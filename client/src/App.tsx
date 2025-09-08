@@ -2,7 +2,7 @@ import {useEffect, useState} from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
-import axios from 'axios'
+import axios, {type AxiosResponse} from 'axios'
 
 function App() {
     const [count, setCount] = useState(0)
@@ -10,7 +10,7 @@ function App() {
 
     useEffect(() => {
         axios.get('http://localhost:3000/api')
-            .then(res => setServerResponse(res.data))
+            .then((res: AxiosResponse) => setServerResponse(res.data))
             .catch(err => setServerResponse(err))
     }, [])
 

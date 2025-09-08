@@ -4,13 +4,17 @@ import viteLogo from '/vite.svg'
 import './App.css'
 import axios, {type AxiosResponse} from 'axios'
 
+type Res = {
+    msg: string
+}
+
 function App() {
     const [count, setCount] = useState(0)
-    const [serverResponse, setServerResponse] = useState(null)
+    const [serverResponse, setServerResponse] = useState<null | Res>(null)
 
     useEffect(() => {
         axios.get('http://localhost:3000/api')
-            .then((res: AxiosResponse) => setServerResponse(res.data))
+            .then((res: AxiosResponse<Res, any>) => setServerResponse(res.data))
             .catch(err => setServerResponse(err))
     }, [])
 

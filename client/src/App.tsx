@@ -13,9 +13,14 @@ function App() {
     const [serverResponse, setServerResponse] = useState<null | Res>(null)
 
     useEffect(() => {
-        axios.get(`${import.meta.env.VITE_BACKEND_URL as string}/api`)
-            .then((res: AxiosResponse<Res, any>) => setServerResponse(res.data))
-            .catch(err => console.log(err))
+        const url = import.meta.env.VITE_BACKEND_URL as string
+        if (url) {
+            axios.get(`${url}/api`)
+                .then((res: AxiosResponse<Res, any>) => setServerResponse(res.data))
+                .catch(err => console.log(err))
+        } else {
+            console.log('server URL not found')
+        }
     }, [])
 
     return (

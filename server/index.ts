@@ -9,6 +9,7 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 const allowedOrigins = (process.env.CORS_ORIGINS as string).split(' ')
+console.log(allowedOrigins)
 
 const app = express();
 app.use(cors({

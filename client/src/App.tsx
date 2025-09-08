@@ -13,9 +13,9 @@ function App() {
     const [serverResponse, setServerResponse] = useState<null | Res>(null)
 
     useEffect(() => {
-        axios.get('http://localhost:3000/api')
+        axios.get('http://localhost:5000/api')
             .then((res: AxiosResponse<Res, any>) => setServerResponse(res.data))
-            .catch(err => setServerResponse(err))
+            .catch(err => console.log(err))
     }, [])
 
     return (

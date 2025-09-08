@@ -11,6 +11,6 @@ app.get('/api', (req: Request, res: Response) => {
     res.status(200).json({msg: "Hello from server!"})
 })
 
-app.listen(3000, () => {
+app.listen(5000, () => {
     console.log("Server started on port 3000");
 });

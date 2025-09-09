@@ -49,6 +49,7 @@ export const authSlice = createSlice({
         },
         refresh: (state, action) => {
             state.token = action.payload
+            state.success = true
         }
     },
     extraReducers: (builder) => {

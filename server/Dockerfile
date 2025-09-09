@@ -4,6 +4,6 @@ COPY package.json .
 COPY package-lock.json .
 RUN npm ci
 COPY . .
-RUN npm run build
+RUN npx prisma generate
 EXPOSE 5000
-CMD ["sh", "-c", "npx prisma db push && npm run"]
+CMD ["sh", "-c", "npx prisma db push && npm run dev"]

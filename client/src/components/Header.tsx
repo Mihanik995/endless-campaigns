@@ -11,6 +11,7 @@ export default function () {
             bg-gray-600 p-4`
         }>
             <Button text='Sign Up' onClick={() => navigate('/auth/signup')} />
+            <Button text='Login' onClick={() => navigate('/auth/login')} />
         </div>
     )
 }

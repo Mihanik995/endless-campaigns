@@ -11,8 +11,6 @@ interface RegisterData {
     email: string;
 }
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-
 export default function (): ReactElement {
     const [registerData, setRegisterData] = useState<RegisterData>({
         username: '',
@@ -22,7 +20,6 @@ export default function (): ReactElement {
     })
 
     const handleChange = function (e: ChangeEvent<HTMLInputElement>) {
-        console.log(registerData)
         setRegisterData({
             ...registerData,
             [e.target.name]: e.target.value
@@ -41,7 +38,7 @@ export default function (): ReactElement {
             return;
         }
         axios.post(
-            `${BACKEND_URL}/auth/register`,
+            `${import.meta.env.VITE_BACKEND_URL}/auth/register`,
             {username, password, email},
             {headers: {'Content-Type': 'application/json'}}
         )

@@ -10,6 +10,7 @@ export default function () {
             flex items-center justify-center gap-2 
             bg-gray-600 p-4`
         }>
+            <Button text='Home' onClick={() => navigate('/')} />
             <Button text='Sign Up' onClick={() => navigate('/auth/signup')} />
             <Button text='Login' onClick={() => navigate('/auth/login')} />
         </div>

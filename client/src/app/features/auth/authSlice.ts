@@ -9,7 +9,10 @@ export const login = createAsyncThunk(
             const res: AxiosResponse = await axios.post(
                 `${import.meta.env.VITE_BACKEND_URL}/auth/login`,
                 data,
-                {headers: {'Content-Type': 'application/json'}}
+                {
+                    headers: {'Content-Type': 'application/json'},
+                    withCredentials: true
+                }
             )
             return res.data
         } catch (error: any) {
@@ -42,6 +45,10 @@ export const authSlice = createSlice({
     reducers: {
         logout: (state) => {
             state.token = ''
+            state.success = false
+        },
+        refresh: (state, action) => {
+            state.token = action.payload
         }
     },
     extraReducers: (builder) => {
@@ -56,12 +63,12 @@ export const authSlice = createSlice({
         builder.addCase((login.fulfilled), (state, action) => {
             state.loading = false
             state.success = true
-            state.token = action.payload.token
+            state.token = action.payload.accessToken
         })
     }
 })
 
-export const {logout} = authSlice.actions;
+export const {logout, refresh} = authSlice.actions;
 
 export const selectAuth = (state: RootState) => state.auth
 

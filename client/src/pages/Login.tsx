@@ -2,7 +2,8 @@ import {type ChangeEvent, type MouseEventHandler, type ReactElement, useState} f
 import Header from "../components/Header.tsx";
 import TextInput from "../components/TextInput.tsx";
 import Button from "../components/Button.tsx";
-import axios from "axios";
+import {useAppDispatch, useAppSelector} from "../app/hooks.ts";
+import {login} from "../app/features/auth/authSlice.ts";
 
 interface LoginData {
     username: string;
@@ -10,11 +11,13 @@ interface LoginData {
 }
 
 export default function (): ReactElement {
-    const [success, setSuccess] = useState(false);
     const [loginData, setLoginData] = useState<LoginData>({
         username: '',
         password: '',
     })
+
+    const auth = useAppSelector(state => state.auth)
+    const dispatch = useAppDispatch()
 
     const handleChange = function (e: ChangeEvent<HTMLInputElement>) {
         setLoginData({
@@ -30,25 +33,13 @@ export default function (): ReactElement {
             alert("Please fill the required fields");
             return;
         }
-        axios.post(
-            `${import.meta.env.VITE_BACKEND_URL}/auth/login`,
-            {username, password},
-            {headers: {'Content-Type': 'application/json'}}
-        )
-            .then(res => {
-                if (res.status === 200) {
-                    console.log(res.data)
-                    setSuccess(true)
-                } else {
-                    console.log(res.data)
-                }
-            })
+        dispatch(login({username, password}))
     }
 
     return (
         <>
             <Header/>
-            {success
+            {auth.success
                 ? <h1>You've successfully logged in!</h1>
                 : <form>
                     <TextInput type={'text'} name={'username'} required={true} onChange={handleChange}/>

@@ -40,7 +40,7 @@ axiosInstance.interceptors.response.use(
             } catch (refreshError) {
                 console.error('Token refresh failed:', refreshError);
                 store.dispatch(logout())
-                // window.location.href = '/auth/login';
+                window.location.href = '/auth/login';
                 return Promise.reject(refreshError);
             }
         }

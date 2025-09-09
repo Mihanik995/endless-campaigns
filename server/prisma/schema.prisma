@@ -14,9 +14,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
+model Users {
   id       Int    @id @unique
   username String @unique
   password Bytes
+  salt     Bytes
   email    String @unique
 }

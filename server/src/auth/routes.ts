@@ -1,4 +1,4 @@
-import type {Request, Response, NextFunction} from "express";
+import type {Request, Response} from "express";
 import type {Users} from "../../generated/prisma";
 
 declare function require(module: string): any;
@@ -10,7 +10,7 @@ const {v4: uuid} = require('uuid');
 const authRouter = Router();
 const client = new PrismaClient();
 
-authRouter.post('/register', (req: Request, res: Response, next: NextFunction) => {
+authRouter.post('/register', (req: Request, res: Response) => {
     const {username, email, password} = req.body;
     const salt = crypto.randomBytes(16)
     crypto.pbkdf2(password, salt, 310000, 32, 'sha256', function (err: Error, hashedPassword: Buffer) {
@@ -27,3 +27,5 @@ authRouter.post('/register', (req: Request, res: Response, next: NextFunction) =
             .catch((err: Error) => res.status(500).send({error: err.message}))
     })
 })
+
+module .exports = authRouter;

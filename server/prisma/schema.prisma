@@ -15,7 +15,7 @@ datasource db {
 }
 
 model Users {
-  id       Int    @id @unique
+  id       String @id @unique
   username String @unique
   password Bytes
   salt     Bytes

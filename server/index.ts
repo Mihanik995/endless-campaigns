@@ -6,6 +6,8 @@ const express = require('express');
 const cors = require("cors");
 const dotenv = require("dotenv");
 
+const authRouter = require('./src/auth/routes')
+
 dotenv.config();
 
 const allowedOrigins = (process.env.CORS_ORIGINS as string).split(' ')
@@ -23,10 +25,9 @@ app.use(cors({
         }
     }
 }));
+app.use(express.json());
 
-app.get('/api', (req: Request, res: Response) => {
-    res.status(200).json({msg: "Hello from server!"})
-})
+app.use('/auth', authRouter)
 
 app.listen(5000, () => {
     console.log("Server started on port 3000");

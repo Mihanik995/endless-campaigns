@@ -155,3 +155,7 @@ dist-ssr
 
 # Prisma ORM
 server/generated/prisma
+
+# Local Docker tests
+docker-compose.yaml
+.dockerignore

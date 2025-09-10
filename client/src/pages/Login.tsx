@@ -41,11 +41,13 @@ export default function (): ReactElement {
             <Header/>
             {auth.success
                 ? <h1>You've successfully logged in!</h1>
-                : <form>
-                    <TextInput type={'text'} name={'username'} required={true} onChange={handleChange}/>
-                    <TextInput type={'password'} name={'password'} required={true} onChange={handleChange}/>
-                    <Button text={'Login'} onClick={handleSubmit}/>
-                </form>}
+                : auth.error
+                    ? <h1>{auth.error}</h1>
+                    : <form>
+                        <TextInput type={'text'} name={'username'} required={true} onChange={handleChange}/>
+                        <TextInput type={'password'} name={'password'} required={true} onChange={handleChange}/>
+                        <Button text={'Login'} onClick={handleSubmit}/>
+                    </form>}
         </>
     )
 }

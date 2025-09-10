@@ -15,10 +15,10 @@ app.get('/test', verifyToken, (req: Request, res: Response) => {
 app.post('/send-me-email', (req: Request, res: Response) => {
     try {
         transporter.sendMail({
-            from: process.env.EMAIL_HOST_USER,
-            to: process.env.EMAIL_HOST_USER,
+            from: process.env.SENDER_EMAIL,
+            to: 'www.mihanik95@yandex.ru',
             subject: 'Hello from server!',
-            text: '<h1>Hello from server!</h1>',
+            html: '<h1>Hello from server!</h1>',
         })
         res.status(200).send({message: 'Message sent successfully!'})
     } catch (err) {

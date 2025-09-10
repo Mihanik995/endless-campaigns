@@ -7,6 +7,7 @@ import Signup from "./pages/Signup.tsx";
 import Login from "./pages/Login.tsx";
 import {store} from './app/store.ts'
 import {Provider} from 'react-redux'
+import Verify from "./pages/Verify.tsx";
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
@@ -17,6 +18,7 @@ createRoot(document.getElementById('root')!).render(
                     <Route path='auth'>
                         <Route path='signup' element={<Signup/>}/>
                         <Route path='login' element={<Login/>}/>
+                        <Route path='verify/:token' element={<Verify/>}/>
                     </Route>
                 </Routes>
             </BrowserRouter>

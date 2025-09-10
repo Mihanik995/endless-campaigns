@@ -8,6 +8,8 @@ const crypto = require("crypto");
 const {PrismaClient} = require('../../generated/prisma')
 const {v4: uuid} = require('uuid');
 const jwt = require('jsonwebtoken');
+const transporter = require('../config/nodemailer')
+const verificationEmail = require('../../templates/verificationEmail')
 
 require('dotenv').config();
 
@@ -27,25 +29,46 @@ authRouter.post('/register', (req: Request, res: Response) => {
                 salt,
                 email
             }
-        }).then((user: Users) => res.status(201).send({user}))
+        }).then((user: Users) => {
+            if (user) {
+                const token = jwt.sign({userId: user.id}, process.env.JWT_SECRET);
+                return transporter.sendMail({
+                    from: process.env.SENDER_EMAIL,
+                    to: user.email,
+                    subject: 'Verification',
+                    html: verificationEmail(token)
+                })
+            }
+        })
+            .then(() => res.sendStatus(201))
             .catch((err: Error) => res.status(500).send({error: err.message}))
     })
+})
+
+authRouter.get('/verify/:token', (req: Request, res: Response) => {
+    const {token} = req.params;
+    const {userId} = jwt.verify(token, process.env.JWT_SECRET);
+    if (!userId) return res.status(400).send({error: 'Invalid link'});
+    client.users.update({where: {id: userId}, data: {isActive: true}})
+        .then(() => res.status(200).send({userId}))
+        .catch((err: Error) => res.status(500).send({error: err.message}))
 })
 
 authRouter.post('/login', async (req: Request, res: Response) => {
     const {username, password} = req.body;
     client.users.findUnique({where: {username}})
-        .then((row: Users) => {
-            if (!row) return res.status(404).json({error: 'User not found'});
-            crypto.pbkdf2(password, row.salt, 310000, 32, 'sha256', function (err: Error, hashedPassword: Buffer) {
+        .then((user: Users) => {
+            if (!user) return res.status(404).json({error: 'User not found'});
+            crypto.pbkdf2(password, user.salt, 310000, 32, 'sha256', function (err: Error, hashedPassword: Buffer) {
                 if (err) {
                     throw new Error(err.message);
                 }
-                if (!crypto.timingSafeEqual(hashedPassword, row.password)) {
+                if (!crypto.timingSafeEqual(hashedPassword, user.password)) {
                     return res.status(401).json({error: 'Authentication failed'});
                 }
-                const accessToken = jwt.sign({userId: row.id}, process.env.JWT_SECRET, {expiresIn: '15m'})
-                const refreshToken = jwt.sign({userId: row.id}, process.env.JWT_SECRET)
+                if (!user.isActive) return res.status(403).send({error: 'User not verified'});
+                const accessToken = jwt.sign({userId: user.id}, process.env.JWT_SECRET, {expiresIn: '15m'})
+                const refreshToken = jwt.sign({userId: user.id}, process.env.JWT_SECRET)
                 return res.status(200)
                     .cookie('refreshToken', refreshToken, {httpOnly: true})
                     .json({accessToken});

@@ -8,7 +8,8 @@ interface Props {
 export default function (children: Props): ReactElement {
     return (
         <button className={
-            `p-2 border-2 border-r-2 border-black`
+            `px-2 py-1 text-yellow-300 font-serif tracking-wide
+            hover:text-yellow-600 transition-colors duration-300 ease-in-out`
         } onClick={children.onClick}>
             {children.text}
         </button>

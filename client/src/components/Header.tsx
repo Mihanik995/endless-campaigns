@@ -12,8 +12,8 @@ export default function () {
     return (
         <div className={
             `fixed top-0 left-0 w-full z-50 
-            flex items-center justify-center gap-2 
-            bg-gray-600 p-4`
+            flex justify-center gap-2 
+            bg-gray-900 p-4`
         }>
             <Button text='Home' onClick={() => navigate('/')} />
             <Button text='Sign Up' onClick={() => navigate('/auth/signup')} />

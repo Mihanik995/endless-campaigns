@@ -67,4 +67,10 @@ authRouter.post('/refresh', async (req: Request, res: Response) => {
         .json({accessToken});
 })
 
+authRouter.post('/logout', (req: Request, res: Response) => {
+    delete req.cookies.refreshToken
+    res.cookie('refreshToken', null)
+        .sendStatus(200)
+})
+
 module.exports = authRouter;

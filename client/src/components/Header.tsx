@@ -1,8 +1,13 @@
 import Button from "./Button.tsx";
 import {useNavigate} from "react-router";
+import {useAppDispatch} from "../app/hooks.ts";
+import {logout} from "../app/features/auth/authSlice.ts";
+import axios from "../axios/axiosConfig.ts";
 
 export default function () {
     const navigate = useNavigate()
+
+    const dispatch = useAppDispatch();
 
     return (
         <div className={
@@ -12,7 +17,14 @@ export default function () {
         }>
             <Button text='Home' onClick={() => navigate('/')} />
             <Button text='Sign Up' onClick={() => navigate('/auth/signup')} />
-            <Button text='Login' onClick={() => navigate('/auth/login')} />
+            <Button text='Log in' onClick={() => navigate('/auth/login')} />
+            <Button text='Log out' onClick={() => {
+                axios.post('/auth/logout')
+                .then(response => {
+                    if (response.status === 200) {
+                        dispatch(logout());
+                    }
+                }).catch(error => console.log(error))}}/>
         </div>
     )
 }

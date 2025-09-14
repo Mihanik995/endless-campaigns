@@ -2,9 +2,22 @@ import {useNavigate} from "react-router";
 import {useAppDispatch, useAppSelector} from "../app/hooks.ts";
 import {logout, selectAuth} from "../app/features/auth/authSlice.ts";
 import axios from "../axios/axiosConfig.ts";
-import {Avatar, Box, DropdownMenu, Flex, Heading, IconButton} from "@radix-ui/themes";
-import {CheckIcon, Cross2Icon, HamburgerMenuIcon, MoonIcon, PersonIcon, SunIcon} from "@radix-ui/react-icons";
-import {selectTheme, toggleTheme} from "../app/features/theme/themeSlice.ts";
+import {
+    Avatar,
+    Box,
+    Button,
+    DropdownMenu,
+    Flex,
+    Heading,
+    IconButton,
+    Popover,
+    Separator,
+    Switch,
+    Text
+} from "@radix-ui/themes";
+import {CheckIcon, Cross2Icon, HamburgerMenuIcon, PersonIcon, ShadowInnerIcon} from "@radix-ui/react-icons";
+import {selectTheme, setBackground, toggleTheme} from "../app/features/theme/themeSlice.ts";
+import background from "./Background.tsx";
 
 export default function () {
     const navigate = useNavigate()
@@ -12,6 +25,14 @@ export default function () {
     const auth = useAppSelector(selectAuth);
     const theme = useAppSelector(selectTheme);
     const dispatch = useAppDispatch();
+
+    const backgrounds = {
+        default: '',
+        stone: `/assets/stone-${theme.theme}-bg.jpg`,
+        metal: `/assets/metal-${theme.theme}-bg.jpg`,
+        wood: `/assets/wood-${theme.theme}-bg.jpg`,
+        leather: `/assets/leather-${theme.theme}-bg.jpg`,
+    }
 
     return (
         <Box
@@ -38,16 +59,43 @@ export default function () {
                     <Heading>Endless Campaigns</Heading>
                 </Flex>
                 <Flex gap='2' align='center'>
-                    <IconButton
-                        size='3'
-                        radius='full'
-                        onClick={() => dispatch(toggleTheme())}
-                    >
-                        {theme.theme === 'dark'
-                            ? <MoonIcon/>
-                            : <SunIcon/>
-                        }
-                    </IconButton>
+                    <Popover.Root>
+                        <Popover.Trigger>
+                            <IconButton
+                                size='3'
+                                radius='full'
+                            >
+                                <ShadowInnerIcon/>
+                            </IconButton>
+                        </Popover.Trigger>
+                        <Popover.Content>
+                            <Text as='label' size='3'>
+                                <Switch
+                                    value={theme.theme === 'light'}
+                                    onClick={() => dispatch(toggleTheme())}
+                                />
+                                {' '}Toggle Theme
+                            </Text>
+                            <Separator size='4' my='3'/>
+                            <Flex direction='column' gap='2' align='end'>
+                                <Text>Backgrounds</Text>
+                                <Flex gap='2' justify='end'>
+                                    {Object.keys(backgrounds).map((bg) => (
+                                        <button
+                                            key={bg}
+                                            onClick={() => dispatch(setBackground(bg))}
+                                        >
+                                            <Avatar
+                                                src={backgrounds[bg]}
+                                                fallback={bg[0]}
+                                                className='cursor-pointer'
+                                            />
+                                        </button>
+                                    ))}
+                                </Flex>
+                            </Flex>
+                        </Popover.Content>
+                    </Popover.Root>
                     <DropdownMenu.Root>
                         <DropdownMenu.Trigger>
                             <IconButton variant='solid' size='3' radius='full'>

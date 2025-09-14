@@ -6,20 +6,48 @@ body {
     min-height: 100vh;
 }
 
-.bg-default {
+.bg-default-dark {
     @apply bg-gradient-to-br from-gray-900 via-stone-800 to-gray-700
 }
 
-.bg-stone-light {
-    background-image: url("/assets/stone-light-bg.jpg");
+.bg-default-light {
+    @apply bg-gradient-to-br from-gray-400 via-stone-300 to-blue-200
+}
+
+.bg {
     background-repeat: no-repeat;
     background-position: center;
     background-size: cover;
 }
 
-.bg-stone-dark {
+.stone-dark {
     background-image: url("/assets/stone-dark-bg.jpg");
-    background-repeat: no-repeat;
-    background-position: center;
-    background-size: cover;
+}
+
+.stone-light {
+    background-image: url("/assets/stone-light-bg.jpg");
+}
+
+.metal-dark {
+    background-image: url("/assets/metal-dark-bg.jpg");
+}
+
+.metal-light {
+    background-image: url("/assets/metal-light-bg.jpg");
+}
+
+.wood-dark {
+    background-image: url("/assets/wood-dark-bg.jpg");
+}
+
+.wood-light {
+    background-image: url("/assets/wood-light-bg.jpg");
+}
+
+.leather-dark {
+    background-image: url("/assets/leather-dark-bg.jpg");
+}
+
+.leather-light {
+    background-image: url("/assets/leather-light-bg.jpg");
 }

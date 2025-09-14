@@ -10,9 +10,14 @@ interface Props {
 
 export default function ({children}: Props) {
     const theme = useAppSelector(selectTheme)
+    const backgroundClass = theme.background === 'default'
+        ? `bg-default-${theme.theme}`
+        : `bg ${theme.background}-${theme.theme}`
 
     return (
-        <div className={`bg-stone-${theme.theme}`}>
+        <div
+            className={backgroundClass}
+        >
             <Theme
                 appearance={theme.theme}
                 accentColor="gray"

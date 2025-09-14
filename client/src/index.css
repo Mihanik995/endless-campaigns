@@ -11,7 +11,14 @@ body {
 }
 
 .bg-stone-light {
-    background-image: url("/assets/stone-bg.jpg");
+    background-image: url("/assets/stone-light-bg.jpg");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
+}
+
+.bg-stone-dark {
+    background-image: url("/assets/stone-dark-bg.jpg");
     background-repeat: no-repeat;
     background-position: center;
     background-size: cover;

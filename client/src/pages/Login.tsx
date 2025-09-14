@@ -1,9 +1,10 @@
 import {type ChangeEvent, type MouseEventHandler, type ReactElement, useState} from "react";
 import Header from "../components/Header.tsx";
-import TextInput from "../components/TextInput.tsx";
-import Button from "../components/Button.tsx";
 import {useAppDispatch, useAppSelector} from "../app/hooks.ts";
 import {login} from "../app/features/auth/authSlice.ts";
+import {Button, Card, Flex, Heading, Separator, Text, TextField} from "@radix-ui/themes";
+import {LockClosedIcon, PersonIcon} from "@radix-ui/react-icons";
+import {useNavigate} from "react-router";
 
 interface LoginData {
     username: string;
@@ -18,6 +19,7 @@ export default function (): ReactElement {
 
     const auth = useAppSelector(state => state.auth)
     const dispatch = useAppDispatch()
+    const navigate = useNavigate();
 
     const handleChange = function (e: ChangeEvent<HTMLInputElement>) {
         setLoginData({
@@ -39,15 +41,53 @@ export default function (): ReactElement {
     return (
         <>
             <Header/>
-            {auth.success
-                ? <h1>You've successfully logged in!</h1>
-                : auth.error
-                    ? <h1>{auth.error}</h1>
-                    : <form>
-                        <TextInput type={'text'} name={'username'} required={true} onChange={handleChange}/>
-                        <TextInput type={'password'} name={'password'} required={true} onChange={handleChange}/>
-                        <Button text={'Login'} onClick={handleSubmit}/>
-                    </form>}
+            <Flex height='100vh' align='center' justify='center'>
+                <Card size='4'>
+                    {auth.success
+                        ? `${navigate('/')}`
+                        : auth.error
+                            ? <Heading>{auth.error}</Heading>
+                            : <form>
+                                <Flex direction='column' gap='3'>
+                                    <Text as='label' size='5'>
+                                        Username:{' '}
+                                        <TextField.Root
+                                            name='username'
+                                            value={loginData.username}
+                                            onChange={handleChange}
+                                            size='3'
+                                        >
+                                            <TextField.Slot>
+                                                <PersonIcon/>
+                                            </TextField.Slot>
+                                        </TextField.Root>
+                                    </Text>
+                                    <Text as='label' size='5'>
+                                        Password:{' '}
+                                        <TextField.Root
+                                            type='password'
+                                            name='password'
+                                            value={loginData.password}
+                                            onChange={handleChange}
+                                            size='3'
+                                        >
+                                            <TextField.Slot>
+                                                <LockClosedIcon/>
+                                            </TextField.Slot>
+                                        </TextField.Root>
+                                    </Text>
+                                    <Separator size='4'/>
+                                    <Button
+                                        onClick={handleSubmit}
+                                        size='3'
+                                    >
+                                        Log In
+                                    </Button>
+                                </Flex>
+                            </form>
+                    }
+                </Card>
+            </Flex>
         </>
     )
 }

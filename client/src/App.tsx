@@ -1,11 +1,10 @@
-import Header from './components/Header'
+import Header from "./components/Header.tsx";
 
-function App() {
+export default function CreateCampaignForm() {
+
     return (
         <>
             <Header/>
         </>
-    )
+    );
 }
-
-export default App

@@ -14,14 +14,14 @@ const verificationEmail = require('../../templates/verificationEmail')
 require('dotenv').config();
 
 const authRouter = Router();
-const client = new PrismaClient();
+const dbClient = new PrismaClient();
 
 authRouter.post('/register', (req: Request, res: Response) => {
     const {username, email, password} = req.body;
     const salt = crypto.randomBytes(16)
     crypto.pbkdf2(password, salt, 310000, 32, 'sha256', function (err: Error, hashedPassword: Buffer) {
         if (err) throw new Error(err.message);
-        client.users.create({
+        dbClient.users.create({
             data: {
                 id: uuid(),
                 username,
@@ -49,14 +49,14 @@ authRouter.get('/verify/:token', (req: Request, res: Response) => {
     const {token} = req.params;
     const {userId} = jwt.verify(token, process.env.JWT_SECRET);
     if (!userId) return res.status(400).send({error: 'Invalid link'});
-    client.users.update({where: {id: userId}, data: {isActive: true}})
+    dbClient.users.update({where: {id: userId}, data: {isActive: true}})
         .then(() => res.status(200).send({userId}))
         .catch((err: Error) => res.status(500).send({error: err.message}))
 })
 
 authRouter.post('/login', async (req: Request, res: Response) => {
     const {username, password} = req.body;
-    client.users.findUnique({where: {username}})
+    dbClient.users.findUnique({where: {username}})
         .then((user: Users) => {
             if (!user) return res.status(404).json({error: 'User not found'});
             crypto.pbkdf2(password, user.salt, 310000, 32, 'sha256', function (err: Error, hashedPassword: Buffer) {

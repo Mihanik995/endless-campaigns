@@ -4,7 +4,6 @@ import {Navigate, Outlet} from "react-router";
 
 export default function () {
     const auth = useAppSelector(selectAuth);
-    console.log(auth.token);
 
     if (!auth.token) {
         return <Navigate to='/auth/login' replace/>

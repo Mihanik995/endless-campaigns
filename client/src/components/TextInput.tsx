@@ -7,14 +7,14 @@ interface Props {
     value: string,
     type?: "number" | "search" | "time" | "text" | "hidden" | "tel" | "url" | "email" | "date" | "datetime-local" | "month" | "password" | "week",
     onChange: (e: ChangeEvent<HTMLInputElement>) => void,
-    icon: ReactElement
+    icon?: ReactElement,
 }
 
 export default function (props: Props): ReactElement {
     const {label, name, value, onChange, icon, type} = props;
 
     return (
-        <Text as='label' size='5'>
+        <Text as='label' size='3'>
             {label}:{' '}
             <TextField.Root
                 name={name}
@@ -23,9 +23,11 @@ export default function (props: Props): ReactElement {
                 onChange={onChange}
                 size='3'
             >
-                <TextField.Slot>
-                    {icon}
-                </TextField.Slot>
+                {!!icon &&
+                    <TextField.Slot>
+                        {icon}
+                    </TextField.Slot>
+                }
             </TextField.Root>
         </Text>
     )

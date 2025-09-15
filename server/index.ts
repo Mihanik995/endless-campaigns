@@ -4,9 +4,11 @@ const app = require('./src/config/server')
 const transporter = require('./src/config/nodemailer')
 
 const authRouter = require('./src/auth/routes')
+const campaignRouter = require('./src/campaigns/routes')
 const {verifyToken} = require('./src/auth/middleware')
 
 app.use('/auth', authRouter)
+app.use('/campaigns', campaignRouter)
 
 app.get('/test', verifyToken, (req: Request, res: Response) => {
     res.status(200).send({message: 'Test passed successfully!'})

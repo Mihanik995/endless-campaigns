@@ -5,6 +5,7 @@ const {Router} = require("express");
 const {PrismaClient} = require("../../generated/prisma")
 const {verifyToken} = require('../auth/middleware')
 const jwt = require('jsonwebtoken');
+const {v4: uuid} = require('uuid');
 
 require('dotenv').config();
 
@@ -36,13 +37,20 @@ campaignsRouter.get("/:id", verifyToken, async (req: Request, res: Response) => 
 
 campaignsRouter.post("/", verifyToken, async (req: Request, res: Response) => {
     const token = req.header('Authorization');
-    const campaignData = req.body as Campaigns
+    const campaignData = req.body
     try {
         const {userId} = jwt.verify(token, process.env.JWT_SECRET);
+
         campaignData["userId"] = userId;
+        campaignData["id"] = uuid();
+
+        campaignData.dateStart = new Date(campaignData.dateStart)
+        campaignData.dateEnd = new Date(campaignData.dateEnd)
+
         const campaign = await dbClient.campaigns.create({data: campaignData})
         return res.status(201).json(campaign)
     } catch (error) {
+        console.log(error)
         res.status(500).json({error})
     }
 })

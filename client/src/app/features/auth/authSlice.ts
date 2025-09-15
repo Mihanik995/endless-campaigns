@@ -14,6 +14,7 @@ export const login = createAsyncThunk(
                     withCredentials: true
                 }
             )
+            console.log(res.data)
             return res.data
         } catch (error: any) {
             if (error.response && error.response.data.message) {
@@ -26,14 +27,14 @@ export const login = createAsyncThunk(
 )
 
 export interface AuthState {
-    token: string,
+    token?: string,
     loading: boolean,
     error: any,
     success: boolean,
 }
 
 const initialState: AuthState = {
-    token: '',
+    token: localStorage.getItem('ec-access') || undefined,
     loading: false,
     error: null as any,
     success: false,
@@ -44,11 +45,13 @@ export const authSlice = createSlice({
     initialState,
     reducers: {
         logout: (state) => {
-            state.token = ''
+            state.token = undefined
             state.success = false
+            localStorage.removeItem('ec-access')
         },
         refresh: (state, action) => {
             state.token = action.payload
+            localStorage.setItem('ec-access', action.payload)
             state.success = true
         }
     },
@@ -65,6 +68,7 @@ export const authSlice = createSlice({
             state.loading = false
             state.success = true
             state.token = action.payload.accessToken
+            localStorage.setItem('ec-access', action.payload.accessToken)
         })
     }
 })

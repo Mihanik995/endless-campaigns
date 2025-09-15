@@ -1,8 +1,8 @@
-import type {ReactNode} from "react";
-import {useAppDispatch, useAppSelector} from "../app/hooks.ts";
-import {selectTheme} from "../app/features/theme/themeSlice.ts";
-import {store} from "../app/store.ts";
+import {type ReactNode} from "react";
 import {Theme} from "@radix-ui/themes";
+
+import {useAppSelector} from "../app/hooks.ts";
+import {selectTheme} from "../app/features/theme/themeSlice.ts";
 
 interface Props {
     children: ReactNode;

@@ -20,19 +20,24 @@ export default function () {
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
                 {auth.token
-                    ? <DropdownMenu.Item
-                        color='red'
-                        onClick={() => {
-                            axios.post('/auth/logout')
-                                .then(response => {
-                                    if (response.status === 200) {
-                                        dispatch(logout());
-                                    }
-                                }).catch(error => console.log(error))
-                        }}
-                    >
-                        <Cross2Icon/>Log Out
-                    </DropdownMenu.Item>
+                    ? <>
+                        <DropdownMenu.Item onClick={() => navigate('/dashboard')}>
+                            Dashboard
+                        </DropdownMenu.Item>
+                        <DropdownMenu.Item
+                            color='red'
+                            onClick={() => {
+                                axios.post('/auth/logout')
+                                    .then(response => {
+                                        if (response.status === 200) {
+                                            dispatch(logout());
+                                        }
+                                    }).catch(error => console.log(error))
+                            }}
+                        >
+                            <Cross2Icon/>Log Out
+                        </DropdownMenu.Item>
+                    </>
                     : <>
                         <DropdownMenu.Item onClick={() => navigate('/auth/signup')}>
                             <PersonIcon/>Sign Up

@@ -4,7 +4,7 @@ import {useAppDispatch, useAppSelector} from "../app/hooks.ts";
 import {login} from "../app/features/auth/authSlice.ts";
 import {Button, Card, Flex, Heading, Separator} from "@radix-ui/themes";
 import {LockClosedIcon, PersonIcon} from "@radix-ui/react-icons";
-import {useNavigate} from "react-router";
+import {Navigate} from "react-router";
 import TextInput from "../components/TextInput.tsx";
 
 interface LoginData {
@@ -20,7 +20,6 @@ export default function (): ReactElement {
 
     const auth = useAppSelector(state => state.auth)
     const dispatch = useAppDispatch()
-    const navigate = useNavigate();
 
     const handleChange = function (e: ChangeEvent<HTMLInputElement>) {
         setLoginData({
@@ -45,7 +44,7 @@ export default function (): ReactElement {
             <Flex height='100vh' align='center' justify='center'>
                 <Card size='4'>
                     {auth.success
-                        ? `${navigate('/')}`
+                        ? <Navigate to='/' replace/>
                         : auth.error
                             ? <Heading>{auth.error}</Heading>
                             : <form>

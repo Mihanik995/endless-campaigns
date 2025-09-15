@@ -9,7 +9,6 @@ import {Provider} from 'react-redux'
 import Verify from "./pages/Verify.tsx";
 import "@radix-ui/themes/styles.css";
 import './index.css'
-import {Theme, ThemePanel} from "@radix-ui/themes";
 import Background from "./components/Background.tsx";
 
 createRoot(document.getElementById('root')!).render(

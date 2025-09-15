@@ -7,8 +7,8 @@ export interface ThemeState {
 }
 
 const initialState: ThemeState = {
-    theme: 'light',
-    background: 'default'
+    theme: localStorage.getItem('endless_campaigns_theme') as ThemeState["theme"] || 'light',
+    background: localStorage.getItem('endless_campaigns_bg') as ThemeState["background"] || 'default'
 }
 
 export const themeSlice = createSlice({
@@ -17,10 +17,11 @@ export const themeSlice = createSlice({
     reducers: {
         toggleTheme: (state) => {
             state.theme = state.theme === 'dark' ? 'light' : 'dark';
+            localStorage.setItem('endless_campaigns_theme', state.theme);
         },
         setBackground: (state, action) => {
-            console.log('action.payload: ', action.payload);
             state.background = action.payload;
+            localStorage.setItem('endless_campaigns_bg', state.background);
         }
     }
 })

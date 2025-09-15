@@ -1,8 +1,9 @@
 import {type ChangeEvent, type MouseEventHandler, type ReactElement, useState} from "react";
 import Header from "../components/Header.tsx";
 import axios from "axios";
-import {Button, Card, Flex, Heading, Separator, Text, TextField} from "@radix-ui/themes";
+import {Button, Card, Flex, Heading, Separator, Text} from "@radix-ui/themes";
 import {EnvelopeClosedIcon, LockClosedIcon, PersonIcon} from "@radix-ui/react-icons";
+import TextInput from "../components/TextInput.tsx";
 
 interface RegisterData {
     username: string;
@@ -72,63 +73,39 @@ export default function (): ReactElement {
                                     }}
                                     gap='3'>
                                     <Flex direction='column' gap='3'>
-                                        <Text as='label' size='5'>
-                                            Username:{' '}
-                                            <TextField.Root
-                                                name='usesrname'
-                                                value={registerData.username}
-                                                onChange={handleChange}
-                                                size='3'
-                                            >
-                                                <TextField.Slot>
-                                                    <PersonIcon/>
-                                                </TextField.Slot>
-                                            </TextField.Root>
-                                        </Text>
-                                        <Text as='label' size='5'>
-                                            E-mail:{' '}
-                                            <TextField.Root
-                                                type='email'
-                                                name='email'
-                                                value={registerData.email}
-                                                onChange={handleChange}
-                                                size='3'
-                                            >
-                                                <TextField.Slot>
-                                                    <EnvelopeClosedIcon/>
-                                                </TextField.Slot>
-                                            </TextField.Root>
-                                        </Text>
+                                        <TextInput
+                                            label='Username'
+                                            name='username'
+                                            value={registerData.username}
+                                            onChange={handleChange}
+                                            icon={<PersonIcon/>}
+                                        />
+                                        <TextInput
+                                            label='E-mail'
+                                            type='email'
+                                            name='email'
+                                            value={registerData.email}
+                                            onChange={handleChange}
+                                            icon={<EnvelopeClosedIcon/>}
+                                        />
                                     </Flex>
                                     <Flex direction='column' gap='3'>
-                                        <Text as='label' size='5'>
-                                            Password:{' '}
-                                            <TextField.Root
-                                                type='password'
-                                                name='password'
-                                                value={registerData.username}
-                                                onChange={handleChange}
-                                                size='3'
-                                            >
-                                                <TextField.Slot>
-                                                    <LockClosedIcon/>
-                                                </TextField.Slot>
-                                            </TextField.Root>
-                                        </Text>
-                                        <Text as='label' size='5'>
-                                            Confirm Password:{' '}
-                                            <TextField.Root
-                                                type='password'
-                                                name='confirmPassword'
-                                                value={registerData.confirmPassword}
-                                                onChange={handleChange}
-                                                size='3'
-                                            >
-                                                <TextField.Slot>
-                                                    <LockClosedIcon/>
-                                                </TextField.Slot>
-                                            </TextField.Root>
-                                        </Text>
+                                        <TextInput
+                                            label='Password'
+                                            type='password'
+                                            name='password'
+                                            value={registerData.password}
+                                            onChange={handleChange}
+                                            icon={<LockClosedIcon/>}
+                                        />
+                                        <TextInput
+                                            label='Confirm Password'
+                                            type='password'
+                                            name='confirmPassword'
+                                            value={registerData.confirmPassword}
+                                            onChange={handleChange}
+                                            icon={<LockClosedIcon/>}
+                                        />
                                     </Flex>
                                 </Flex>
                                 <Separator size='4'/>

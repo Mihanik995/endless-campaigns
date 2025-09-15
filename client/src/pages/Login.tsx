@@ -2,9 +2,10 @@ import {type ChangeEvent, type MouseEventHandler, type ReactElement, useState} f
 import Header from "../components/Header.tsx";
 import {useAppDispatch, useAppSelector} from "../app/hooks.ts";
 import {login} from "../app/features/auth/authSlice.ts";
-import {Button, Card, Flex, Heading, Separator, Text, TextField} from "@radix-ui/themes";
+import {Button, Card, Flex, Heading, Separator} from "@radix-ui/themes";
 import {LockClosedIcon, PersonIcon} from "@radix-ui/react-icons";
 import {useNavigate} from "react-router";
+import TextInput from "../components/TextInput.tsx";
 
 interface LoginData {
     username: string;
@@ -49,33 +50,21 @@ export default function (): ReactElement {
                             ? <Heading>{auth.error}</Heading>
                             : <form>
                                 <Flex direction='column' gap='3'>
-                                    <Text as='label' size='5'>
-                                        Username:{' '}
-                                        <TextField.Root
-                                            name='username'
-                                            value={loginData.username}
-                                            onChange={handleChange}
-                                            size='3'
-                                        >
-                                            <TextField.Slot>
-                                                <PersonIcon/>
-                                            </TextField.Slot>
-                                        </TextField.Root>
-                                    </Text>
-                                    <Text as='label' size='5'>
-                                        Password:{' '}
-                                        <TextField.Root
-                                            type='password'
-                                            name='password'
-                                            value={loginData.password}
-                                            onChange={handleChange}
-                                            size='3'
-                                        >
-                                            <TextField.Slot>
-                                                <LockClosedIcon/>
-                                            </TextField.Slot>
-                                        </TextField.Root>
-                                    </Text>
+                                    <TextInput
+                                        label='Username'
+                                        name='username'
+                                        value={loginData.username}
+                                        onChange={handleChange}
+                                        icon={<PersonIcon/>}
+                                    />
+                                    <TextInput
+                                        label='Password'
+                                        name='password'
+                                        type='password'
+                                        value={loginData.password}
+                                        onChange={handleChange}
+                                        icon={<LockClosedIcon/>}
+                                    />
                                     <Separator size='4'/>
                                     <Button
                                         onClick={handleSubmit}

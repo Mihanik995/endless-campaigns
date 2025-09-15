@@ -28,7 +28,7 @@ export default function () {
             <Popover.Content>
                 <Text as='label' size='3'>
                     <Switch
-                        value={theme.theme === 'light'}
+                        value={(theme.theme === 'light') as unknown as number}
                         onClick={() => dispatch(toggleTheme())}
                     />
                     {' '}Toggle Theme

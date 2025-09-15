@@ -1,32 +1,32 @@
-import type {ChangeEvent, ReactElement} from "react";
+import {Text, TextField} from "@radix-ui/themes";
+import {type ChangeEvent, type ReactElement} from "react";
 
 interface Props {
-    placeholder?: string,
+    label: string,
     name: string,
-    type: 'text' | 'password' | 'email',
+    value: string,
+    type?: "number" | "search" | "time" | "text" | "hidden" | "tel" | "url" | "email" | "date" | "datetime-local" | "month" | "password" | "week",
     onChange: (e: ChangeEvent<HTMLInputElement>) => void,
-    required: boolean,
+    icon: ReactElement
 }
 
 export default function (props: Props): ReactElement {
+    const {label, name, value, onChange, icon, type} = props;
+
     return (
-        <div>
-            <label
-                className={
-                    `text-xl font-semibold`
-                }>
-                {props.name[0].toUpperCase() + props.name.slice(1)}{props.required && '*'}:
-                <input
-                    className={
-                        `p-2 border-2 border-black border-r-2`
-                    }
-                    type={props.type}
-                    onChange={props.onChange}
-                    placeholder={props.placeholder}
-                    name={props.name}
-                    required={props.required}
-                />
-            </label>
-        </div>
+        <Text as='label' size='5'>
+            {label}:{' '}
+            <TextField.Root
+                name={name}
+                value={value}
+                type={type || 'text'}
+                onChange={onChange}
+                size='3'
+            >
+                <TextField.Slot>
+                    {icon}
+                </TextField.Slot>
+            </TextField.Root>
+        </Text>
     )
 }

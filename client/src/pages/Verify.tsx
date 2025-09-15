@@ -2,6 +2,7 @@ import {type ReactElement, useEffect, useState} from "react";
 import axios from "../axios/axiosConfig.ts";
 import {useParams} from "react-router";
 import Header from "../components/Header.tsx";
+import {Heading, Text} from "@radix-ui/themes";
 
 export default function (): ReactElement {
     const [success, setSuccess] = useState(false)
@@ -21,8 +22,8 @@ export default function (): ReactElement {
             <Header/>
             {success &&
                 <>
-                    <h1>Your verification passed successfully!</h1>
-                    <p>You can Log in now!</p>
+                    <Heading>Your verification passed successfully!</Heading>
+                    <Text>You can Log in now!</Text>
                 </>
             }
         </>)

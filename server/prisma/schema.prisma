@@ -15,10 +15,21 @@ datasource db {
 }
 
 model Users {
-  id       String  @id @unique
-  username String  @unique
-  password Bytes
-  salt     Bytes
-  email    String  @unique
-  isActive Boolean @default(false)
+  id        String      @id @unique
+  username  String      @unique
+  password  Bytes
+  salt      Bytes
+  email     String      @unique
+  isActive  Boolean     @default(false)
+  Campaigns Campaigns[]
+}
+
+model Campaigns {
+  id          String   @id @unique
+  owner       Users    @relation(fields: [userId], references: [id])
+  userId      String
+  description String
+  regulations String
+  dateStart   DateTime
+  dateEnd     DateTime
 }

@@ -1,5 +1,5 @@
 import {DropdownMenu, IconButton} from "@radix-ui/themes";
-import {CheckIcon, Cross2Icon, HamburgerMenuIcon, PersonIcon} from "@radix-ui/react-icons";
+import {CheckIcon, Cross2Icon, DashboardIcon, HamburgerMenuIcon, PersonIcon} from "@radix-ui/react-icons";
 import {useAppDispatch, useAppSelector} from "../app/hooks.ts";
 import {logout, selectAuth} from "../app/features/auth/authSlice.ts";
 import {useNavigate} from "react-router";
@@ -22,7 +22,7 @@ export default function () {
                 {auth.token
                     ? <>
                         <DropdownMenu.Item onClick={() => navigate('/dashboard')}>
-                            Dashboard
+                            <DashboardIcon/>Dashboard
                         </DropdownMenu.Item>
                         <DropdownMenu.Item
                             color='red'

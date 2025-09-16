@@ -1,9 +1,11 @@
 import Header from "../components/Header.tsx";
-import {Box, Button, Card, Container, Flex, Heading, Separator, Spinner} from "@radix-ui/themes";
+import {Box, Button, Callout, Card, Container, Flex, Separator, Spinner} from "@radix-ui/themes";
 import {type ChangeEvent, type MouseEventHandler, useState} from "react";
 import TextInput from "../components/TextInput.tsx";
 import TextAreaInput from "../components/TextAreaInput.tsx";
 import axios from "../axios/axiosConfig.ts";
+import {useNavigate} from "react-router";
+import {InfoCircledIcon} from "@radix-ui/react-icons";
 
 interface CampaignData {
     title: string;
@@ -22,7 +24,8 @@ export default function () {
         dateEnd: ''
     })
     const [isLoading, setIsLoading] = useState(false);
-    const [success, setSuccess] = useState(false)
+    const [error, setError] = useState()
+    const navigate = useNavigate();
 
     const handleChange = function (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
         setCampaignData({
@@ -44,8 +47,8 @@ export default function () {
 
         axios.post('/campaigns', campaignData)
             .then(res => {
-                if (res.status === 201) setSuccess(true)
-            }).catch(err => console.log(err))
+                if (res.status === 201) navigate('/dashboard')
+            }).catch(err => setError(err))
             .finally(() => setIsLoading(false))
     }
 
@@ -57,55 +60,60 @@ export default function () {
                     <Card size='2'>
                         {isLoading
                             ? <Spinner size='3'/>
-                            : success
-                                ? <Heading>Campaign created successfully!</Heading>
-                                : <form>
-                                    <Flex direction='column' gap='3'>
+                            : <Flex direction='column' gap='3'>
+                                <TextInput
+                                    label='Title'
+                                    name='title'
+                                    value={campaignData.title}
+                                    onChange={handleChange}
+                                />
+                                <TextAreaInput
+                                    label='Description'
+                                    name='description'
+                                    value={campaignData.description}
+                                    onChange={handleChange}
+                                />
+                                <Flex gap='5'>
+                                    <Flex direction='column' align='end' gap='3'>
                                         <TextInput
-                                            label='Title'
-                                            name='title'
-                                            value={campaignData.title}
+                                            label='Date Start'
+                                            name='dateStart'
+                                            type='date'
+                                            value={campaignData.dateStart as string}
                                             onChange={handleChange}
                                         />
-                                        <TextAreaInput
-                                            label='Description'
-                                            name='description'
-                                            value={campaignData.description}
+                                        <TextInput
+                                            label='End Date'
+                                            name='dateEnd'
+                                            type='date'
+                                            value={campaignData.dateEnd as string}
                                             onChange={handleChange}
                                         />
-                                        <Flex gap='5'>
-                                            <Flex direction='column' align='end' gap='3'>
-                                                <TextInput
-                                                    label='Date Start'
-                                                    name='dateStart'
-                                                    type='date'
-                                                    value={campaignData.dateStart as string}
-                                                    onChange={handleChange}
-                                                />
-                                                <TextInput
-                                                    label='End Date'
-                                                    name='dateEnd'
-                                                    type='date'
-                                                    value={campaignData.dateEnd as string}
-                                                    onChange={handleChange}
-                                                />
-                                            </Flex>
-                                            <Container>
-                                                <TextInput
-                                                    label='Regulations link'
-                                                    name='regulations'
-                                                    value={campaignData.regulations}
-                                                    onChange={handleChange}
-                                                />
-                                            </Container>
-                                        </Flex>
-                                        <Separator size='4'/>
-                                        <Button onClick={handleSubmit}>
-                                            Create
-                                        </Button>
                                     </Flex>
-                                </form>
+                                    <Container>
+                                        <TextInput
+                                            label='Regulations link'
+                                            name='regulations'
+                                            value={campaignData.regulations}
+                                            onChange={handleChange}
+                                        />
+                                    </Container>
+                                </Flex>
+                                <Separator size='4'/>
+                                <Button onClick={handleSubmit}>
+                                    Create
+                                </Button>
+                            </Flex>
                         }
+                        {!!error &&
+                            <Callout.Root color='red'>
+                                <Callout.Icon>
+                                    <InfoCircledIcon />
+                                </Callout.Icon>
+                                <Callout.Text>
+                                    {error}
+                                </Callout.Text>
+                            </Callout.Root>}
                     </Card>
                 </Box>
             </Flex>

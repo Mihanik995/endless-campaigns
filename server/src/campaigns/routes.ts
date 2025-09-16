@@ -61,7 +61,7 @@ campaignsRouter.put("/:id", verifyToken, async (req: Request, res: Response) => 
     const campaignData = req.body as Campaigns
     try {
         const {userId} = jwt.verify(token, process.env.JWT_SECRET);
-        const campaign = dbClient.campaigns.update({where: {userId, id: campaignId}, data: campaignData})
+        const campaign = await dbClient.campaigns.update({where: {userId, id: campaignId}, data: campaignData})
         return res.status(200).json(campaign)
     } catch (error) {
         res.status(500).json({error})

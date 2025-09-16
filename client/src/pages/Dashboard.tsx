@@ -1,10 +1,11 @@
 import type {Campaigns} from "../../../server/generated/prisma"
-import Header from "../components/Header.tsx";
-import {Button, Card, Flex, Heading, Section, Spinner} from "@radix-ui/themes";
+import {Button, Card, Container, Flex, Heading, Spinner} from "@radix-ui/themes";
 import {useEffect, useState} from "react";
 
 import axios from "../axios/axiosConfig.ts"
 import {useNavigate} from "react-router";
+import CampaignCard from "../components/CampaignCard"
+import Header from "../components/Header.tsx";
 
 export default function () {
     const [campaigns, setCampaigns] = useState<Campaigns[]>([])
@@ -29,13 +30,20 @@ export default function () {
             <Header/>
             <Flex minHeight='100vh' align='center' justify='center'>
                 {isLoading
-                    ? <Spinner size='3' m='4'/>
+                    ? <Card><Spinner size='3' m='4'/></Card>
                     : <Card>
-                        <Heading>Campaigns</Heading>
-                        <Flex minHeight='200px' width='90vw' justify='center' align='center'>
+                        <Heading mx='3'>Campaigns</Heading>
+                        <Container>
                             {campaigns.length
-                                ? <Section>
-                                </Section>
+                                ? <>
+                                    {campaigns.map((campaign) => (
+                                        <CampaignCard key={campaign.id} {...campaign}/>
+                                    ))}
+                                    <Button
+                                        m='3'
+                                        onClick={() => navigate('/campaigns/new')}
+                                    > Create new campaign</Button>
+                                </>
                                 : <Flex align='center' justify='center'>
                                     <Button
                                         onClick={() => navigate('/campaigns/new')}
@@ -45,7 +53,7 @@ export default function () {
                                     </Button>
                                 </Flex>
                             }
-                        </Flex>
+                        </Container>
                     </Card>
                 }
             </Flex>

@@ -11,7 +11,10 @@ export default function () {
             onClick={() => navigate('/')}
             className='cursor-pointer'
         >
-            <Avatar fallback='EC' src='/logo.png'/>
+            <Avatar size={{
+                initial: '5',
+                xs: '3'
+            }} fallback='EC' src='/logo.png'/>
             <Heading>Endless Campaigns</Heading>
         </Flex>
     )

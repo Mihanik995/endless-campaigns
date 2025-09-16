@@ -28,7 +28,7 @@ export default function () {
     return (
         <>
             <Header/>
-            <Flex minHeight='100vh' align='center' justify='center'>
+            <Flex minHeight='80vh' align='center' justify='center' className='pt-25 pb-10'>
                 {isLoading
                     ? <Card><Spinner size='3' m='4'/></Card>
                     : <Card>

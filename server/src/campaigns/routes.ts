@@ -7,10 +7,14 @@ const {verifyToken} = require('../auth/middleware')
 const jwt = require('jsonwebtoken');
 const {v4: uuid} = require('uuid');
 
+const campaignRegisterRouter = require('./campaign-register/routes')
+
 require('dotenv').config();
 
 const dbClient = new PrismaClient();
 const campaignsRouter = new Router();
+
+campaignsRouter.use('/register', campaignRegisterRouter);
 
 campaignsRouter.get("/", verifyToken, async (req: Request, res: Response) => {
     const token = req.header('Authorization');

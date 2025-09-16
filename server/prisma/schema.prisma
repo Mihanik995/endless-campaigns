@@ -47,4 +47,5 @@ model CampaignRegister {
   campaignId    String
   formationName String
   rosterLink    String
+  approved      Boolean
 }

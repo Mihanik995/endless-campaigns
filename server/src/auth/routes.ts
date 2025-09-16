@@ -67,11 +67,13 @@ authRouter.post('/login', async (req: Request, res: Response) => {
                     return res.status(401).json({error: 'Authentication failed'});
                 }
                 if (!user.isActive) return res.status(403).send({error: 'User not verified'});
-                const accessToken = jwt.sign({userId: user.id}, process.env.JWT_SECRET, {expiresIn: '5m'})
-                const refreshToken = jwt.sign({userId: user.id}, process.env.JWT_SECRET)
+
+                const userId = user.id
+                const accessToken = jwt.sign({userId}, process.env.JWT_SECRET, {expiresIn: '5m'})
+                const refreshToken = jwt.sign({userId}, process.env.JWT_SECRET)
                 return res.status(200)
                     .cookie('refreshToken', refreshToken, {httpOnly: true})
-                    .json({accessToken});
+                    .json({accessToken, userId});
             });
         }).catch((err: Error) => res.status(500).send({error: err.message}));
 });
@@ -88,7 +90,7 @@ authRouter.post('/refresh', async (req: Request, res: Response) => {
         const newRefreshToken = jwt.sign({userId}, process.env.JWT_SECRET)
         return res.status(200)
             .cookie('refreshToken', newRefreshToken, {httpOnly: true})
-            .json({accessToken});
+            .json({accessToken, userId});
     } catch (error) {
         return res.status(401).json({error: 'Authentication failed'});
     }

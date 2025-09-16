@@ -15,13 +15,14 @@ datasource db {
 }
 
 model Users {
-  id        String      @id @unique
-  username  String      @unique
-  password  Bytes
-  salt      Bytes
-  email     String      @unique
-  isActive  Boolean     @default(false)
-  Campaigns Campaigns[]
+  id                String             @id @unique
+  username          String             @unique
+  password          Bytes
+  salt              Bytes
+  email             String             @unique
+  isActive          Boolean            @default(false)
+  Campaigns         Campaigns[]
+  CampaignRegisters CampaignRegister[]
 }
 
 model Campaigns {
@@ -33,4 +34,17 @@ model Campaigns {
   regulations String
   dateStart   DateTime
   dateEnd     DateTime
+
+  requiresRegisterApproval Boolean            @default(true)
+  CampaignRegisters        CampaignRegister[]
+}
+
+model CampaignRegister {
+  id            String    @id @unique
+  player        Users     @relation(fields: [playerId], references: [id])
+  playerId      String
+  campaign      Campaigns @relation(fields: [campaignId], references: [id])
+  campaignId    String
+  formationName String
+  rosterLink    String
 }

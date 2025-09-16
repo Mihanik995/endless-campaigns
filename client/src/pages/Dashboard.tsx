@@ -40,7 +40,7 @@ export default function () {
                                         <CampaignCard key={campaign.id} {...campaign}/>
                                     ))}
                                     <Button
-                                        m='3'
+                                        m='2'
                                         onClick={() => navigate('/campaigns/new')}
                                     > Create new campaign</Button>
                                 </>

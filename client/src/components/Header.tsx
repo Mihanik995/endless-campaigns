@@ -19,7 +19,8 @@ export default function () {
                         justify='between'
                         align='center'
 
-                        p="4"
+                        py="4"
+                        px="6"
                         className='shadow-2xl z-20 backdrop-blur-2xl'
                     >
                         <Logo/>

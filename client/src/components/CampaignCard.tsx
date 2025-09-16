@@ -64,8 +64,8 @@ export default function (campaignData: CampaignData) {
     }
 
     return !deleted &&
-        <Container m='3' width='100vw'>
-            <Card size='3' m='3'>
+        <Container width='100vw'>
+            <Card size='3' m='2'>
                 <Flex gap='3'>
                     {edit
                         ? <>

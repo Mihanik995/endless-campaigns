@@ -25,10 +25,8 @@ campaignsRouter.get("/", verifyToken, async (req: Request, res: Response) => {
 
 campaignsRouter.get("/:id", verifyToken, async (req: Request, res: Response) => {
     const campaignId = req.params.id;
-    const token = req.header('Authorization');
     try {
-        const {userId} = jwt.verify(token, process.env.JWT_SECRET);
-        const campaign = dbClient.campaigns.findUnique({where: {userId, id: campaignId}})
+        const campaign = dbClient.campaigns.findUnique({where: {id: campaignId}})
         return res.status(200).json(campaign)
     } catch (error) {
         res.status(500).json({error})

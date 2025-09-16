@@ -27,8 +27,8 @@ model Users {
 
 model Campaigns {
   id          String   @id @unique
-  owner       Users    @relation(fields: [userId], references: [id])
-  userId      String
+  owner       Users    @relation(fields: [ownerId], references: [id])
+  ownerId     String
   title       String
   description String
   regulations String

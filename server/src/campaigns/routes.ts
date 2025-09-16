@@ -19,8 +19,8 @@ campaignsRouter.use('/register', campaignRegisterRouter);
 campaignsRouter.get("/", verifyToken, async (req: Request, res: Response) => {
     const token = req.header('Authorization');
     try {
-        const {userId} = jwt.verify(token, process.env.JWT_SECRET);
-        const campaigns = await dbClient.campaigns.findMany({where: {userId}})
+        const {userId: ownerId} = jwt.verify(token, process.env.JWT_SECRET);
+        const campaigns = await dbClient.campaigns.findMany({where: {ownerId}})
         return res.status(200).json(campaigns)
     } catch (error) {
         res.status(500).json({error})
@@ -41,9 +41,9 @@ campaignsRouter.post("/", verifyToken, async (req: Request, res: Response) => {
     const token = req.header('Authorization');
     const campaignData = req.body
     try {
-        const {userId} = jwt.verify(token, process.env.JWT_SECRET);
+        const {userId: ownerId} = jwt.verify(token, process.env.JWT_SECRET);
 
-        campaignData["userId"] = userId;
+        campaignData["ownerId"] = ownerId;
         campaignData["id"] = uuid();
 
         campaignData.dateStart = new Date(campaignData.dateStart)

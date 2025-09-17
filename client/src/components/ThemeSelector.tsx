@@ -3,11 +3,15 @@ import {ShadowInnerIcon} from "@radix-ui/react-icons";
 import {selectTheme, setBackground, toggleTheme} from "../app/features/theme/themeSlice.ts";
 import {useAppDispatch, useAppSelector} from "../app/hooks.ts";
 
+interface StringMap {
+    [key: string]: string;
+}
+
 export default function () {
     const theme = useAppSelector(selectTheme);
     const dispatch = useAppDispatch();
 
-    const backgrounds = {
+    const backgrounds: StringMap = {
         default: '',
         stone: `/assets/stone-${theme.theme}-bg.jpg`,
         metal: `/assets/metal-${theme.theme}-bg.jpg`,

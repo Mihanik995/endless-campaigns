@@ -1,4 +1,4 @@
-import {Text, TextField} from "@radix-ui/themes";
+import {Flex, Text, TextField} from "@radix-ui/themes";
 import {type ChangeEvent, type ReactElement} from "react";
 
 interface Props {
@@ -7,26 +7,32 @@ interface Props {
     value: string,
     type?: "number" | "search" | "time" | "text" | "hidden" | "tel" | "url" | "email" | "date" | "datetime-local" | "month" | "password" | "week",
     onChange: (e: ChangeEvent<HTMLInputElement>) => void,
-    icon: ReactElement
+    icon?: ReactElement,
+    placeholder?: string
 }
 
 export default function (props: Props): ReactElement {
-    const {label, name, value, onChange, icon, type} = props;
+    const {label, name, value, onChange, icon, type, placeholder} = props;
 
     return (
-        <Text as='label' size='5'>
-            {label}:{' '}
-            <TextField.Root
-                name={name}
-                value={value}
-                type={type || 'text'}
-                onChange={onChange}
-                size='3'
-            >
-                <TextField.Slot>
-                    {icon}
-                </TextField.Slot>
-            </TextField.Root>
+        <Text as='label' size='3'>
+            <Flex direction='column' gap='1'>
+                {label}:{' '}
+                <TextField.Root
+                    name={name}
+                    value={value}
+                    type={type || 'text'}
+                    onChange={onChange}
+                    size='3'
+                    placeholder={placeholder}
+                >
+                    {!!icon &&
+                        <TextField.Slot>
+                            {icon}
+                        </TextField.Slot>
+                    }
+                </TextField.Root>
+            </Flex>
         </Text>
     )
 }

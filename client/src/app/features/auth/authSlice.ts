@@ -26,14 +26,16 @@ export const login = createAsyncThunk(
 )
 
 export interface AuthState {
-    token: string,
+    id?: string;
+    token?: string,
     loading: boolean,
     error: any,
     success: boolean,
 }
 
 const initialState: AuthState = {
-    token: '',
+    id: localStorage.getItem('ec-id') || undefined,
+    token: localStorage.getItem('ec-access') || undefined,
     loading: false,
     error: null as any,
     success: false,
@@ -44,11 +46,17 @@ export const authSlice = createSlice({
     initialState,
     reducers: {
         logout: (state) => {
-            state.token = ''
+            state.token = undefined
+            state.id = undefined
             state.success = false
+            localStorage.removeItem('ec-access')
+            localStorage.removeItem('ec-id')
         },
         refresh: (state, action) => {
-            state.token = action.payload
+            state.token = action.payload.accessToken
+            state.id = action.payload.userId
+            localStorage.setItem('ec-access', action.payload.accessToken)
+            localStorage.setItem('ec-id', action.payload.userId)
             state.success = true
         }
     },
@@ -65,6 +73,9 @@ export const authSlice = createSlice({
             state.loading = false
             state.success = true
             state.token = action.payload.accessToken
+            state.id = action.payload.userId
+            localStorage.setItem('ec-access', action.payload.accessToken)
+            localStorage.setItem('ec-id', action.payload.userId)
         })
     }
 })

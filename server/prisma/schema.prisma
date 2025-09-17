@@ -27,7 +27,7 @@ model Users {
 
 model Campaigns {
   id          String   @id @unique
-  owner       Users    @relation(fields: [ownerId], references: [id])
+  owner       Users    @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   ownerId     String
   title       String
   description String
@@ -41,9 +41,9 @@ model Campaigns {
 
 model CampaignRegister {
   id            String    @id @unique
-  player        Users     @relation(fields: [playerId], references: [id])
+  player        Users     @relation(fields: [playerId], references: [id], onDelete: Cascade)
   playerId      String
-  campaign      Campaigns @relation(fields: [campaignId], references: [id])
+  campaign      Campaigns @relation(fields: [campaignId], references: [id], onDelete: Cascade)
   campaignId    String
   formationName String
   rosterLink    String

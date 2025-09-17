@@ -24,7 +24,15 @@ campaignsRouter.get("/", verifyToken, async (req: Request, res: Response) => {
         const userRegs = await dbClient.campaignRegister.findMany({where: {playerId: userId}}) as CampaignRegister[]
         const campaignsUserParticipates = await Promise.all(userRegs.map(async reg =>
                 dbClient.campaigns.findUnique({where: {id: reg.campaignId}}))) as Campaigns[]
-        const campaigns: Campaigns[] = [...new Set([...campaignsUserOwns, ...campaignsUserParticipates])]
+        const dupsFilter = new Set()
+        const campaigns: Campaigns[] = [...campaignsUserOwns, ...campaignsUserParticipates]
+            .filter(camp => {
+                if (dupsFilter.has(camp.id)) {
+                    return false
+                }
+                dupsFilter.add(camp.id)
+                return true
+            })
         return res.status(200).json(campaigns)
     } catch (error) {
         res.status(500).json({error})
@@ -66,9 +74,13 @@ campaignsRouter.put("/:id", verifyToken, async (req: Request, res: Response) => 
     const token = req.header('Authorization');
     const campaignId = req.params.id;
     const campaignData = req.body as Campaigns
+
+    if (campaignData.dateStart) campaignData.dateStart = new Date(campaignData.dateStart)
+    if (campaignData.dateEnd) campaignData.dateEnd = new Date(campaignData.dateEnd)
+
     try {
-        const {userId} = jwt.verify(token, process.env.JWT_SECRET);
-        const campaign = await dbClient.campaigns.update({where: {userId, id: campaignId}, data: campaignData})
+        const {userId: ownerId} = jwt.verify(token, process.env.JWT_SECRET);
+        const campaign = await dbClient.campaigns.update({where: {ownerId, id: campaignId}, data: campaignData})
         return res.status(200).json(campaign)
     } catch (error) {
         res.status(500).json({error})
@@ -79,8 +91,8 @@ campaignsRouter.delete("/:id", verifyToken, (req: Request, res: Response) => {
     const token = req.header('Authorization');
     const campaignId = req.params.id;
     try {
-        const {userId} = jwt.verify(token, process.env.JWT_SECRET);
-        dbClient.campaigns.delete({where: {userId, id: campaignId}})
+        const {userId: ownerId} = jwt.verify(token, process.env.JWT_SECRET);
+        dbClient.campaigns.delete({where: {ownerId, id: campaignId}})
             .then(() => res.sendStatus(204))
     } catch (error) {
         res.status(500).json({error})

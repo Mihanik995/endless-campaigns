@@ -1,4 +1,4 @@
-import {Text, TextField} from "@radix-ui/themes";
+import {Flex, Text, TextField} from "@radix-ui/themes";
 import {type ChangeEvent, type ReactElement} from "react";
 
 interface Props {
@@ -16,21 +16,23 @@ export default function (props: Props): ReactElement {
 
     return (
         <Text as='label' size='3'>
-            {label}:{' '}
-            <TextField.Root
-                name={name}
-                value={value}
-                type={type || 'text'}
-                onChange={onChange}
-                size='3'
-                placeholder={placeholder}
-            >
-                {!!icon &&
-                    <TextField.Slot>
-                        {icon}
-                    </TextField.Slot>
-                }
-            </TextField.Root>
+            <Flex direction='column' gap='1'>
+                {label}:{' '}
+                <TextField.Root
+                    name={name}
+                    value={value}
+                    type={type || 'text'}
+                    onChange={onChange}
+                    size='3'
+                    placeholder={placeholder}
+                >
+                    {!!icon &&
+                        <TextField.Slot>
+                            {icon}
+                        </TextField.Slot>
+                    }
+                </TextField.Root>
+            </Flex>
         </Text>
     )
 }

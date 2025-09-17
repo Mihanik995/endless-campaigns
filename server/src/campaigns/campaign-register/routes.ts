@@ -17,6 +17,8 @@ campaignRegisterRouter.post('/', verifyToken, async (req: Request, res: Response
     const {campaignId, formationName, rosterLink} = req.body
     try {
         const {userId: playerId} = jwt.verify(token, process.env.JWT_SECRET)
+        const alreadyExists = await dbClient.campaignRegister.findMany({where: {playerId, campaignId}})
+        if (alreadyExists) return res.status(400).json({error: 'This player already registered'})
         const campaign = await dbClient.campaigns.findUnique({where: {id: campaignId}}) as Campaigns
         if (!campaign) return res.status(404).json({error: 'Campaign not found'})
         const approved = !campaign.requiresRegisterApproval

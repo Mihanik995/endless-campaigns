@@ -1,4 +1,4 @@
-import {Button, Container, Flex, Heading} from "@radix-ui/themes";
+import {Button, Container, Flex, Popover} from "@radix-ui/themes";
 import {type ChangeEvent, type MouseEventHandler, type ReactElement, useState} from "react";
 import TextInput from "./TextInput.tsx";
 import axios from "../axios/axiosConfig.ts";
@@ -14,7 +14,6 @@ interface Props {
 }
 
 export default function ({campaignId}: Props): ReactElement {
-    const [success, setSuccess] = useState(false);
     const [registerData, setRegisterData] = useState<RegisterData>({
         campaignId: campaignId,
         formationName: '',
@@ -33,31 +32,37 @@ export default function ({campaignId}: Props): ReactElement {
 
         axios.post('/campaigns/register', registerData)
             .then((response) => {
-                if (response.status === 201) setSuccess(true)
+                if (response.status === 201) window.location.reload();
             })
     }
 
-    return <Container>
-        <Flex direction="column" gap='3'>
-            {success
-                ? <Heading>You've registered successfully</Heading>
-                : <>
-                    <TextInput
-                        label='Formation Name'
-                        name='formationName'
-                        value={registerData.formationName}
-                        onChange={handleChange}
-                        placeholder='Name of your gang / squad / army / whatever...'
-                    />
-                    <TextInput
-                        label='Roster Link'
-                        name='rosterLink'
-                        value={registerData.rosterLink}
-                        onChange={handleChange}
-                    />
-                    <Button onClick={handleSubmit}>Register</Button>
-                </>
-            }
-        </Flex>
-    </Container>
+    return (
+        <Popover.Root>
+            <Popover.Trigger>
+                <Button>Register Form</Button>
+            </Popover.Trigger>
+            <Popover.Content>
+                <Container minWidth='300px' width='30vw'>
+                    <Flex direction="column" gap='3'>
+                        <TextInput
+                            label='Formation Name'
+                            name='formationName'
+                            value={registerData.formationName}
+                            onChange={handleChange}
+                            placeholder='Name of your gang / squad / army / whatever...'
+                        />
+                        <TextInput
+                            label='Roster Link'
+                            name='rosterLink'
+                            value={registerData.rosterLink}
+                            onChange={handleChange}
+                        />
+                        <Popover.Close>
+                            <Button onClick={handleSubmit}>Register</Button>
+                        </Popover.Close>
+                    </Flex>
+                </Container>
+            </Popover.Content>
+        </Popover.Root>
+    )
 }

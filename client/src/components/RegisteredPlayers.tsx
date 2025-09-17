@@ -1,4 +1,4 @@
-import {Button, Card, Container, Flex, Heading, Spinner, Table} from "@radix-ui/themes";
+import {Button, Card, Container, Flex, Heading, Link, Spinner, Table} from "@radix-ui/themes";
 import {useEffect, useState} from "react";
 import type {CampaignRegister} from "../../../server/generated/prisma";
 import axios from "../axios/axiosConfig.ts";
@@ -52,76 +52,84 @@ export default function ({campaignId, isOwner}: Props) {
     }
 
     return <Container>
-        {isLoading
-            ? <Card><Spinner size='3'/></Card>
-            : registers.map(reg => reg.playerId).includes(auth.id as string)
-                ? <>
+        <Card size='3'>
+            {isLoading
+                ? <Card><Spinner size='3'/></Card>
+                : <>
                     <Heading mb='2'>Players:</Heading>
-                    <Card>
-                        {registers.length
-                            ? <Table.Root>
-                                <Table.Header>
-                                    <Table.Row>
-                                        <Table.ColumnHeaderCell>Player</Table.ColumnHeaderCell>
-                                        <Table.ColumnHeaderCell>Formation
-                                            Name</Table.ColumnHeaderCell>
-                                        <Table.ColumnHeaderCell>Roster Link</Table.ColumnHeaderCell>
-                                        <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
-                                    </Table.Row>
-                                </Table.Header>
-                                <Table.Body>
-                                    {registers
-                                        .filter(register => isOwner
-                                            ? true
-                                            : register.approved)
-                                        .map((register) => (
-                                            <Table.Row key={register.id}>
-                                                <Table.Cell>{register.username}</Table.Cell>
-                                                <Table.Cell>{register.formationName}</Table.Cell>
-                                                <Table.Cell>{register.rosterLink}</Table.Cell>
-                                                <Table.Cell>
-                                                    {isOwner
-                                                        ? register.approved
-                                                            ?
-                                                                <Button
-                                                                    color='red'
-                                                                    onClick={() => handleDelete(register.id)}
-                                                                >
-                                                                    Delete
-                                                                </Button>
-                                                            : <Flex gap='2'>
-                                                                <Button
-                                                                    onClick={() => handleAccept(register.id)}
-                                                                >
-                                                                    Accept
-                                                                </Button>
-                                                                <Button
-                                                                    color='red'
-                                                                    onClick={() => handleDelete(register.id)}
-                                                                >
-                                                                    Decline
-                                                                </Button>
-                                                            </Flex>
-                                                        : (auth.id === register.playerId) &&
+                    {registers.length
+                        ? <Table.Root>
+                            <Table.Header>
+                                <Table.Row>
+                                    <Table.ColumnHeaderCell>Player</Table.ColumnHeaderCell>
+                                    <Table.ColumnHeaderCell>Formation
+                                        Name</Table.ColumnHeaderCell>
+                                    <Table.ColumnHeaderCell>Roster Link</Table.ColumnHeaderCell>
+                                    <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
+                                </Table.Row>
+                            </Table.Header>
+                            <Table.Body>
+                                {registers
+                                    .filter(register => isOwner
+                                        ? true
+                                        : register.approved)
+                                    .map((register) => (
+                                        <Table.Row key={register.id}>
+                                            <Table.Cell>{register.username}</Table.Cell>
+                                            <Table.Cell>{register.formationName}</Table.Cell>
+                                            <Table.Cell>
+                                                <Link href={register.rosterLink} target='_blank'>
+                                                    {register.rosterLink}
+                                                </Link>
+                                            </Table.Cell>
+                                            <Table.Cell>
+                                                {isOwner
+                                                    ? register.approved
+                                                        ?
                                                         <Button
                                                             color='red'
                                                             onClick={() => handleDelete(register.id)}
                                                         >
-                                                            Drop register
+                                                            Delete
                                                         </Button>
-                                                    }
-                                                </Table.Cell>
-                                            </Table.Row>
-                                        ))}
-                                </Table.Body>
-                            </Table.Root>
-                            : <Container width='100vw'>
-                                <Heading align='center'>No registrations found.</Heading>
-                            </Container>
-                        }
-                    </Card>
+                                                        : <Flex gap='2'>
+                                                            <Button
+                                                                onClick={() => handleAccept(register.id)}
+                                                            >
+                                                                Accept
+                                                            </Button>
+                                                            <Button
+                                                                color='red'
+                                                                onClick={() => handleDelete(register.id)}
+                                                            >
+                                                                Decline
+                                                            </Button>
+                                                        </Flex>
+                                                    : (auth.id === register.playerId) &&
+                                                    <Button
+                                                        color='red'
+                                                        onClick={() => handleDelete(register.id)}
+                                                    >
+                                                        Drop register
+                                                    </Button>
+                                                }
+                                            </Table.Cell>
+                                        </Table.Row>
+                                    ))}
+                            </Table.Body>
+                        </Table.Root>
+                        : <Container width='100vw'>
+                            <Heading align='center'>No registrations found.</Heading>
+                        </Container>
+                    }
                 </>
-                : <CampaignRegisterForm campaignId={campaignId}/>
-        }
+            }
+            {!registers.map(reg => reg.playerId).includes(auth.id as string) &&
+                <>
+                    <br/>
+                    <CampaignRegisterForm campaignId={campaignId}/>
+                </>
+            }
+        </Card>
     </Container>
 }

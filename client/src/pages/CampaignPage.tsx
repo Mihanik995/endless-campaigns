@@ -59,7 +59,7 @@ export default function () {
                                 clickable={false}
                                 onDelete={() => navigate('/dashboard')}
                             />
-                            <Box p='2'>
+                            <Box m='2'>
                                 <RegisteredPlayers
                                     campaignId={campaignId as string}
                                     isOwner={isOwner}

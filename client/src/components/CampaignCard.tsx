@@ -1,4 +1,16 @@
-import {Button, Card, Container, Flex, Heading, IconButton, Popover, Separator, Text, Tooltip} from "@radix-ui/themes";
+import {
+    Button,
+    Card,
+    Container,
+    Flex,
+    Heading,
+    IconButton,
+    Link,
+    Popover,
+    Separator,
+    Text,
+    Tooltip
+} from "@radix-ui/themes";
 import {type ChangeEvent, type MouseEventHandler, useState} from "react";
 import axios from "../axios/axiosConfig.ts"
 import TextInput from "./TextInput.tsx";
@@ -112,7 +124,7 @@ export default function ({clickable, onDelete, ...campaignData}: Props) {
                                         type='date'
                                         value={typeof campaign.dateStart === 'string'
                                             ? campaign.dateStart
-                                            : campaign.dateStart.toDateString()}
+                                            : campaign.dateStart.toISOString().slice(0, 10)}
                                         onChange={handleChange}
                                     />
                                     <TextInput
@@ -121,7 +133,7 @@ export default function ({clickable, onDelete, ...campaignData}: Props) {
                                         type='date'
                                         value={typeof campaign.dateEnd === 'string'
                                             ? campaign.dateEnd
-                                            : campaign.dateEnd.toDateString()}
+                                            : campaign.dateEnd.toISOString().slice(0, 10)}
                                         onChange={handleChange}
                                     />
                                 </Flex>
@@ -159,7 +171,12 @@ export default function ({clickable, onDelete, ...campaignData}: Props) {
                                 <Separator size='4' my='2'/>
                                 <Text>{campaign.description}</Text>
                                 <Separator size='4' my='2'/>
-                                <Text>Regulations: {campaign.regulations}</Text>
+                                <Text>
+                                    Regulations:{' '}
+                                    <Link href={campaign.regulations} target='_blank'>
+                                        {campaign.regulations}
+                                    </Link>
+                                </Text>
                                 <Separator size='4' my='2'/>
                                 <Text>Dates: {typeof campaign.dateStart === 'string'
                                     ? campaign.dateStart

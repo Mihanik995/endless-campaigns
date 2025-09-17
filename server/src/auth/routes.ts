@@ -122,6 +122,10 @@ authRouter.put('/:id', verifyToken, async (req: Request, res: Response) => {
     try {
         const {userId} = jwt.verify(token, process.env.JWT_SECRET);
         if (userId !== id) return res.status(403).json({error: 'Access denied'});
+        if (data.username) {
+            const alreadyUsed = await dbClient.users.findUnique({where: {username: data.username}});
+            if (!alreadyUsed) return res.status(400).json({error: 'Such username is already occupied'});
+        }
         const user = await dbClient.users.update({where: {id}, data})
         if (!user) return res.status(404).json({error: 'User not found'});
         const {username, email} = user;
@@ -158,7 +162,7 @@ authRouter.put('/:id/change-email', verifyToken, async (req: Request, res: Respo
         const {userId} = jwt.verify(token, process.env.JWT_SECRET);
         if (userId !== id) return res.status(403).json({error: 'Access denied'});
         const alreadyUsed = await dbClient.users.findUnique({where: {email}});
-        if (alreadyUsed) return res.status(400).json({error: 'Such e-mail already is occupied'});
+        if (alreadyUsed) return res.status(400).json({error: 'Such e-mail is already occupied'});
         const user = await dbClient.users.update({where: {id}, data: {email, isActive: false}});
         if (!user) return res.status(404).json({error: 'User not found'});
         const verifyToken = jwt.sign({userId: user.id}, process.env.JWT_SECRET);

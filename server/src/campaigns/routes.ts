@@ -1,5 +1,5 @@
 import type {Request, Response} from "express";
-import type {Campaigns} from "../../generated/prisma";
+import type {CampaignRegister, Campaigns} from "../../generated/prisma";
 
 const {Router} = require("express");
 const {PrismaClient} = require("../../generated/prisma")
@@ -19,8 +19,12 @@ campaignsRouter.use('/register', campaignRegisterRouter);
 campaignsRouter.get("/", verifyToken, async (req: Request, res: Response) => {
     const token = req.header('Authorization');
     try {
-        const {userId: ownerId} = jwt.verify(token, process.env.JWT_SECRET);
-        const campaigns = await dbClient.campaigns.findMany({where: {ownerId}})
+        const {userId} = jwt.verify(token, process.env.JWT_SECRET);
+        const campaignsUserOwns = await dbClient.campaigns.findMany({where: {ownerId: userId}}) as Campaigns[]
+        const userRegs = await dbClient.campaignRegister.findMany({where: {playerId: userId}}) as CampaignRegister[]
+        const campaignsUserParticipates = await Promise.all(userRegs.map(async reg =>
+                dbClient.campaigns.findUnique({where: {id: reg.campaignId}}))) as Campaigns[]
+        const campaigns: Campaigns[] = [...new Set([...campaignsUserOwns, ...campaignsUserParticipates])]
         return res.status(200).json(campaigns)
     } catch (error) {
         res.status(500).json({error})

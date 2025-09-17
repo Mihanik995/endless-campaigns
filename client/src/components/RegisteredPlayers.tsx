@@ -19,12 +19,11 @@ export default function ({campaignId}: Props) {
         setIsLoading(true)
         axios.get(`/campaigns/register/campaign/${campaignId}`)
             .then(regsRes => {
-                console.log(regsRes.data)
                 if (regsRes.status === 200) setRegisters(regsRes.data)
             }).catch(err => console.log(err))
             .finally(() => {
                 setIsLoading(false)
-            }).catch(err => console.log(err))
+            })
     }, [])
 
     const handleAccept = (id: string) => {

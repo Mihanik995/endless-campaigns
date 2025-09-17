@@ -5,9 +5,12 @@ import TextInput from "./TextInput.tsx";
 import TextAreaInput from "./TextAreaInput.tsx";
 import {CheckIcon, Cross2Icon, Pencil2Icon, TrashIcon} from "@radix-ui/react-icons";
 import {useNavigate} from "react-router";
+import {useAppSelector} from "../app/hooks.ts";
+import {selectAuth} from "../app/features/auth/authSlice.ts";
 
 interface CampaignData {
     id: string;
+    ownerId: string;
     title: string,
     description: string,
     regulations: string,
@@ -28,6 +31,9 @@ export default function ({clickable, onDelete, ...campaignData}: Props) {
     })
     const [edit, setEdit] = useState(false)
     const navigate = useNavigate();
+
+    const auth = useAppSelector(selectAuth);
+    const isOwner = auth.id === campaign.ownerId;
 
     const handleChange = (
         e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -55,6 +61,7 @@ export default function ({clickable, onDelete, ...campaignData}: Props) {
                 if (response.status === 200) {
                     setCampaign({
                         id: response.data.id,
+                        ownerId: campaign.ownerId,
                         title: response.data.title,
                         description: response.data.description,
                         regulations: response.data.regulations,
@@ -112,18 +119,20 @@ export default function ({clickable, onDelete, ...campaignData}: Props) {
                                     />
                                 </Flex>
                             </Flex>
-                            <Flex direction='column' align='end' justify='start' gap='3'>
-                                <Tooltip content='Cancel'>
-                                    <IconButton radius='full' onClick={() => setEdit(false)}>
-                                        <Cross2Icon/>
-                                    </IconButton>
-                                </Tooltip>
-                                <Tooltip content='Submit'>
-                                    <IconButton radius='full' color='grass' onClick={handleSubmit}>
-                                        <CheckIcon/>
-                                    </IconButton>
-                                </Tooltip>
-                            </Flex>
+                            {isOwner &&
+                                <Flex direction='column' align='end' justify='start' gap='3'>
+                                    <Tooltip content='Cancel'>
+                                        <IconButton radius='full' onClick={() => setEdit(false)}>
+                                            <Cross2Icon/>
+                                        </IconButton>
+                                    </Tooltip>
+                                    <Tooltip content='Submit'>
+                                        <IconButton radius='full' color='grass' onClick={handleSubmit}>
+                                            <CheckIcon/>
+                                        </IconButton>
+                                    </Tooltip>
+                                </Flex>
+                            }
                         </>
                         : <>
                             <Flex
@@ -149,36 +158,38 @@ export default function ({clickable, onDelete, ...campaignData}: Props) {
                                     : campaign.dateEnd.toLocaleDateString()
                                 }</Text>
                             </Flex>
-                            <Flex direction='column' align='end' justify='start' gap='3'>
-                                <Tooltip content='Edit'>
-                                    <IconButton radius='full' onClick={() => setEdit(true)}>
-                                        <Pencil2Icon/>
-                                    </IconButton>
-                                </Tooltip>
-                                <Popover.Root>
-                                    <Tooltip content='Delete'>
-                                        <Popover.Trigger>
-                                            <IconButton radius='full' color='red'>
-                                                <TrashIcon/>
-                                            </IconButton>
-                                        </Popover.Trigger>
+                            {isOwner &&
+                                <Flex direction='column' align='end' justify='start' gap='3'>
+                                    <Tooltip content='Edit'>
+                                        <IconButton radius='full' onClick={() => setEdit(true)}>
+                                            <Pencil2Icon/>
+                                        </IconButton>
                                     </Tooltip>
-                                    <Popover.Content>
-                                        <Flex direction='column' gap='2'>
-                                            <Heading>Are you sure?</Heading>
-                                            <Text>This action cannot be undone!</Text>
-                                            <Flex gap='2'>
-                                                <Popover.Close>
-                                                    <Button>Cancel</Button>
-                                                </Popover.Close>
-                                                <Popover.Close>
-                                                    <Button color='red' onClick={handleDelete}>Delete</Button>
-                                                </Popover.Close>
+                                    <Popover.Root>
+                                        <Tooltip content='Delete'>
+                                            <Popover.Trigger>
+                                                <IconButton radius='full' color='red'>
+                                                    <TrashIcon/>
+                                                </IconButton>
+                                            </Popover.Trigger>
+                                        </Tooltip>
+                                        <Popover.Content>
+                                            <Flex direction='column' gap='2'>
+                                                <Heading>Are you sure?</Heading>
+                                                <Text>This action cannot be undone!</Text>
+                                                <Flex gap='2'>
+                                                    <Popover.Close>
+                                                        <Button>Cancel</Button>
+                                                    </Popover.Close>
+                                                    <Popover.Close>
+                                                        <Button color='red' onClick={handleDelete}>Delete</Button>
+                                                    </Popover.Close>
+                                                </Flex>
                                             </Flex>
-                                        </Flex>
-                                    </Popover.Content>
-                                </Popover.Root>
-                            </Flex>
+                                        </Popover.Content>
+                                    </Popover.Root>
+                                </Flex>
+                            }
                         </>
                     }
                 </Flex>

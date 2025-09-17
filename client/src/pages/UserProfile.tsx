@@ -8,6 +8,7 @@ import {selectAuth} from "../app/features/auth/authSlice.ts";
 import {CheckIcon, Cross2Icon, Pencil2Icon} from "@radix-ui/react-icons";
 import PasswordChangeButton from "../components/PasswordChangeButton.tsx";
 import EmailChangeButton from "../components/EmailChangeButton.tsx";
+import UserCampaigns from "../components/UserCampaigns.tsx";
 
 interface UserData {
     username: string;
@@ -76,7 +77,7 @@ export default function () {
                                 <Table.Body>
                                     <Table.Row>
                                         <Table.RowHeaderCell>
-                                            <Flex width='25vw'>
+                                            <Flex width='20vw'>
                                             {edit
                                                 ? <TextField.Root
                                                     name='username'
@@ -87,12 +88,12 @@ export default function () {
                                             </Flex>
                                         </Table.RowHeaderCell>
                                         <Table.Cell>
-                                            <Flex width='25vw'>
+                                            <Flex width='20vw'>
                                             {userData.email}
                                             </Flex>
                                         </Table.Cell>
                                         <Table.Cell>
-                                            <Flex gap='2' width='25vw'>
+                                            <Flex gap='2' width='20vw'>
                                                 {edit
                                                     ? <>
                                                         <Tooltip content='Cancel'>
@@ -130,6 +131,8 @@ export default function () {
                                     </Table.Row>
                                 </Table.Body>
                             </Table.Root>
+                            <br/>
+                            <UserCampaigns id={id as string}/>
                         </Container>
                     }
                 </Card>

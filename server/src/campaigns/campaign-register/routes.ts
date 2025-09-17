@@ -1,5 +1,5 @@
 import type {Request, Response} from 'express'
-import type {Campaigns, Users} from "../../../generated/prisma";
+import type {CampaignRegister, Campaigns, Users} from "../../../generated/prisma";
 
 const {Router} = require('express')
 const {PrismaClient} = require('../../../generated/prisma')
@@ -40,6 +40,21 @@ campaignRegisterRouter.get('/campaign/:id', verifyToken, async (req: Request, re
             reg.username = user.username
         }
         res.status(200).json(regs)
+    } catch (error) {
+        res.status(500).json({error})
+    }
+})
+
+campaignRegisterRouter.get('/user/:id', verifyToken, async (req: Request, res: Response) => {
+    const {id} = req.params
+    try {
+        const regs = await dbClient.campaignRegister.findMany({where: {playerId: id}})
+        for (const reg of regs) {
+            const campaign = await dbClient.campaigns.findUnique({where: {id: reg.campaignId}}) as Campaigns
+            reg.title = campaign.title
+            reg.regulations = campaign.regulations
+        }
+        return res.status(200).json(regs)
     } catch (error) {
         res.status(500).json({error})
     }

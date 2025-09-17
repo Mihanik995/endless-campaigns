@@ -106,9 +106,10 @@ authRouter.post('/logout', (req: Request, res: Response) => {
 authRouter.get('/:id', verifyToken, async (req: Request, res: Response) => {
     const {id} = req.params;
     try {
-        const user = dbClient.users.findUnique({where: {id}})
+        const user = await dbClient.users.findUnique({where: {id}})
         if (!user) return res.status(404).json({error: 'User not found'});
-        return res.status(200).json(user)
+        const {username, email} = user;
+        return res.status(200).json({username, email})
     } catch (error) {
         res.status(500).json({error})
     }
@@ -121,7 +122,7 @@ authRouter.put('/:id', verifyToken, async (req: Request, res: Response) => {
     try {
         const {userId} = jwt.verify(token, process.env.JWT_SECRET);
         if (userId !== id) return res.status(403).json({error: 'Access denied'});
-        const user = dbClient.users.update({where: {id}, data})
+        const user = await dbClient.users.update({where: {id}, data})
         if (!user) return res.status(404).json({error: 'User not found'});
         const {username, email} = user;
         return res.status(200).json({username, email})

@@ -1,5 +1,5 @@
 import {DropdownMenu, IconButton} from "@radix-ui/themes";
-import {CheckIcon, Cross2Icon, DashboardIcon, HamburgerMenuIcon, PersonIcon} from "@radix-ui/react-icons";
+import {DashboardIcon, EnterIcon, ExitIcon, HamburgerMenuIcon, PersonIcon} from "@radix-ui/react-icons";
 import {useAppDispatch, useAppSelector} from "../app/hooks.ts";
 import {logout, selectAuth} from "../app/features/auth/authSlice.ts";
 import {useNavigate} from "react-router";
@@ -21,9 +21,13 @@ export default function () {
             <DropdownMenu.Content>
                 {auth.token
                     ? <>
+                        <DropdownMenu.Item onClick={() => navigate('/profile')}>
+                            <PersonIcon/>Profile
+                        </DropdownMenu.Item>
                         <DropdownMenu.Item onClick={() => navigate('/dashboard')}>
                             <DashboardIcon/>Dashboard
                         </DropdownMenu.Item>
+                        <DropdownMenu.Separator/>
                         <DropdownMenu.Item
                             color='red'
                             onClick={() => {
@@ -35,7 +39,7 @@ export default function () {
                                     }).catch(error => console.log(error))
                             }}
                         >
-                            <Cross2Icon/>Log Out
+                            <ExitIcon/>Log Out
                         </DropdownMenu.Item>
                     </>
                     : <>
@@ -43,7 +47,7 @@ export default function () {
                             <PersonIcon/>Sign Up
                         </DropdownMenu.Item>
                         <DropdownMenu.Item onClick={() => navigate('/auth/login')}>
-                            <CheckIcon/>Sign In
+                            <EnterIcon/>Sign In
                         </DropdownMenu.Item>
                     </>
                 }

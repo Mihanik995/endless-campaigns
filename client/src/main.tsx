@@ -16,6 +16,7 @@ import "@radix-ui/themes/styles.css";
 import './index.css'
 import CreateCampaign from "./pages/CreateCampaign.tsx";
 import CampaignPage from "./pages/CampaignPage.tsx";
+import UserProfile from "./pages/UserProfile.tsx";
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
@@ -30,6 +31,9 @@ createRoot(document.getElementById('root')!).render(
                             <Route path='verify/:token' element={<Verify/>}/>
                         </Route>
                         <Route element={<ProtectedRoute/>}>
+                            <Route path='profile' element={<UserProfile/>}>
+                                <Route path=':id' element={<UserProfile/>}/>
+                            </Route>
                             <Route path='dashboard' element={<Dashboard/>}/>
                             <Route path='campaigns'>
                                 <Route path='new' element={<CreateCampaign/>}/>

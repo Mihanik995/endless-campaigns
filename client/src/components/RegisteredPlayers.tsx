@@ -2,6 +2,9 @@ import {Button, Card, Container, Flex, Heading, Spinner, Table} from "@radix-ui/
 import {useEffect, useState} from "react";
 import type {CampaignRegister} from "../../../server/generated/prisma";
 import axios from "../axios/axiosConfig.ts";
+import {useAppSelector} from "../app/hooks.ts";
+import {selectAuth} from "../app/features/auth/authSlice.ts";
+import CampaignRegisterForm from "./CampaignRegisterForm.tsx";
 
 interface RegData extends CampaignRegister {
     username: string
@@ -9,11 +12,14 @@ interface RegData extends CampaignRegister {
 
 interface Props {
     campaignId: string;
+    isOwner: boolean;
 }
 
-export default function ({campaignId}: Props) {
+export default function ({campaignId, isOwner}: Props) {
     const [isLoading, setIsLoading] = useState(false)
     const [registers, setRegisters] = useState<RegData[]>([])
+
+    const auth = useAppSelector(selectAuth)
 
     useEffect(() => {
         setIsLoading(true)
@@ -48,59 +54,74 @@ export default function ({campaignId}: Props) {
     return <Container>
         {isLoading
             ? <Card><Spinner size='3'/></Card>
-            : <>
-                <Heading mb='2'>Players:</Heading>
-                <Card>
-                    {registers.length
-                        ? <Table.Root>
-                            <Table.Header>
-                                <Table.Row>
-                                    <Table.ColumnHeaderCell>Player</Table.ColumnHeaderCell>
-                                    <Table.ColumnHeaderCell>Formation
-                                        Name</Table.ColumnHeaderCell>
-                                    <Table.ColumnHeaderCell>Roster Link</Table.ColumnHeaderCell>
-                                    <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
-                                </Table.Row>
-                            </Table.Header>
-                            <Table.Body>
-                                {registers.map((register) => (
-                                    <Table.Row key={register.id}>
-                                        <Table.Cell>{register.username}</Table.Cell>
-                                        <Table.Cell>{register.formationName}</Table.Cell>
-                                        <Table.Cell>{register.rosterLink}</Table.Cell>
-                                        <Table.Cell>
-                                            {register.approved
-                                                ? <Button
-                                                    color='red'
-                                                    onClick={() => handleDelete(register.id)}
-                                                >
-                                                    Delete
-                                                </Button>
-                                                : <Flex gap='2' justify='center'>
-                                                    <Button
-                                                        onClick={() => handleAccept(register.id)}
-                                                    >
-                                                        Accept
-                                                    </Button>
-                                                    <Button
-                                                        color='red'
-                                                        onClick={() => handleDelete(register.id)}
-                                                    >
-                                                        Decline
-                                                    </Button>
-                                                </Flex>
-                                            }
-                                        </Table.Cell>
+            : registers.map(reg => reg.playerId).includes(auth.id as string)
+                ? <>
+                    <Heading mb='2'>Players:</Heading>
+                    <Card>
+                        {registers.length
+                            ? <Table.Root>
+                                <Table.Header>
+                                    <Table.Row>
+                                        <Table.ColumnHeaderCell>Player</Table.ColumnHeaderCell>
+                                        <Table.ColumnHeaderCell>Formation
+                                            Name</Table.ColumnHeaderCell>
+                                        <Table.ColumnHeaderCell>Roster Link</Table.ColumnHeaderCell>
+                                        <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
                                     </Table.Row>
-                                ))}
-                            </Table.Body>
-                        </Table.Root>
-                        : <Container width='100vw'>
-                            <Heading align='center'>No registrations found.</Heading>
-                        </Container>
-                    }
-                </Card>
-            </>
+                                </Table.Header>
+                                <Table.Body>
+                                    {registers
+                                        .filter(register => isOwner
+                                            ? true
+                                            : register.approved)
+                                        .map((register) => (
+                                            <Table.Row key={register.id}>
+                                                <Table.Cell>{register.username}</Table.Cell>
+                                                <Table.Cell>{register.formationName}</Table.Cell>
+                                                <Table.Cell>{register.rosterLink}</Table.Cell>
+                                                <Table.Cell>
+                                                    {isOwner
+                                                        ? register.approved
+                                                            ?
+                                                                <Button
+                                                                    color='red'
+                                                                    onClick={() => handleDelete(register.id)}
+                                                                >
+                                                                    Delete
+                                                                </Button>
+                                                            : <Flex gap='2'>
+                                                                <Button
+                                                                    onClick={() => handleAccept(register.id)}
+                                                                >
+                                                                    Accept
+                                                                </Button>
+                                                                <Button
+                                                                    color='red'
+                                                                    onClick={() => handleDelete(register.id)}
+                                                                >
+                                                                    Decline
+                                                                </Button>
+                                                            </Flex>
+                                                        : (auth.id === register.playerId) &&
+                                                        <Button
+                                                            color='red'
+                                                            onClick={() => handleDelete(register.id)}
+                                                        >
+                                                            Drop register
+                                                        </Button>
+                                                    }
+                                                </Table.Cell>
+                                            </Table.Row>
+                                        ))}
+                                </Table.Body>
+                            </Table.Root>
+                            : <Container width='100vw'>
+                                <Heading align='center'>No registrations found.</Heading>
+                            </Container>
+                        }
+                    </Card>
+                </>
+                : <CampaignRegisterForm campaignId={campaignId}/>
         }
     </Container>
 }

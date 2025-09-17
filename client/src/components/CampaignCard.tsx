@@ -7,8 +7,11 @@ import {CheckIcon, Cross2Icon, Pencil2Icon, TrashIcon} from "@radix-ui/react-ico
 import {useNavigate} from "react-router";
 import {useAppSelector} from "../app/hooks.ts";
 import {selectAuth} from "../app/features/auth/authSlice.ts";
+import CheckInput from "./CheckInput.tsx";
 
 interface CampaignData {
+    [key: string]: string | boolean | Date | (() => void)
+
     id: string;
     ownerId: string;
     title: string,
@@ -16,6 +19,7 @@ interface CampaignData {
     regulations: string,
     dateStart: string | Date,
     dateEnd: string | Date,
+    requiresRegisterApproval: boolean
 }
 
 interface Props extends CampaignData {
@@ -44,6 +48,13 @@ export default function ({clickable, onDelete, ...campaignData}: Props) {
         })
     }
 
+    const handleSwitch = (name: string) => {
+        setCampaign({
+            ...campaign,
+            [name]: !(campaign[name] as boolean)
+        })
+    }
+
     const handleDelete: MouseEventHandler<HTMLButtonElement> = (e) => {
         e.preventDefault()
 
@@ -60,11 +71,7 @@ export default function ({clickable, onDelete, ...campaignData}: Props) {
             .then((response) => {
                 if (response.status === 200) {
                     setCampaign({
-                        id: response.data.id,
-                        ownerId: campaign.ownerId,
-                        title: response.data.title,
-                        description: response.data.description,
-                        regulations: response.data.regulations,
+                        ...response.data,
                         dateStart: new Date(response.data.dateStart),
                         dateEnd: new Date(response.data.dateEnd)
                     })
@@ -118,21 +125,25 @@ export default function ({clickable, onDelete, ...campaignData}: Props) {
                                         onChange={handleChange}
                                     />
                                 </Flex>
+                                <CheckInput
+                                    value={campaign.requiresRegisterApproval as unknown as number}
+                                    name='requiresRegisterApproval'
+                                    onClick={() => handleSwitch('requiresRegisterApproval')}
+                                    label='Player register requires master approval'
+                                />
                             </Flex>
-                            {isOwner &&
-                                <Flex direction='column' align='end' justify='start' gap='3'>
-                                    <Tooltip content='Cancel'>
-                                        <IconButton radius='full' onClick={() => setEdit(false)}>
-                                            <Cross2Icon/>
-                                        </IconButton>
-                                    </Tooltip>
-                                    <Tooltip content='Submit'>
-                                        <IconButton radius='full' color='grass' onClick={handleSubmit}>
-                                            <CheckIcon/>
-                                        </IconButton>
-                                    </Tooltip>
-                                </Flex>
-                            }
+                            <Flex direction='column' align='end' justify='start' gap='3'>
+                                <Tooltip content='Cancel'>
+                                    <IconButton radius='full' onClick={() => setEdit(false)}>
+                                        <Cross2Icon/>
+                                    </IconButton>
+                                </Tooltip>
+                                <Tooltip content='Submit'>
+                                    <IconButton radius='full' color='grass' onClick={handleSubmit}>
+                                        <CheckIcon/>
+                                    </IconButton>
+                                </Tooltip>
+                            </Flex>
                         </>
                         : <>
                             <Flex

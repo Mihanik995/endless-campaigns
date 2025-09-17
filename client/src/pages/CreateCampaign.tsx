@@ -1,19 +1,25 @@
 import Header from "../components/Header.tsx";
 import {Box, Button, Callout, Card, Container, Flex, Separator, Spinner} from "@radix-ui/themes";
-import {type ChangeEvent, type MouseEventHandler, useState} from "react";
+import {type ChangeEventHandler, type MouseEventHandler, useState} from "react";
 import TextInput from "../components/TextInput.tsx";
 import TextAreaInput from "../components/TextAreaInput.tsx";
 import axios from "../axios/axiosConfig.ts";
 import {useNavigate} from "react-router";
 import {InfoCircledIcon} from "@radix-ui/react-icons";
+import CheckInput from "../components/CheckInput.tsx";
 
 interface CampaignData {
+    [key: string]: string | boolean | Date;
+
     title: string;
     description: string;
     regulations: string;
     dateStart: string | Date;
     dateEnd: string | Date;
+    requiresRegisterApproval: boolean
 }
+
+type InputElement = HTMLInputElement | HTMLTextAreaElement
 
 export default function () {
     const [campaignData, setCampaignData] = useState<CampaignData>({
@@ -21,16 +27,24 @@ export default function () {
         description: '',
         regulations: '',
         dateStart: '',
-        dateEnd: ''
+        dateEnd: '',
+        requiresRegisterApproval: true
     })
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState()
     const navigate = useNavigate();
 
-    const handleChange = function (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
+    const handleChange: ChangeEventHandler<InputElement> = function (e) {
         setCampaignData({
             ...campaignData,
             [e.target.name]: e.target.value
+        })
+    }
+
+    const handleSwitch = (name: string) => {
+        setCampaignData({
+            ...campaignData,
+            [name]: !(campaignData[name] as boolean)
         })
     }
 
@@ -91,12 +105,20 @@ export default function () {
                                         />
                                     </Flex>
                                     <Container>
-                                        <TextInput
-                                            label='Regulations link'
-                                            name='regulations'
-                                            value={campaignData.regulations}
-                                            onChange={handleChange}
-                                        />
+                                        <Flex direction='column' gap='6'>
+                                            <TextInput
+                                                label='Regulations link'
+                                                name='regulations'
+                                                value={campaignData.regulations}
+                                                onChange={handleChange}
+                                            />
+                                            <CheckInput
+                                                name='requiresRegisterApproval'
+                                                value={campaignData.requiresRegisterApproval as unknown as number}
+                                                onClick={() => handleSwitch('requiresRegisterApproval')}
+                                                label='Player register requires master approval'
+                                            />
+                                        </Flex>
                                     </Container>
                                 </Flex>
                                 <Separator size='4'/>
@@ -108,7 +130,7 @@ export default function () {
                         {!!error &&
                             <Callout.Root color='red'>
                                 <Callout.Icon>
-                                    <InfoCircledIcon />
+                                    <InfoCircledIcon/>
                                 </Callout.Icon>
                                 <Callout.Text>
                                     {error}

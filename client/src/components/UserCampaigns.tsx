@@ -39,7 +39,7 @@ export default function ({id}: Props) {
                     ? <Flex height='200px' justify='center' align='center'>
                         <Spinner/>
                     </Flex>
-                    : <Flex direction='column' px='5'>
+                    : <Flex direction='column' px='5' gap='3'>
                         <Heading>Campaigns</Heading>
                         <Table.Root>
                             <Table.Header>

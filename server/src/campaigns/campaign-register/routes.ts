@@ -1,5 +1,5 @@
 import type {Request, Response} from 'express'
-import type {CampaignRegister, Campaigns, Users} from "../../../generated/prisma";
+import type {Campaigns, Users} from "../../../generated/prisma";
 
 const {Router} = require('express')
 const {PrismaClient} = require('../../../generated/prisma')

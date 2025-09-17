@@ -135,7 +135,7 @@ authRouter.put('/:id/change-password', verifyToken, async (req: Request, res: Re
     const {id} = req.params;
     const token = req.header('Authorization');
     const {password} = req.body;
-    try{
+    try {
         const {userId} = jwt.verify(token, process.env.JWT_SECRET);
         if (userId !== id) return res.status(403).json({error: 'Access denied'});
         const user = await dbClient.users.findUnique({where: {id}})
@@ -147,6 +147,31 @@ authRouter.put('/:id/change-password', verifyToken, async (req: Request, res: Re
         })
     } catch (error) {
         res.status(500).json({error})
+    }
+})
+
+authRouter.put('/:id/change-email', verifyToken, async (req: Request, res: Response) => {
+    const {id} = req.params;
+    const token = req.header('Authorization');
+    const {email} = req.body;
+    try {
+        const {userId} = jwt.verify(token, process.env.JWT_SECRET);
+        if (userId !== id) return res.status(403).json({error: 'Access denied'});
+        const alreadyUsed = await dbClient.users.findUnique({where: {email}});
+        if (alreadyUsed) return res.status(400).json({error: 'Such e-mail already is occupied'});
+        const user = await dbClient.users.update({where: {id}, data: {email, isActive: false}});
+        if (!user) return res.status(404).json({error: 'User not found'});
+        const verifyToken = jwt.sign({userId: user.id}, process.env.JWT_SECRET);
+        await transporter.sendMail({
+            from: process.env.SENDER_EMAIL,
+            to: user.email,
+            subject: 'Verification',
+            html: verificationEmail(verifyToken)
+        })
+        return res.sendStatus(200)
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({error});
     }
 })
 

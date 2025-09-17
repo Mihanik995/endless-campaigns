@@ -5,8 +5,9 @@ import axios from "../axios/axiosConfig.ts";
 import {useParams} from "react-router";
 import {useAppSelector} from "../app/hooks.ts";
 import {selectAuth} from "../app/features/auth/authSlice.ts";
-import {CheckIcon, Cross2Icon, EnvelopeClosedIcon, Pencil2Icon} from "@radix-ui/react-icons";
+import {CheckIcon, Cross2Icon, Pencil2Icon} from "@radix-ui/react-icons";
 import PasswordChangeButton from "../components/PasswordChangeButton.tsx";
+import EmailChangeButton from "../components/EmailChangeButton.tsx";
 
 interface UserData {
     username: string;
@@ -121,11 +122,7 @@ export default function () {
                                                                 <Pencil2Icon/>
                                                             </IconButton>
                                                         </Tooltip>
-                                                        <Tooltip content='Change E-mail'>
-                                                            <IconButton radius='full'>
-                                                                <EnvelopeClosedIcon/>
-                                                            </IconButton>
-                                                        </Tooltip>
+                                                        <EmailChangeButton/>
                                                         <PasswordChangeButton/>
                                                     </>}
                                             </Flex>

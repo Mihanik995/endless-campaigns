@@ -34,7 +34,7 @@ axiosInstance.interceptors.response.use(
             try {
                 const response = await axios.post(`${backendUrl}/auth/refresh`, {}, {withCredentials: true});
                 const {accessToken} = response.data;
-                store.dispatch(refresh(accessToken))
+                store.dispatch(refresh(response.data))
                 axiosInstance.defaults.headers.common['Authorization'] = accessToken;
                 return axiosInstance(originalRequest);
             } catch (refreshError) {

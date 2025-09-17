@@ -44,7 +44,7 @@ export default function (): ReactElement {
             <Flex height='100vh' align='center' justify='center'>
                 <Card size='4'>
                     {auth.success
-                        ? <Navigate to='/' replace/>
+                        ? <Navigate to='/dashboard' replace/>
                         : auth.error
                             ? <Heading>{auth.error}</Heading>
                             : <form>

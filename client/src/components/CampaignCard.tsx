@@ -1,9 +1,10 @@
-import {Button, Card, Container, Flex, Heading, IconButton, Popover, Separator, Text} from "@radix-ui/themes";
+import {Button, Card, Container, Flex, Heading, IconButton, Popover, Separator, Text, Tooltip} from "@radix-ui/themes";
 import {type ChangeEvent, type MouseEventHandler, useState} from "react";
 import axios from "../axios/axiosConfig.ts"
 import TextInput from "./TextInput.tsx";
 import TextAreaInput from "./TextAreaInput.tsx";
-import {CheckIcon, Cross2Icon, Pencil2Icon} from "@radix-ui/react-icons";
+import {CheckIcon, Cross2Icon, Pencil2Icon, TrashIcon} from "@radix-ui/react-icons";
+import {useNavigate} from "react-router";
 
 interface CampaignData {
     id: string;
@@ -14,17 +15,19 @@ interface CampaignData {
     dateEnd: string | Date,
 }
 
-export default function (campaignData: CampaignData) {
+interface Props extends CampaignData {
+    clickable: boolean
+    onDelete: () => void
+}
+
+export default function ({clickable, onDelete, ...campaignData}: Props) {
     const [campaign, setCampaign] = useState<CampaignData>({
-        id: campaignData.id,
-        title: campaignData.title,
-        description: campaignData.description,
-        regulations: campaignData.regulations,
+        ...campaignData,
         dateStart: new Date(campaignData.dateStart),
         dateEnd: new Date(campaignData.dateEnd)
     })
     const [edit, setEdit] = useState(false)
-    const [deleted, setDeleted] = useState(false)
+    const navigate = useNavigate();
 
     const handleChange = (
         e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -40,7 +43,7 @@ export default function (campaignData: CampaignData) {
 
         axios.delete(`/campaigns/${campaign.id}`)
             .then((response) => {
-                if (response.status === 204) setDeleted(true)
+                if (response.status === 204) onDelete()
             }).catch((error) => console.log(error))
     }
 
@@ -63,7 +66,7 @@ export default function (campaignData: CampaignData) {
             }).catch((error) => console.log(error))
     }
 
-    return !deleted &&
+    return (
         <Container width='100vw'>
             <Card size='3' m='2'>
                 <Flex gap='3'>
@@ -110,16 +113,28 @@ export default function (campaignData: CampaignData) {
                                 </Flex>
                             </Flex>
                             <Flex direction='column' align='end' justify='start' gap='3'>
-                                <IconButton radius='full' onClick={() => setEdit(false)}>
-                                    <Cross2Icon/>
-                                </IconButton>
-                                <IconButton radius='full' color='grass' onClick={handleSubmit}>
-                                    <CheckIcon/>
-                                </IconButton>
+                                <Tooltip content='Cancel'>
+                                    <IconButton radius='full' onClick={() => setEdit(false)}>
+                                        <Cross2Icon/>
+                                    </IconButton>
+                                </Tooltip>
+                                <Tooltip content='Submit'>
+                                    <IconButton radius='full' color='grass' onClick={handleSubmit}>
+                                        <CheckIcon/>
+                                    </IconButton>
+                                </Tooltip>
                             </Flex>
                         </>
                         : <>
-                            <Flex width='100%' direction='column' align='start'>
+                            <Flex
+                                width='100%'
+                                direction='column'
+                                align='start'
+                                onClick={() => {
+                                    if (clickable) navigate(`/campaigns/${campaign.id}`)
+                                }}
+                                className={`${clickable && 'cursor-pointer'}`}
+                            >
                                 <Heading>{campaign.title}</Heading>
                                 <Separator size='4' my='2'/>
                                 <Text>{campaign.description}</Text>
@@ -135,15 +150,19 @@ export default function (campaignData: CampaignData) {
                                 }</Text>
                             </Flex>
                             <Flex direction='column' align='end' justify='start' gap='3'>
-                                <IconButton radius='full' onClick={() => setEdit(true)}>
-                                    <Pencil2Icon/>
-                                </IconButton>
+                                <Tooltip content='Edit'>
+                                    <IconButton radius='full' onClick={() => setEdit(true)}>
+                                        <Pencil2Icon/>
+                                    </IconButton>
+                                </Tooltip>
                                 <Popover.Root>
-                                    <Popover.Trigger>
-                                        <IconButton radius='full' color='red'>
-                                            <Cross2Icon/>
-                                        </IconButton>
-                                    </Popover.Trigger>
+                                    <Tooltip content='Delete'>
+                                        <Popover.Trigger>
+                                            <IconButton radius='full' color='red'>
+                                                <TrashIcon/>
+                                            </IconButton>
+                                        </Popover.Trigger>
+                                    </Tooltip>
                                     <Popover.Content>
                                         <Flex direction='column' gap='2'>
                                             <Heading>Are you sure?</Heading>
@@ -165,4 +184,5 @@ export default function (campaignData: CampaignData) {
                 </Flex>
             </Card>
         </Container>
+    )
 }

@@ -15,6 +15,7 @@ import Dashboard from "./pages/Dashboard.tsx";
 import "@radix-ui/themes/styles.css";
 import './index.css'
 import CreateCampaign from "./pages/CreateCampaign.tsx";
+import CampaignPage from "./pages/CampaignPage.tsx";
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
@@ -32,6 +33,7 @@ createRoot(document.getElementById('root')!).render(
                             <Route path='dashboard' element={<Dashboard/>}/>
                             <Route path='campaigns'>
                                 <Route path='new' element={<CreateCampaign/>}/>
+                                <Route path=':id' element={<CampaignPage/>}/>
                             </Route>
                         </Route>
                     </Routes>

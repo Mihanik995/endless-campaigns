@@ -34,6 +34,7 @@ export interface AuthState {
 }
 
 const initialState: AuthState = {
+    id: localStorage.getItem('ec-id') || undefined,
     token: localStorage.getItem('ec-access') || undefined,
     loading: false,
     error: null as any,
@@ -49,11 +50,13 @@ export const authSlice = createSlice({
             state.id = undefined
             state.success = false
             localStorage.removeItem('ec-access')
+            localStorage.removeItem('ec-id')
         },
         refresh: (state, action) => {
             state.token = action.payload.accessToken
             state.id = action.payload.userId
-            localStorage.setItem('ec-access', action.payload)
+            localStorage.setItem('ec-access', action.payload.accessToken)
+            localStorage.setItem('ec-id', action.payload.userId)
             state.success = true
         }
     },
@@ -72,6 +75,7 @@ export const authSlice = createSlice({
             state.token = action.payload.accessToken
             state.id = action.payload.userId
             localStorage.setItem('ec-access', action.payload.accessToken)
+            localStorage.setItem('ec-id', action.payload.userId)
         })
     }
 })

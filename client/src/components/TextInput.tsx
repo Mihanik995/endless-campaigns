@@ -8,10 +8,11 @@ interface Props {
     type?: "number" | "search" | "time" | "text" | "hidden" | "tel" | "url" | "email" | "date" | "datetime-local" | "month" | "password" | "week",
     onChange: (e: ChangeEvent<HTMLInputElement>) => void,
     icon?: ReactElement,
+    placeholder?: string
 }
 
 export default function (props: Props): ReactElement {
-    const {label, name, value, onChange, icon, type} = props;
+    const {label, name, value, onChange, icon, type, placeholder} = props;
 
     return (
         <Text as='label' size='3'>
@@ -22,6 +23,7 @@ export default function (props: Props): ReactElement {
                 type={type || 'text'}
                 onChange={onChange}
                 size='3'
+                placeholder={placeholder}
             >
                 {!!icon &&
                     <TextField.Slot>

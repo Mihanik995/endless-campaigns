@@ -33,18 +33,25 @@ export default function () {
                     ? <Card><Spinner size='3' m='4'/></Card>
                     : <Card>
                         <Heading mx='3'>Campaigns</Heading>
-                        <Container>
+                        <Container width='100vw'>
                             {campaigns.length
                                 ? <>
                                     {campaigns.map((campaign) => (
-                                        <CampaignCard key={campaign.id} {...campaign}/>
+                                        <CampaignCard
+                                            key={campaign.id}
+                                            {...campaign}
+                                            clickable={true}
+                                            onDelete={() => setCampaigns(campaigns.filter(
+                                                camp => camp.id !== campaign.id
+                                            ))}
+                                        />
                                     ))}
                                     <Button
                                         m='2'
                                         onClick={() => navigate('/campaigns/new')}
                                     > Create new campaign</Button>
                                 </>
-                                : <Flex align='center' justify='center'>
+                                : <Flex align='center' justify='center' height='50vh'>
                                     <Button
                                         onClick={() => navigate('/campaigns/new')}
                                         size='4'

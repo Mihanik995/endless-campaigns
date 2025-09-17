@@ -5,7 +5,8 @@ import axios from "../axios/axiosConfig.ts";
 import {useParams} from "react-router";
 import {useAppSelector} from "../app/hooks.ts";
 import {selectAuth} from "../app/features/auth/authSlice.ts";
-import {CheckIcon, Cross2Icon, DotsHorizontalIcon, EnvelopeClosedIcon, Pencil2Icon} from "@radix-ui/react-icons";
+import {CheckIcon, Cross2Icon, EnvelopeClosedIcon, Pencil2Icon} from "@radix-ui/react-icons";
+import PasswordChangeButton from "../components/PasswordChangeButton.tsx";
 
 interface UserData {
     username: string;
@@ -32,7 +33,7 @@ export default function () {
     }, [])
 
     const [edit, setEdit] = useState(false)
-    const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const handleProfileChange = (event: ChangeEvent<HTMLInputElement>) => {
         setUserData({
             ...userData,
             [event.target.name]: event.target.value
@@ -79,7 +80,7 @@ export default function () {
                                                 ? <TextField.Root
                                                     name='username'
                                                     value={userData.username}
-                                                    onChange={handleChange}
+                                                    onChange={handleProfileChange}
                                                 />
                                                 : userData.username}
                                             </Flex>
@@ -101,7 +102,7 @@ export default function () {
                                                                 <Cross2Icon/>
                                                             </IconButton>
                                                         </Tooltip>
-                                                        <Tooltip content='Edit'>
+                                                        <Tooltip content='Submit'>
                                                             <IconButton
                                                                 radius='full'
                                                                 color='grass'
@@ -112,7 +113,7 @@ export default function () {
                                                         </Tooltip>
                                                     </>
                                                     : <>
-                                                        <Tooltip content='Edit'>
+                                                        <Tooltip content='Edit profile'>
                                                             <IconButton
                                                                 radius='full'
                                                                 onClick={() => setEdit(true)}
@@ -125,11 +126,7 @@ export default function () {
                                                                 <EnvelopeClosedIcon/>
                                                             </IconButton>
                                                         </Tooltip>
-                                                        <Tooltip content='Change Password'>
-                                                            <IconButton radius='full'>
-                                                                <DotsHorizontalIcon/>
-                                                            </IconButton>
-                                                        </Tooltip>
+                                                        <PasswordChangeButton/>
                                                     </>}
                                             </Flex>
                                         </Table.Cell>

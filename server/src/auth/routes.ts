@@ -131,4 +131,23 @@ authRouter.put('/:id', verifyToken, async (req: Request, res: Response) => {
     }
 })
 
+authRouter.put('/:id/change-password', verifyToken, async (req: Request, res: Response) => {
+    const {id} = req.params;
+    const token = req.header('Authorization');
+    const {password} = req.body;
+    try{
+        const {userId} = jwt.verify(token, process.env.JWT_SECRET);
+        if (userId !== id) return res.status(403).json({error: 'Access denied'});
+        const user = await dbClient.users.findUnique({where: {id}})
+        if (!user) return res.status(404).json({error: 'User not found'});
+        crypto.pbkdf2(password, user.salt, 310000, 32, 'sha256', function (err: Error, hashedPassword: Buffer) {
+            if (err) throw new Error(err.message);
+            const updatedUser = dbClient.users.update({where: {id}, data: {password: hashedPassword}});
+            return res.status(200).json({updatedUser})
+        })
+    } catch (error) {
+        res.status(500).json({error})
+    }
+})
+
 module.exports = authRouter;

@@ -6,6 +6,8 @@ interface Props {
 }
 
 export default function ({error}: Props) {
+    console.log(error);
+
     return (
         <Callout.Root color='red'>
             <Callout.Icon>

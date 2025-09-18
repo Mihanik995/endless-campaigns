@@ -14,7 +14,7 @@ const dbClient = new PrismaClient();
 
 periodsRouter.post('/', verifyToken, async (req: Request, res: Response) => {
     const data = req.body;
-    const token = req.body['Authorization'];
+    const token = req.header('Authorization');
     try {
         const {userId} = jwt.verify(token, process.env.JWT_SECRET);
         const campaign = await dbClient.campaigns.findUnique({where: {id: data.campaignId}}) as Campaigns;
@@ -34,26 +34,29 @@ periodsRouter.post('/', verifyToken, async (req: Request, res: Response) => {
 periodsRouter.get('/:campaignId', verifyToken, async (req: Request, res: Response) => {
     const {campaignId} = req.params;
     try {
-        const periods = dbClient.campaignPeriod.findMany({where: {campaignId}});
+        const periods = await dbClient.campaignPeriod.findMany({where: {campaignId}});
         return res.status(200).json(periods)
     } catch (error) {
         res.status(500).json({error})
     }
 })
 
-periodsRouter.put('/id', verifyToken, async (req: Request, res: Response) => {
+periodsRouter.put('/:id', verifyToken, async (req: Request, res: Response) => {
     const {id} = req.params;
     const data = req.body;
+    if (data.dateStart) data.dateStart = new Date(data.dateStart)
+    if (data.dateEnd) data.dateEnd = new Date(data.dateEnd)
     try {
         const period = await dbClient.campaignPeriod.update({where: {id}, data});
         if (!period) return res.status(404).json({error: "Period not found"});
         return res.status(200).json(period)
     } catch (error) {
+        console.log(error)
         res.status(500).json({error})
     }
 })
 
-periodsRouter.delete('/id', verifyToken, async (req: Request, res: Response) => {
+periodsRouter.delete('/:id', verifyToken, async (req: Request, res: Response) => {
     const {id} = req.params;
     dbClient.campaignPeriod.delete({where: {id}})
         .then(() => res.sendStatus(204))

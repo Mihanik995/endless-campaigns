@@ -53,15 +53,13 @@ export default function ({campaignId, isOwner}: Props) {
             }).catch(err => setError(err as Error))
     }
 
-    return <Container>
+    return <Container mt='3'>
         <Card size='3'>
             {isLoading
                 ? <Spinner size='3'/>
                 : !!error
                     ? <ErrorHandler error={error}/>
-                    : <>
-                        <Heading mb='2'>Players:</Heading>
-                        {registers.length
+                    : registers.length
                             ? <Table.Root>
                                 <Table.Header>
                                     <Table.Row>
@@ -125,8 +123,6 @@ export default function ({campaignId, isOwner}: Props) {
                             : <Container width='100vw'>
                                 <Heading align='center'>No registrations found.</Heading>
                             </Container>
-                        }
-                    </>
             }
             {!registers.map(reg => reg.playerId).includes(auth.id as string) &&
                 <>

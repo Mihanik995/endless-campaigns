@@ -1,7 +1,7 @@
 import type {Campaigns} from '../../../server/generated/prisma'
 
 import {useNavigate, useParams} from "react-router";
-import {Box, Card, Container, Flex, Spinner} from "@radix-ui/themes";
+import {Box, Card, Container, Flex, Spinner, Tabs} from "@radix-ui/themes";
 import Header from "../components/Header.tsx";
 import {useEffect, useState} from "react";
 import axios from '../axios/axiosConfig.ts'
@@ -10,6 +10,7 @@ import RegisteredPlayers from "../components/RegisteredPlayers.tsx";
 import {useAppSelector} from "../app/hooks.ts";
 import {selectAuth} from "../app/features/auth/authSlice.ts";
 import ErrorHandler from "../components/ErrorHandler.tsx";
+import CampaignPeriods from "../components/CampaignPeriods.tsx";
 
 export default function () {
     const {id: campaignId} = useParams();
@@ -51,7 +52,7 @@ export default function () {
     return (
         <>
             <Header/>
-            <Flex minHeight='80vh' align='center' justify='center' className='pt-25 pb-10'>
+            <Flex minHeight='80vh' align='center' justify='center' className='pb-5 pt-28'>
                 <Card>
                     {isLoading
                         ? <Spinner size='3'/>
@@ -64,12 +65,25 @@ export default function () {
                                     onDelete={() => navigate('/dashboard')}
                                 />
                                 <Box m='2'>
-                                    <RegisteredPlayers
-                                        campaignId={campaignId as string}
-                                        isOwner={isOwner}
-                                    />
+                                    <Tabs.Root defaultValue='registers'>
+                                        <Tabs.List>
+                                            <Tabs.Trigger value='registers'>Players</Tabs.Trigger>
+                                            <Tabs.Trigger value='periods'>Periods</Tabs.Trigger>
+                                        </Tabs.List>
+                                        <Tabs.Content value='registers'>
+                                            <RegisteredPlayers
+                                                campaignId={campaignId as string}
+                                                isOwner={isOwner}
+                                            />
+                                        </Tabs.Content>
+                                        <Tabs.Content value='periods'>
+                                            <CampaignPeriods
+                                                campaignId={campaignId as string}
+                                                isOwner={isOwner}
+                                            />
+                                        </Tabs.Content>
+                                    </Tabs.Root>
                                 </Box>
-
                             </Container>
                     }
                 </Card>

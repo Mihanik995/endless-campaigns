@@ -12,7 +12,7 @@ export default function ({error}: Props) {
                 <InfoCircledIcon/>
             </Callout.Icon>
             <Callout.Text>
-                {error.message}
+                Error occurred: {error.message}
             </Callout.Text>
         </Callout.Root>
     )

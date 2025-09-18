@@ -37,6 +37,8 @@ model Campaigns {
 
   requiresRegisterApproval Boolean            @default(true)
   CampaignRegisters        CampaignRegister[]
+
+  CampaignPeriod CampaignPeriod[]
 }
 
 model CampaignRegister {
@@ -48,4 +50,12 @@ model CampaignRegister {
   formationName String
   rosterLink    String
   approved      Boolean
+}
+
+model CampaignPeriod {
+  id         String    @id @unique
+  campaign   Campaigns @relation(fields: [campaignId], references: [id])
+  campaignId String
+  dateStart  DateTime
+  dateEnd    DateTime
 }

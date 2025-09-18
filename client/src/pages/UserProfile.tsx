@@ -9,6 +9,7 @@ import {CheckIcon, Cross2Icon, Pencil2Icon} from "@radix-ui/react-icons";
 import PasswordChangeButton from "../components/PasswordChangeButton.tsx";
 import EmailChangeButton from "../components/EmailChangeButton.tsx";
 import UserCampaigns from "../components/UserCampaigns.tsx";
+import ErrorHandler from "../components/ErrorHandler.tsx";
 
 interface UserData {
     username: string;
@@ -21,6 +22,7 @@ export default function () {
     const id = idParam ? idParam : auth.id;
 
     const [isLoading, setIsLoading] = useState(false)
+    const [error, setError] = useState<Error>()
     const [userData, setUserData] = useState<UserData>({
         username: '',
         email: '',
@@ -30,7 +32,7 @@ export default function () {
         axios.get(`/auth/${id}`)
             .then(res => {
                 if (res.status === 200) setUserData({...res.data});
-            }).catch(err => console.log(err))
+            }).catch(err => setError(err as Error))
             .finally(() => setIsLoading(false))
     }, [])
 
@@ -49,7 +51,7 @@ export default function () {
                     setUserData({...response.data})
                     setEdit(false)
                 }
-            }).catch((error) => console.log(error))
+            }).catch((error) => setError(error as Error))
     }
 
     return (
@@ -59,81 +61,83 @@ export default function () {
                 <Card>
                     {isLoading
                         ? <Spinner/>
-                        : <Container width='100vw'>
-                            <Table.Root mx='5'>
-                                <Table.Header>
-                                    <Table.Row>
-                                        <Table.ColumnHeaderCell>
-                                            Username
-                                        </Table.ColumnHeaderCell>
-                                        <Table.ColumnHeaderCell>
-                                            E-mail
-                                        </Table.ColumnHeaderCell>
-                                        <Table.ColumnHeaderCell>
-                                            Actions
-                                        </Table.ColumnHeaderCell>
-                                    </Table.Row>
-                                </Table.Header>
-                                <Table.Body>
-                                    <Table.Row>
-                                        <Table.RowHeaderCell>
-                                            <Flex width='20vw'>
-                                            {edit
-                                                ? <TextField.Root
-                                                    name='username'
-                                                    value={userData.username}
-                                                    onChange={handleProfileChange}
-                                                />
-                                                : userData.username}
-                                            </Flex>
-                                        </Table.RowHeaderCell>
-                                        <Table.Cell>
-                                            <Flex width='20vw'>
-                                            {userData.email}
-                                            </Flex>
-                                        </Table.Cell>
-                                        <Table.Cell>
-                                            <Flex gap='2' width='20vw'>
-                                                {edit
-                                                    ? <>
-                                                        <Tooltip content='Cancel'>
-                                                            <IconButton
-                                                                radius='full'
-                                                                onClick={() => setEdit(false)}
-                                                            >
-                                                                <Cross2Icon/>
-                                                            </IconButton>
-                                                        </Tooltip>
-                                                        <Tooltip content='Submit'>
-                                                            <IconButton
-                                                                radius='full'
-                                                                color='grass'
-                                                                onClick={handleSubmitProfileChange}
-                                                            >
-                                                                <CheckIcon/>
-                                                            </IconButton>
-                                                        </Tooltip>
-                                                    </>
-                                                    : <>
-                                                        <Tooltip content='Edit profile'>
-                                                            <IconButton
-                                                                radius='full'
-                                                                onClick={() => setEdit(true)}
-                                                            >
-                                                                <Pencil2Icon/>
-                                                            </IconButton>
-                                                        </Tooltip>
-                                                        <EmailChangeButton/>
-                                                        <PasswordChangeButton/>
-                                                    </>}
-                                            </Flex>
-                                        </Table.Cell>
-                                    </Table.Row>
-                                </Table.Body>
-                            </Table.Root>
-                            <br/>
-                            <UserCampaigns id={id as string}/>
-                        </Container>
+                        : !!error
+                            ? <ErrorHandler error={error}/>
+                            : <Container width='100vw'>
+                                <Table.Root mx='5'>
+                                    <Table.Header>
+                                        <Table.Row>
+                                            <Table.ColumnHeaderCell>
+                                                Username
+                                            </Table.ColumnHeaderCell>
+                                            <Table.ColumnHeaderCell>
+                                                E-mail
+                                            </Table.ColumnHeaderCell>
+                                            <Table.ColumnHeaderCell>
+                                                Actions
+                                            </Table.ColumnHeaderCell>
+                                        </Table.Row>
+                                    </Table.Header>
+                                    <Table.Body>
+                                        <Table.Row>
+                                            <Table.RowHeaderCell>
+                                                <Flex width='20vw'>
+                                                    {edit
+                                                        ? <TextField.Root
+                                                            name='username'
+                                                            value={userData.username}
+                                                            onChange={handleProfileChange}
+                                                        />
+                                                        : userData.username}
+                                                </Flex>
+                                            </Table.RowHeaderCell>
+                                            <Table.Cell>
+                                                <Flex width='20vw'>
+                                                    {userData.email}
+                                                </Flex>
+                                            </Table.Cell>
+                                            <Table.Cell>
+                                                <Flex gap='2' width='20vw'>
+                                                    {edit
+                                                        ? <>
+                                                            <Tooltip content='Cancel'>
+                                                                <IconButton
+                                                                    radius='full'
+                                                                    onClick={() => setEdit(false)}
+                                                                >
+                                                                    <Cross2Icon/>
+                                                                </IconButton>
+                                                            </Tooltip>
+                                                            <Tooltip content='Submit'>
+                                                                <IconButton
+                                                                    radius='full'
+                                                                    color='grass'
+                                                                    onClick={handleSubmitProfileChange}
+                                                                >
+                                                                    <CheckIcon/>
+                                                                </IconButton>
+                                                            </Tooltip>
+                                                        </>
+                                                        : <>
+                                                            <Tooltip content='Edit profile'>
+                                                                <IconButton
+                                                                    radius='full'
+                                                                    onClick={() => setEdit(true)}
+                                                                >
+                                                                    <Pencil2Icon/>
+                                                                </IconButton>
+                                                            </Tooltip>
+                                                            <EmailChangeButton/>
+                                                            <PasswordChangeButton/>
+                                                        </>}
+                                                </Flex>
+                                            </Table.Cell>
+                                        </Table.Row>
+                                    </Table.Body>
+                                </Table.Root>
+                                <br/>
+                                <UserCampaigns id={id as string}/>
+                            </Container>
                     }
                 </Card>
             </Flex>

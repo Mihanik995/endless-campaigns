@@ -5,10 +5,12 @@ import {logout, selectAuth} from "../app/features/auth/authSlice.ts";
 import {type MouseEventHandler, useState} from "react";
 import axios from "../axios/axiosConfig.ts";
 import TextInput from "./TextInput.tsx";
+import ErrorHandler from "./ErrorHandler.tsx";
 
 export default function () {
     const {id} = useAppSelector(selectAuth);
     const dispatch = useAppDispatch();
+    const [error, setError] = useState<Error>()
 
     const [newEmail, setNewEmail] = useState<string>('')
     const handleSubmit: MouseEventHandler<HTMLButtonElement> = (e) => {
@@ -16,7 +18,7 @@ export default function () {
         axios.put(`/auth/${id}/change-email`, {email: newEmail})
             .then((response) => {
                 if (response.status === 200) dispatch(logout())
-            }).catch(error => console.log(error));
+            }).catch(err => setError(err as Error));
     }
 
     return (
@@ -55,6 +57,7 @@ export default function () {
                             </Button>
                         </Popover.Close>
                     </Flex>
+                    {!!error && <ErrorHandler error={error}/>}
                 </Flex>
             </Popover.Content>
         </Popover.Root>

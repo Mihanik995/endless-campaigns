@@ -6,6 +6,7 @@ import {useAppDispatch, useAppSelector} from "../app/hooks.ts";
 import {logout, selectAuth} from "../app/features/auth/authSlice.ts";
 import TextInput from "./TextInput.tsx";
 import {Text} from "@radix-ui/themes";
+import ErrorHandler from "./ErrorHandler.tsx";
 
 interface NewPassword {
     password: string;
@@ -15,6 +16,7 @@ interface NewPassword {
 export default function () {
     const {id} = useAppSelector(selectAuth);
     const dispatch = useAppDispatch();
+    const [error, setError] = useState<Error>()
 
     const [newPassword, setNewPassword] = useState<NewPassword>({
         password: '',
@@ -32,7 +34,7 @@ export default function () {
         axios.put(`/auth/${id}/change-password`, {password: newPassword.password})
             .then((response) => {
                 if (response.status === 200) dispatch(logout())
-            }).catch(error => console.log(error));
+            }).catch(err => setError(err as Error));
     }
 
     return (
@@ -79,6 +81,7 @@ export default function () {
                             </Button>
                         </Popover.Close>
                     </Flex>
+                    {!!error && <ErrorHandler error={error}/>}
                 </Flex>
             </Popover.Content>
         </Popover.Root>

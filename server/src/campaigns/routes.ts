@@ -45,7 +45,6 @@ campaignsRouter.get("/:id", verifyToken, async (req: Request, res: Response) => 
         const campaign = await dbClient.campaigns.findUnique({where: {id: campaignId}})
         return res.status(200).json(campaign)
     } catch (error) {
-        console.log(error)
         res.status(500).json({error})
     }
 })
@@ -65,7 +64,6 @@ campaignsRouter.post("/", verifyToken, async (req: Request, res: Response) => {
         const campaign = await dbClient.campaigns.create({data: campaignData})
         return res.status(201).json(campaign)
     } catch (error) {
-        console.log(error)
         res.status(500).json({error})
     }
 })

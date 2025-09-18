@@ -20,6 +20,7 @@ import {useNavigate} from "react-router";
 import {useAppSelector} from "../app/hooks.ts";
 import {selectAuth} from "../app/features/auth/authSlice.ts";
 import CheckInput from "./CheckInput.tsx";
+import ErrorHandler from "./ErrorHandler.tsx";
 
 interface CampaignData {
     [key: string]: string | boolean | Date | (() => void)
@@ -47,6 +48,7 @@ export default function ({clickable, onDelete, ...campaignData}: Props) {
     })
     const [edit, setEdit] = useState(false)
     const navigate = useNavigate();
+    const [error, setError] = useState<Error>()
 
     const auth = useAppSelector(selectAuth);
     const isOwner = auth.id === campaign.ownerId;
@@ -73,7 +75,7 @@ export default function ({clickable, onDelete, ...campaignData}: Props) {
         axios.delete(`/campaigns/${campaign.id}`)
             .then((response) => {
                 if (response.status === 204) onDelete()
-            }).catch((error) => console.log(error))
+            }).catch((error) => setError(error as Error))
     }
 
     const handleSubmit: MouseEventHandler<HTMLButtonElement> = (e) => {
@@ -89,7 +91,7 @@ export default function ({clickable, onDelete, ...campaignData}: Props) {
                     })
                     setEdit(false)
                 }
-            }).catch((error) => console.log(error))
+            }).catch((error) => setError(error as Error))
     }
 
     return (
@@ -220,6 +222,7 @@ export default function ({clickable, onDelete, ...campaignData}: Props) {
                             }
                         </>
                     }
+                    {!!error && <ErrorHandler error={error}/>}
                 </Flex>
             </Card>
         </Container>

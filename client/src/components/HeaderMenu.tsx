@@ -5,11 +5,14 @@ import {logout, selectAuth} from "../app/features/auth/authSlice.ts";
 import {useNavigate} from "react-router";
 
 import axios from "../axios/axiosConfig.ts"
+import {useState} from "react";
+import ErrorHandler from "./ErrorHandler.tsx";
 
 export default function () {
     const auth = useAppSelector(selectAuth);
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
+    const [error, setError] = useState<Error>()
 
     return (
         <DropdownMenu.Root>
@@ -33,14 +36,13 @@ export default function () {
                             onClick={() => {
                                 axios.post('/auth/logout')
                                     .then(response => {
-                                        if (response.status === 200) {
-                                            dispatch(logout());
-                                        }
-                                    }).catch(error => console.log(error))
+                                        if (response.status === 200) dispatch(logout());
+                                    }).catch(err => setError(err as Error))
                             }}
                         >
                             <ExitIcon/>Log Out
                         </DropdownMenu.Item>
+                        {!!error && <ErrorHandler error={error}/>}
                     </>
                     : <>
                         <DropdownMenu.Item onClick={() => navigate('/auth/signup')}>

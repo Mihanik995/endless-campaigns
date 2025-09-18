@@ -9,6 +9,7 @@ import CampaignCard from "../components/CampaignCard.tsx";
 import RegisteredPlayers from "../components/RegisteredPlayers.tsx";
 import {useAppSelector} from "../app/hooks.ts";
 import {selectAuth} from "../app/features/auth/authSlice.ts";
+import ErrorHandler from "../components/ErrorHandler.tsx";
 
 export default function () {
     const {id: campaignId} = useParams();
@@ -18,6 +19,7 @@ export default function () {
     const auth = useAppSelector(selectAuth);
     const [isOwner, setIsOwner] = useState(false);
 
+    const [error, setError] = useState<Error>()
     const [isLoading, setIsLoading] = useState(false)
     const [campaignData, setCampaignData] = useState<Campaigns>({
         id: '',
@@ -42,7 +44,7 @@ export default function () {
                     })
                     setIsOwner(auth.id === campRes.data.ownerId)
                 }
-            }).catch(err => console.log(err))
+            }).catch(err => setError(err as Error))
             .finally(() => setIsLoading(false))
     }, []);
 
@@ -53,20 +55,22 @@ export default function () {
                 <Card>
                     {isLoading
                         ? <Spinner size='3'/>
-                        : <Container width='100vw'>
-                            <CampaignCard
-                                {...campaignData}
-                                clickable={false}
-                                onDelete={() => navigate('/dashboard')}
-                            />
-                            <Box m='2'>
-                                <RegisteredPlayers
-                                    campaignId={campaignId as string}
-                                    isOwner={isOwner}
+                        : !!error
+                            ? <ErrorHandler error={error}/>
+                            : <Container width='100vw'>
+                                <CampaignCard
+                                    {...campaignData}
+                                    clickable={false}
+                                    onDelete={() => navigate('/dashboard')}
                                 />
-                            </Box>
+                                <Box m='2'>
+                                    <RegisteredPlayers
+                                        campaignId={campaignId as string}
+                                        isOwner={isOwner}
+                                    />
+                                </Box>
 
-                        </Container>
+                            </Container>
                     }
                 </Card>
             </Flex>

@@ -174,7 +174,6 @@ authRouter.put('/:id/change-email', verifyToken, async (req: Request, res: Respo
         })
         return res.sendStatus(200)
     } catch (error) {
-        console.log(error)
         res.status(500).json({error});
     }
 })

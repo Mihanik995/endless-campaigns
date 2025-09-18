@@ -15,24 +15,24 @@ import {type ChangeEvent, type MouseEventHandler, useState} from "react";
 import axios from "../axios/axiosConfig.ts"
 import TextInput from "./TextInput.tsx";
 import TextAreaInput from "./TextAreaInput.tsx";
-import {CheckIcon, Cross2Icon, Pencil2Icon, TrashIcon} from "@radix-ui/react-icons";
-import {useNavigate} from "react-router";
-import {useAppSelector} from "../app/hooks.ts";
+import {CheckIcon, Cross2Icon, ExitIcon, Pencil2Icon, TrashIcon} from "@radix-ui/react-icons";
+import {useAppDispatch, useAppSelector} from "../app/hooks.ts";
 import {selectAuth} from "../app/features/auth/authSlice.ts";
 import CheckInput from "./CheckInput.tsx";
 import ErrorHandler from "./ErrorHandler.tsx";
+import {cleanCampaign, selectCampaign, updateCampaign} from "../app/features/campaign/campaignSlice.ts";
 
 interface CampaignData {
-    [key: string]: string | boolean | Date | (() => void)
+    [key: string]: string | boolean | Date | (() => void) | undefined
 
     id: string;
     ownerId: string;
     title: string,
     description: string,
     regulations: string,
-    dateStart: string | Date,
-    dateEnd: string | Date,
-    requiresRegisterApproval: boolean
+    dateStart: string,
+    dateEnd: string,
+    requiresRegisterApproval?: boolean
 }
 
 interface Props extends CampaignData {
@@ -41,16 +41,15 @@ interface Props extends CampaignData {
 }
 
 export default function ({clickable, onDelete, ...campaignData}: Props) {
-    const [campaign, setCampaign] = useState<CampaignData>({
-        ...campaignData,
-        dateStart: new Date(campaignData.dateStart),
-        dateEnd: new Date(campaignData.dateEnd)
-    })
+    const [campaign, setCampaign] = useState<CampaignData>({...campaignData})
     const [edit, setEdit] = useState(false)
-    const navigate = useNavigate();
     const [error, setError] = useState<Error>()
 
+    console.log(campaignData)
+
     const auth = useAppSelector(selectAuth);
+    const {id} = useAppSelector(selectCampaign);
+    const dispatch = useAppDispatch();
     const isOwner = auth.id === campaign.ownerId;
 
     const handleChange = (
@@ -124,23 +123,19 @@ export default function ({clickable, onDelete, ...campaignData}: Props) {
                                         label='Start Date'
                                         name='dateStart'
                                         type='date'
-                                        value={typeof campaign.dateStart === 'string'
-                                            ? campaign.dateStart
-                                            : campaign.dateStart.toISOString().slice(0, 10)}
+                                        value={campaign.dateStart.slice(0, 10)}
                                         onChange={handleChange}
                                     />
                                     <TextInput
                                         label='End Date'
                                         name='dateEnd'
                                         type='date'
-                                        value={typeof campaign.dateEnd === 'string'
-                                            ? campaign.dateEnd
-                                            : campaign.dateEnd.toISOString().slice(0, 10)}
+                                        value={campaign.dateEnd.slice(0, 10)}
                                         onChange={handleChange}
                                     />
                                 </Flex>
                                 <CheckInput
-                                    value={campaign.requiresRegisterApproval as unknown as number}
+                                    value={Number(campaign.requiresRegisterApproval)}
                                     name='requiresRegisterApproval'
                                     onClick={() => handleSwitch('requiresRegisterApproval')}
                                     label='Player register requires master approval'
@@ -165,7 +160,7 @@ export default function ({clickable, onDelete, ...campaignData}: Props) {
                                 direction='column'
                                 align='start'
                                 onClick={() => {
-                                    if (clickable) navigate(`/campaigns/${campaign.id}`)
+                                    if (clickable) dispatch(updateCampaign(campaign))
                                 }}
                                 className={`${clickable && 'cursor-pointer'}`}
                             >
@@ -180,46 +175,58 @@ export default function ({clickable, onDelete, ...campaignData}: Props) {
                                     </Link>
                                 </Text>
                                 <Separator size='4' my='2'/>
-                                <Text>Dates: {typeof campaign.dateStart === 'string'
-                                    ? campaign.dateStart
-                                    : campaign.dateStart.toLocaleDateString()
-                                } - {typeof campaign.dateEnd === 'string'
-                                    ? campaign.dateEnd
-                                    : campaign.dateEnd.toLocaleDateString()
+                                <Text>Dates: {
+                                    new Date(campaign.dateStart).toLocaleDateString()
+                                } - {
+                                    new Date(campaign.dateEnd).toLocaleDateString()
                                 }</Text>
                             </Flex>
-                            {isOwner &&
-                                <Flex direction='column' align='end' justify='start' gap='3'>
-                                    <Tooltip content='Edit'>
-                                        <IconButton radius='full' onClick={() => setEdit(true)}>
-                                            <Pencil2Icon/>
-                                        </IconButton>
-                                    </Tooltip>
-                                    <Popover.Root>
-                                        <Tooltip content='Delete'>
-                                            <Popover.Trigger>
-                                                <IconButton radius='full' color='red'>
-                                                    <TrashIcon/>
-                                                </IconButton>
-                                            </Popover.Trigger>
+                            <Flex direction='column' align='end' justify='start' gap='3'>
+                                {!!id.length &&
+                                    <>
+                                        <Tooltip content='Exit'>
+                                            <IconButton
+                                                radius='full'
+                                                onClick={() => dispatch(cleanCampaign())}
+                                            >
+                                                <ExitIcon/>
+                                            </IconButton>
                                         </Tooltip>
-                                        <Popover.Content>
-                                            <Flex direction='column' gap='2'>
-                                                <Heading>Are you sure?</Heading>
-                                                <Text>This action cannot be undone!</Text>
-                                                <Flex gap='2'>
-                                                    <Popover.Close>
-                                                        <Button>Cancel</Button>
-                                                    </Popover.Close>
-                                                    <Popover.Close>
-                                                        <Button color='red' onClick={handleDelete}>Delete</Button>
-                                                    </Popover.Close>
+                                    </>
+                                }
+                                {isOwner &&
+                                    <>
+                                        <Tooltip content='Edit'>
+                                            <IconButton radius='full' onClick={() => setEdit(true)}>
+                                                <Pencil2Icon/>
+                                            </IconButton>
+                                        </Tooltip>
+                                        <Popover.Root>
+                                            <Tooltip content='Delete'>
+                                                <Popover.Trigger>
+                                                    <IconButton radius='full' color='red'>
+                                                        <TrashIcon/>
+                                                    </IconButton>
+                                                </Popover.Trigger>
+                                            </Tooltip>
+                                            <Popover.Content>
+                                                <Flex direction='column' gap='2'>
+                                                    <Heading>Are you sure?</Heading>
+                                                    <Text>This action cannot be undone!</Text>
+                                                    <Flex gap='2'>
+                                                        <Popover.Close>
+                                                            <Button>Cancel</Button>
+                                                        </Popover.Close>
+                                                        <Popover.Close>
+                                                            <Button color='red' onClick={handleDelete}>Delete</Button>
+                                                        </Popover.Close>
+                                                    </Flex>
                                                 </Flex>
-                                            </Flex>
-                                        </Popover.Content>
-                                    </Popover.Root>
-                                </Flex>
-                            }
+                                            </Popover.Content>
+                                        </Popover.Root>
+                                    </>
+                                }
+                            </Flex>
                         </>
                     }
                     {!!error && <ErrorHandler error={error}/>}

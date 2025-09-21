@@ -1,0 +1,112 @@
+import type {Request, Response} from 'express';
+
+const {Router} = require("express");
+const {PrismaClient} = require("../../../generated/prisma");
+const jwt = require("jsonwebtoken");
+const {v4: uuid} = require("uuid");
+const {verifyToken} = require("../../auth/middleware")
+
+require("dotenv").config();
+
+const pairingsRouter = new Router();
+const dbClient = new PrismaClient();
+
+pairingsRouter.post('/', verifyToken, async (req: Request, res: Response) => {
+    const {campaignId, periodId, playerIds, simpleMissionId} = req.body;
+    try {
+        const id = uuid()
+        const pairing = await dbClient.pairing.create({
+            data: {
+                id, campaignId, periodId, simpleMissionId, players: {
+                    create: playerIds.map((id: string) => {
+                        return {player: {connect: {id}}}
+                    })
+                }
+            }
+        })
+        res.status(201).json(pairing);
+    } catch (error) {
+        res.status(500).json({error})
+    }
+})
+
+pairingsRouter.get('/:id', verifyToken, async (req: Request, res: Response) => {
+    const {id} = req.params;
+    try {
+        const pairing = await dbClient.pairing.findUnique({where: {id}})
+        if (!pairing) return res.status(404).json({error: 'No pairing'})
+        res.status(200).json(pairing);
+    } catch (error) {
+        res.status(500).json({error})
+    }
+})
+
+pairingsRouter.get('/campaign/:campaignId', verifyToken, async (req: Request, res: Response) => {
+    const {campaignId} = req.params;
+    try {
+        const pairing = await dbClient.pairing.findUnique({where: {campaignId}})
+        if (!pairing) return res.status(404).json({error: 'No pairing'})
+        res.status(200).json(pairing);
+    } catch (error) {
+        res.status(500).json({error})
+    }
+})
+
+pairingsRouter.get('/period/:periodId', verifyToken, async (req: Request, res: Response) => {
+    const {periodId} = req.params;
+    try {
+        const pairing = await dbClient.pairing.findUnique({where: {periodId}})
+        if (!pairing) return res.status(404).json({error: 'No pairing'})
+        res.status(200).json(pairing);
+    } catch (error) {
+        res.status(500).json({error})
+    }
+})
+
+pairingsRouter.get('/player/:playerId', verifyToken, async (req: Request, res: Response) => {
+    const {playerId} = req.params;
+    try {
+        const pairing = await dbClient.pairing.findUnique({
+            select: {players: {where: {playerId}}}
+        })
+        if (!pairing) return res.status(404).json({error: 'No pairing'})
+        res.status(200).json(pairing);
+    } catch (error) {
+        res.status(500).json({error})
+    }
+})
+
+pairingsRouter.put('/:id', verifyToken, async (req: Request, res: Response) => {
+    const {id} = req.params;
+    const {campaignId, periodId, playerIds, simpleMissionId} = req.body;
+    try {
+        const pairing = await dbClient.pairing.findUnique({where: {id}})
+        if (!pairing) return res.status(404).json({error: 'No pairing'})
+        const updatedPairing = await dbClient.pairing.update({
+            where: {id},
+            data: {campaignId, periodId, simpleMissionId,
+                players: {
+                    disconnect: true,
+                    create: playerIds.map((id: string) => {
+                        return {player: {connect: {id}}}
+                    })
+                }
+            },
+        })
+        res.status(200).json(updatedPairing);
+    } catch (error) {
+        res.status(500).json({error})
+    }
+})
+
+pairingsRouter.delete('/:id', verifyToken, async (req: Request, res: Response) => {
+    const {id} = req.params;
+    try {
+        dbClient.pairing.delete({where: {id}})
+            .then(() => res.sendStatus(204))
+    } catch (error) {
+        res.status(500).json({error})
+    }
+})
+
+module.exports = pairingsRouter

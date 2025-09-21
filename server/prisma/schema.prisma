@@ -25,6 +25,8 @@ model Users {
   CampaignRegisters CampaignRegister[]
 
   SimpleMission SimpleMission[]
+
+  pairings PlayersOnPairings[]
 }
 
 model Campaigns {
@@ -41,6 +43,8 @@ model Campaigns {
   CampaignRegisters        CampaignRegister[]
 
   CampaignPeriod CampaignPeriod[]
+
+  Pairing Pairing[]
 }
 
 model CampaignRegister {
@@ -56,17 +60,40 @@ model CampaignRegister {
 
 model CampaignPeriod {
   id         String    @id @unique
-  campaign   Campaigns @relation(fields: [campaignId], references: [id])
+  campaign   Campaigns @relation(fields: [campaignId], references: [id], onDelete: Cascade)
   campaignId String
   dateStart  DateTime
   dateEnd    DateTime
+
+  Pairing Pairing[]
 }
 
 model SimpleMission {
-  id                   String @id @unique
-  creator              Users  @relation(fields: [creatorId], references: [id])
+  id                   String    @id @unique
+  creator              Users     @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   creatorId            String
   title                String
   narrativeDescription String
   missionConditions    String
+  Pairing              Pairing[]
+}
+
+model Pairing {
+  id              String              @id @unique
+  campaign        Campaigns           @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  campaignId      String
+  period          CampaignPeriod      @relation(fields: [periodId], references: [id], onDelete: Cascade)
+  periodId        String
+  simpleMission   SimpleMission       @relation(fields: [simpleMissionId], references: [id])
+  simpleMissionId String
+  players         PlayersOnPairings[]
+}
+
+model PlayersOnPairings {
+  player    Users   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  playerId  String
+  pairing   Pairing @relation(fields: [pairingId], references: [id], onDelete: Cascade)
+  pairingId String
+
+  @@id([pairingId, playerId])
 }

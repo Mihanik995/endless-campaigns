@@ -1,12 +1,12 @@
 import Header from "../components/Header.tsx";
-import {Box, Button, Callout, Card, Container, Flex, Separator, Spinner} from "@radix-ui/themes";
+import {Box, Button, Card, Container, Flex, Separator, Spinner} from "@radix-ui/themes";
 import {type ChangeEventHandler, type MouseEventHandler, useState} from "react";
 import TextInput from "../components/TextInput.tsx";
 import TextAreaInput from "../components/TextAreaInput.tsx";
 import axios from "../axios/axiosConfig.ts";
 import {useNavigate} from "react-router";
-import {InfoCircledIcon} from "@radix-ui/react-icons";
 import CheckInput from "../components/CheckInput.tsx";
+import ErrorHandler from "../components/ErrorHandler.tsx";
 
 interface CampaignData {
     [key: string]: string | boolean | Date;
@@ -127,15 +127,7 @@ export default function () {
                                 </Button>
                             </Flex>
                         }
-                        {!!error &&
-                            <Callout.Root color='red'>
-                                <Callout.Icon>
-                                    <InfoCircledIcon/>
-                                </Callout.Icon>
-                                <Callout.Text>
-                                    {error}
-                                </Callout.Text>
-                            </Callout.Root>}
+                        {!!error && <ErrorHandler error={error}/>}
                     </Card>
                 </Box>
             </Flex>

@@ -18,7 +18,7 @@ simpleMissionsRouter.post("/", verifyToken, async (req: Request, res: Response) 
         const {userId} = jwt.verify(token, process.env.JWT_SECRET)
         data.creatorId = userId
         data.id = uuid()
-        const mission = await dbClient.simpleMission.create(data)
+        const mission = await dbClient.simpleMission.create({data})
         res.status(201).json(mission)
     } catch (error) {
         res.status(500).json({error})
@@ -59,6 +59,7 @@ simpleMissionsRouter.put("/:id", verifyToken, async (req: Request, res: Response
         const updatedMission = await dbClient.simpleMission.update({where: {id}, data})
         res.status(200).json(updatedMission)
     } catch (error) {
+        console.log(error)
         res.status(500).json({error})
     }
 })

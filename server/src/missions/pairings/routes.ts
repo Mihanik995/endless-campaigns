@@ -2,7 +2,6 @@ import type {Request, Response} from 'express';
 
 const {Router} = require("express");
 const {PrismaClient} = require("../../../generated/prisma");
-const jwt = require("jsonwebtoken");
 const {v4: uuid} = require("uuid");
 const {verifyToken} = require("../../auth/middleware")
 

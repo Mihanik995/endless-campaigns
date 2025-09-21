@@ -1,4 +1,4 @@
-import {Box, Button, Flex, IconButton, Select, Table, Text} from "@radix-ui/themes";
+import {Box, Button, Flex, IconButton, Select, Table} from "@radix-ui/themes";
 import {type MouseEventHandler, useState} from "react";
 import {Cross2Icon, PlusIcon} from "@radix-ui/react-icons";
 import axios from "../axios/axiosConfig.ts";

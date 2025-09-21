@@ -23,6 +23,8 @@ model Users {
   isActive          Boolean            @default(false)
   Campaigns         Campaigns[]
   CampaignRegisters CampaignRegister[]
+
+  SimpleMission SimpleMission[]
 }
 
 model Campaigns {
@@ -58,4 +60,13 @@ model CampaignPeriod {
   campaignId String
   dateStart  DateTime
   dateEnd    DateTime
+}
+
+model SimpleMission {
+  id                   String @id @unique
+  creator              Users  @relation(fields: [creatorId], references: [id])
+  creatorId            String
+  title                String
+  narrativeDescription String
+  missionConditions    String
 }

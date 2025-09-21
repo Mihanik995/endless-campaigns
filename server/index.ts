@@ -4,12 +4,12 @@ const app = require('./src/config/server')
 const transporter = require('./src/config/nodemailer')
 
 const authRouter = require('./src/auth/routes')
-const campaignRouter = require('./src/campaigns/routes')
+const campaignsRouter = require('./src/campaigns/routes')
 const missionsRouter = require('./src/missions/routes')
 const {verifyToken} = require('./src/auth/middleware')
 
 app.use('/auth', authRouter)
-app.use('/campaigns', campaignRouter)
+app.use('/campaigns', campaignsRouter)
 app.use('/missions', missionsRouter)
 
 app.get('/test', verifyToken, (req: Request, res: Response) => {
@@ -31,5 +31,5 @@ app.post('/send-me-email', (req: Request, res: Response) => {
 })
 
 app.listen(5000, () => {
-    console.log("Server started on port 3000");
+    console.log("Server started on port 5000");
 });

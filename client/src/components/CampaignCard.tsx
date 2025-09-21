@@ -15,7 +15,7 @@ import {type ChangeEvent, type MouseEventHandler, useState} from "react";
 import axios from "../axios/axiosConfig.ts"
 import TextInput from "./TextInput.tsx";
 import TextAreaInput from "./TextAreaInput.tsx";
-import {CheckIcon, Cross2Icon, ExitIcon, Pencil2Icon, TrashIcon} from "@radix-ui/react-icons";
+import {CheckIcon, Cross2Icon, ExitIcon, Pencil2Icon, TrashIcon, UpdateIcon} from "@radix-ui/react-icons";
 import {useAppDispatch, useAppSelector} from "../app/hooks.ts";
 import {selectAuth} from "../app/features/auth/authSlice.ts";
 import CheckInput from "./CheckInput.tsx";
@@ -44,8 +44,6 @@ export default function ({clickable, onDelete, ...campaignData}: Props) {
     const [campaign, setCampaign] = useState<CampaignData>({...campaignData})
     const [edit, setEdit] = useState(false)
     const [error, setError] = useState<Error>()
-
-    console.log(campaignData)
 
     const auth = useAppSelector(selectAuth);
     const {id} = useAppSelector(selectCampaign);
@@ -89,6 +87,17 @@ export default function ({clickable, onDelete, ...campaignData}: Props) {
                         dateEnd: new Date(response.data.dateEnd)
                     })
                     setEdit(false)
+                }
+            }).catch((error) => setError(error as Error))
+    }
+
+    const handleUpdate: MouseEventHandler<HTMLButtonElement> = (e) => {
+        e.preventDefault()
+
+        axios.get(`/campaigns/${campaign.id}`)
+            .then((response) => {
+                if (response.status === 200) {
+                    dispatch(updateCampaign(response.data))
                 }
             }).catch((error) => setError(error as Error))
     }
@@ -181,7 +190,7 @@ export default function ({clickable, onDelete, ...campaignData}: Props) {
                                     new Date(campaign.dateEnd).toLocaleDateString()
                                 }</Text>
                             </Flex>
-                            <Flex direction='column' align='end' justify='start' gap='3'>
+                            <Flex direction='column' align='end' justify='start' gap='2'>
                                 {!!id.length &&
                                     <>
                                         <Tooltip content='Exit'>
@@ -190,6 +199,14 @@ export default function ({clickable, onDelete, ...campaignData}: Props) {
                                                 onClick={() => dispatch(cleanCampaign())}
                                             >
                                                 <ExitIcon/>
+                                            </IconButton>
+                                        </Tooltip>
+                                        <Tooltip content='Refresh'>
+                                            <IconButton
+                                                radius='full'
+                                                onClick={handleUpdate}
+                                            >
+                                                <UpdateIcon/>
                                             </IconButton>
                                         </Tooltip>
                                     </>

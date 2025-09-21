@@ -32,7 +32,9 @@ export const campaignSlice = createSlice({
         updateCampaign: (state, action) => {
             for (const [key, value] of Object.entries(action.payload)) {
                 state[key] = value as (string | boolean)
-                localStorage.setItem(`ec-campaign-${key}`, JSON.stringify(value))
+                key === 'requiresRegisterApproval'
+                    ? localStorage.setItem(`ec-campaign-${key}`, JSON.stringify(value))
+                    : localStorage.setItem(`ec-campaign-${key}`, value as string)
             }
         },
         cleanCampaign: (state) => {

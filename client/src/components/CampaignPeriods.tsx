@@ -17,18 +17,40 @@ interface Period {
     dateEnd: string,
 }
 
+interface RegData {
+    id: string,
+    playerId: string,
+    username: string
+}
+
+interface MissionData {
+    id: string,
+    title: string,
+}
+
 export default function ({campaignId, isOwner}: Props) {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<Error>()
     const [change, setChange] = useState(0)
     const [periods, setPeriods] = useState<Period[]>([])
+    const [campaignPlayers, setCampaignPlayers] = useState<RegData[]>([])
+    const [missions, setMissions] = useState<MissionData[]>([])
 
     useEffect(() => {
         setIsLoading(true)
         axios.get(`/campaigns/periods/${campaignId}`)
             .then(res => {
                 if (res.status === 200) setPeriods(res.data)
-            }).catch(error => setError(error as Error))
+            })
+            .then(() => axios.get(`/campaigns/register/campaign/${campaignId}`))
+            .then(regsRes => {
+                if (regsRes.status === 200) setCampaignPlayers(regsRes.data)
+            })
+            .then(() => axios.get(`/missions/simple`))
+            .then(res => {
+                if (res.status === 200) setMissions(res.data)
+            })
+            .catch(error => setError(error as Error))
             .finally(() => setIsLoading(false))
     }, [change]);
 
@@ -86,6 +108,8 @@ export default function ({campaignId, isOwner}: Props) {
                                         index={i}
                                         isOwner={isOwner}
                                         period={period}
+                                        campaignPlayers={campaignPlayers}
+                                        missions={missions}
                                         onChange={() => setChange(change + 1)}
                                     />
                                 ))}

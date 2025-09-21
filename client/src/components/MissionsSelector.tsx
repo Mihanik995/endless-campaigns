@@ -39,7 +39,7 @@ export default function () {
                 : !!error
                     ? <ErrorHandler error={error}/>
                     : <Container className='mt-3'>
-                        <Heading className='px-8'>Missions</Heading>
+                        <Heading m='2'>Missions</Heading>
                         <Container width='100vw'>
                             {!!missions.length
                                 ? <>{missions.map((mission) => (

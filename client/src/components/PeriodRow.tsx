@@ -2,21 +2,35 @@ import {Button, Flex, Table, TextField} from "@radix-ui/themes";
 import {type ChangeEvent, type MouseEventHandler, useState} from "react";
 import axios from "../axios/axiosConfig.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
+import PairingCreateRow from "./PairingCreateRow.tsx";
+
+interface Period {
+    id: string;
+    campaignId: string;
+    dateStart: string;
+    dateEnd: string;
+}
+
+interface Mission {
+    id: string;
+    title: string;
+}
 
 interface Props {
     isOwner: boolean;
     index: number
     onChange: () => void
-    period: {
+    period: Period
+    missions: Mission[]
+    campaignPlayers: {
         id: string;
-        campaignId: string;
-        dateStart: string;
-        dateEnd: string;
-    }
+        playerId: string;
+        username: string;
+    }[]
 }
 
-export default function ({isOwner, index, onChange, period}: Props) {
-    const [periodChanges, setPeriodChanges] = useState({...period})
+export default function ({isOwner, index, onChange, period, campaignPlayers, missions}: Props) {
+    const [periodChanges, setPeriodChanges] = useState<Period>(period)
     const [edit, setEdit] = useState<boolean>(false)
     const [error, setError] = useState<Error>()
 
@@ -43,47 +57,62 @@ export default function ({isOwner, index, onChange, period}: Props) {
             }).catch(err => setError(err as Error))
     }
 
+    const [addPairing, setAddPairing] = useState(false)
+
     return (
-        <Table.Row>
-            <Table.RowHeaderCell>
-                Period {index + 1}
-            </Table.RowHeaderCell>
-            <Table.Cell>
-                <Flex align='center'>
-                    {edit
-                        ? <TextField.Root
-                            type='date'
-                            name='dateStart'
-                            value={periodChanges.dateStart}
-                            onChange={handleChange}
-                        />
-                        : new Date(period.dateStart).toLocaleDateString()}
-                    {' - '}
-                    {edit
-                        ? <TextField.Root
-                            type='date'
-                            name='dateEnd'
-                            value={periodChanges.dateEnd}
-                            onChange={handleChange}
-                        />
-                        : new Date(period.dateEnd).toLocaleDateString()}
-                </Flex>
-            </Table.Cell>
-            {isOwner &&
+        <>
+            <Table.Row>
+                <Table.RowHeaderCell>
+                    Period {index + 1}
+                </Table.RowHeaderCell>
                 <Table.Cell>
-                    <Flex gap='3'>
-                        {!edit
-                            ? <>
-                                <Button onClick={() => setEdit(true)}>Edit</Button>
-                                <Button color='red' onClick={handleDelete}>Delete</Button>
-                            </>
-                            : <>
-                                <Button onClick={() => setEdit(false)}>Cancel</Button>
-                                <Button color='grass' onClick={handleSubmit}>Submit</Button>
-                            </>}
-                        {!!error && <ErrorHandler error={error}/>}
+                    <Flex align='center'>
+                        {edit
+                            ? <TextField.Root
+                                type='date'
+                                name='dateStart'
+                                value={periodChanges.dateStart}
+                                onChange={handleChange}
+                            />
+                            : new Date(period.dateStart).toLocaleDateString()}
+                        {' - '}
+                        {edit
+                            ? <TextField.Root
+                                type='date'
+                                name='dateEnd'
+                                value={periodChanges.dateEnd}
+                                onChange={handleChange}
+                            />
+                            : new Date(period.dateEnd).toLocaleDateString()}
                     </Flex>
-                </Table.Cell>}
-        </Table.Row>
+                </Table.Cell>
+                {isOwner &&
+                    <Table.Cell>
+                        <Flex gap='3'>
+                            {!edit
+                                ? <>
+                                    <Button onClick={() => setEdit(true)}>Edit</Button>
+                                    <Button onClick={() => setAddPairing(!addPairing)}>
+                                        {addPairing ? 'Cancel' : 'Add pairing'}
+                                    </Button>
+                                    <Button color='red' onClick={handleDelete}>Delete</Button>
+                                </>
+                                : <>
+                                    <Button onClick={() => setEdit(false)}>Cancel</Button>
+                                    <Button color='grass' onClick={handleSubmit}>Submit</Button>
+                                </>}
+                            {!!error && <ErrorHandler error={error}/>}
+                        </Flex>
+                    </Table.Cell>}
+            </Table.Row>
+            {addPairing &&
+                <PairingCreateRow
+                    players={campaignPlayers}
+                    period={period}
+                    onChange={onChange}
+                    missions={missions}
+                />
+            }
+        </>
     )
 }

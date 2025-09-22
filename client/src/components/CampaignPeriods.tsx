@@ -27,10 +27,11 @@ export default function ({campaignId, isOwner}: Props) {
             })
             .then(() => axios.get(`/campaigns/register/campaign/${campaignId}`))
             .then(regsRes => {
+                console.log(regsRes.data)
                 if (regsRes.status === 200) setCampaignPlayers(
                     regsRes.data.filter((reg: CampaignRegister) => reg.approved)
                         .map((reg: CampaignRegister) => {
-                        return {...reg, playerUsername: reg.username}
+                        return {...reg, playerUsername: reg.player?.username}
                     })
                 )
             })

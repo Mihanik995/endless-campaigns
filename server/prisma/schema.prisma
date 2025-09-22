@@ -104,9 +104,9 @@ model PlayersOnPairings {
 }
 
 model WinnersOnPairings {
-  player    User    @relation(fields: [playerId], references: [id])
+  player    User    @relation(fields: [playerId], references: [id], onDelete: Cascade)
   playerId  String
-  pairing   Pairing @relation(fields: [pairingId], references: [id])
+  pairing   Pairing @relation(fields: [pairingId], references: [id], onDelete: Cascade)
   pairingId String
 
   @@id([playerId, pairingId])

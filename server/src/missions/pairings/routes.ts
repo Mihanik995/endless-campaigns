@@ -34,10 +34,19 @@ pairingsRouter.post('/', verifyToken, async (req: Request, res: Response) => {
 pairingsRouter.get('/:id', verifyToken, async (req: Request, res: Response) => {
     const {id} = req.params;
     try {
-        const pairing = await dbClient.pairing.findUnique({where: {id}})
+        const pairing = await dbClient.pairing.findUnique({
+            where: {id},
+            include: {
+                simpleMission: true,
+                campaign: {include: {campaignRegisters: true}},
+                players: {include: {player: {select: {id: true, username: true, email: true}}}},
+                winners: {include: {player: {select: {id: true, username: true, email: true}}}}
+            }
+        })
         if (!pairing) return res.status(404).json({error: 'No pairing'})
         res.status(200).json(pairing);
     } catch (error) {
+        console.log(error);
         res.status(500).json({error})
     }
 })
@@ -139,9 +148,9 @@ pairingsRouter.delete('/:id', verifyToken, async (req: Request, res: Response) =
     }
 })
 
-pairingsRouter.post('/:id/set-winner/', verifyToken, async (req: Request, res: Response) => {
+pairingsRouter.post('/:id/set-winners/', verifyToken, async (req: Request, res: Response) => {
     const {id} = req.params;
-    const winnersIds: string[] = req.body.winnersIds
+    const winnersIds: string[] = req.body.winners
     try {
         const pairing = await dbClient.pairing.findUnique({
             where: {id},
@@ -160,12 +169,13 @@ pairingsRouter.post('/:id/set-winner/', verifyToken, async (req: Request, res: R
             data: {
                 played: true,
                 winners: {create: winnersIds.map((id: string) => {
-                    return {winner: {connect: {id}}}
+                    return {player: {connect: {id}}}
                 })}
             }
         })
         res.status(200).json(updatedPairing);
     } catch (error) {
+        console.log(error)
         res.status(500).json({error})
     }
 })

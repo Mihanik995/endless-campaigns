@@ -26,15 +26,16 @@ interface Props {
     clickable: boolean
     onDelete: () => void
     mission: SimpleMission
+    owner?: boolean
 }
 
-export default function ({clickable, onDelete, mission}: Props) {
+export default function ({clickable, onDelete, mission, owner}: Props) {
     const [missionData, setMissionData] = useState<SimpleMission>({...mission})
     const [edit, setEdit] = useState(false)
     const [error, setError] = useState<Error>()
 
     const auth = useAppSelector(selectAuth);
-    const isOwner = auth.id === missionData.creatorId;
+    const isOwner = owner !== undefined ? owner : auth.id === missionData.creatorId;
 
     const navigate = useNavigate()
 

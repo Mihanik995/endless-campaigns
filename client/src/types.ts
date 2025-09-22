@@ -96,10 +96,13 @@ export interface Pairing {
     simpleMissionId: string
     simpleMission?: SimpleMission
     players: PlayersOnPairings[]
+
+    played: boolean
+    winners: WinnersOnPairings[]
 }
 
 export interface PairingData {
-    [key: string]: string | PlayersOnPairings[]
+    [key: string]: any
 
     id: string
     campaignId: string
@@ -121,4 +124,11 @@ export interface PlayerRegister {
     id: string;
     playerId: string;
     playerUsername: string;
+}
+
+interface WinnersOnPairings {
+    player?: User
+    playerId: String
+    pairing?: Pairing
+    pairingId: String
 }

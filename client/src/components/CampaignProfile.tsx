@@ -24,7 +24,7 @@ export default function () {
                     onDelete={() => navigate('/dashboard')}
                 />
                 <Box m='2'>
-                    <Tabs.Root defaultValue='registers'>
+                    <Tabs.Root defaultValue='periods'>
                         <Tabs.List>
                             <Tabs.Trigger value='registers'>Players</Tabs.Trigger>
                             <Tabs.Trigger value='periods'>Periods and Pairings</Tabs.Trigger>

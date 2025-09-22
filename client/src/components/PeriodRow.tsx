@@ -1,9 +1,11 @@
-import {Button, Flex, Table, TextField} from "@radix-ui/themes";
-import {type ChangeEvent, type MouseEventHandler, useState} from "react";
+import {Button, Flex, Spinner, Table, TextField} from "@radix-ui/themes";
+import {type ChangeEvent, type MouseEventHandler, useEffect, useState} from "react";
 import axios from "../axios/axiosConfig.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
 import PairingCreateRow from "./PairingCreateRow.tsx";
-import type {CampaignPeriod, SimpleMission} from "../types.ts";
+import type {CampaignPeriod, Pairing, PairingData, PlayerRegister, SimpleMission} from "../types.ts";
+import PeriodPairings from "./PeriodPairings.tsx";
+import {TriangleDownIcon, TriangleUpIcon} from "@radix-ui/react-icons";
 
 interface Props {
     isOwner: boolean;
@@ -11,17 +13,31 @@ interface Props {
     onChange: () => void
     period: CampaignPeriod
     missions: SimpleMission[]
-    campaignPlayers: {
-        id: string;
-        playerId: string;
-        username: string;
-    }[]
+    campaignPlayers: PlayerRegister[]
 }
 
 export default function ({isOwner, index, onChange, period, campaignPlayers, missions}: Props) {
     const [periodChanges, setPeriodChanges] = useState<CampaignPeriod>(period)
     const [edit, setEdit] = useState<boolean>(false)
     const [error, setError] = useState<Error>()
+
+    const [isLoading, setIsLoading] = useState(false)
+    const [pairingsError, setPairingsEError] = useState<Error>()
+    const [pairings, setPairings] = useState<Pairing[]>([])
+    useEffect(() => {
+        setIsLoading(true)
+
+        axios.get(`/missions/pairings/period/${period.id}`)
+            .then(res => {
+                if (res.status === 200) setPairings(res.data.map((pairing: PairingData) => {
+                    return {
+                        ...pairing,
+                        players: pairing.players.map((p) => p.player),
+                    }
+                }))
+            }).catch(err => setPairingsEError(err as Error))
+            .finally(() => setIsLoading(false))
+    }, [])
 
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         setPeriodChanges({
@@ -48,11 +64,26 @@ export default function ({isOwner, index, onChange, period, campaignPlayers, mis
 
     const [addPairing, setAddPairing] = useState(false)
 
+    const [unfold, setUnfold] = useState(false)
+
     return (
         <>
-            <Table.Row>
+            <Table.Row
+                onClick={() => {
+                    if (pairings.length) setUnfold(!unfold)
+                }}
+                className={pairings.length ? 'cursor-pointer' : ''}
+            >
                 <Table.RowHeaderCell>
-                    Period {index + 1}
+                    <Flex gap='2'>
+                        Period {index + 1}
+                        {pairings.length
+                            ? unfold
+                                ? <TriangleDownIcon/>
+                                : <TriangleUpIcon/>
+                            : ''
+                        }
+                    </Flex>
                 </Table.RowHeaderCell>
                 <Table.Cell>
                     <Flex align='center'>
@@ -96,12 +127,39 @@ export default function ({isOwner, index, onChange, period, campaignPlayers, mis
             </Table.Row>
             {addPairing &&
                 <PairingCreateRow
-                    players={campaignPlayers}
+                    playerRegisters={campaignPlayers}
                     period={period}
                     onChange={onChange}
                     missions={missions}
                 />
             }
+            {unfold
+                ? isLoading
+                    ? <Table.Row>
+                        <Table.Cell colSpan={isOwner ? 3 : 2} justify='center'>
+                            <Spinner size='3'/>
+                        </Table.Cell>
+                    </Table.Row>
+                    : !!pairingsError
+                        ? <Table.Row>
+                            <Table.Cell colSpan={isOwner ? 3 : 2} justify='center'>
+                                <ErrorHandler error={pairingsError}/>
+                            </Table.Cell>
+                        </Table.Row>
+                        : !!pairings.length &&
+                        <Table.Row>
+                            <Table.Cell colSpan={isOwner ? 3 : 2}>
+                                <PeriodPairings
+                                    isOwner={isOwner}
+                                    pairings={pairings}
+                                    missions={missions}
+                                    playerRegisters={campaignPlayers}
+                                    period={period}
+                                    onChange={onChange}
+                                />
+                            </Table.Cell>
+                        </Table.Row>
+                : <></>}
         </>
     )
 }

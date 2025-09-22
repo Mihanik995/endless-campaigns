@@ -14,7 +14,7 @@ export default function () {
             <Header/>
             <Container className='pb-5 pt-23'>
                 <Card size='1'>
-                    <Tabs.Root defaultValue="missions">
+                    <Tabs.Root defaultValue="campaigns">
                         <Tabs.List size='2'>
                             <Tabs.Trigger value="campaigns">Campaigns</Tabs.Trigger>
                             <Tabs.Trigger value="missions">Missions</Tabs.Trigger>

@@ -43,7 +43,15 @@ pairingsRouter.get('/:id', verifyToken, async (req: Request, res: Response) => {
 pairingsRouter.get('/campaign/:campaignId', verifyToken, async (req: Request, res: Response) => {
     const {campaignId} = req.params;
     try {
-        const pairing = await dbClient.pairing.findUnique({where: {campaignId}})
+        const pairing = await dbClient.pairing.findMany({
+            where: {campaignId},
+            include: {
+                simpleMission: true,
+                players: {include: {player: {
+                            select: {id: true, username: true, email: true}
+                        }}}
+            }
+        })
         if (!pairing) return res.status(404).json({error: 'No pairing'})
         res.status(200).json(pairing);
     } catch (error) {
@@ -54,10 +62,18 @@ pairingsRouter.get('/campaign/:campaignId', verifyToken, async (req: Request, re
 pairingsRouter.get('/period/:periodId', verifyToken, async (req: Request, res: Response) => {
     const {periodId} = req.params;
     try {
-        const pairing = await dbClient.pairing.findUnique({where: {periodId}})
+        const pairing = await dbClient.pairing.findMany({
+            where: {periodId},
+            include: {
+                simpleMission: true,
+                players: {include: {player: {
+                            select: {id: true, username: true, email: true}
+                        }}}}
+        })
         if (!pairing) return res.status(404).json({error: 'No pairing'})
         res.status(200).json(pairing);
     } catch (error) {
+        console.log(error)
         res.status(500).json({error})
     }
 })
@@ -65,8 +81,9 @@ pairingsRouter.get('/period/:periodId', verifyToken, async (req: Request, res: R
 pairingsRouter.get('/player/:playerId', verifyToken, async (req: Request, res: Response) => {
     const {playerId} = req.params;
     try {
-        const pairing = await dbClient.pairing.findUnique({
-            select: {players: {where: {playerId}}}
+        const pairing = await dbClient.playersOnPairings.findMany({
+            where: {playerId},
+            include: {pairing: true},
         })
         if (!pairing) return res.status(404).json({error: 'No pairing'})
         res.status(200).json(pairing);
@@ -83,9 +100,10 @@ pairingsRouter.put('/:id', verifyToken, async (req: Request, res: Response) => {
         if (!pairing) return res.status(404).json({error: 'No pairing'})
         const updatedPairing = await dbClient.pairing.update({
             where: {id},
-            data: {campaignId, periodId, simpleMissionId,
+            data: {
+                campaignId, periodId, simpleMissionId,
                 players: {
-                    disconnect: true,
+                    deleteMany: {},
                     create: playerIds.map((id: string) => {
                         return {player: {connect: {id}}}
                     })

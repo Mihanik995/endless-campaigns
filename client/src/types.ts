@@ -84,11 +84,35 @@ export interface SimpleMissionCreate {
 }
 
 export interface Pairing {
-    [key: string]: string | User[]
+    [key: string]: any
+
+    id: string
+    campaignId: string
+    campaign?: Campaign
+    periodId: string
+    period?: CampaignPeriod
+    simpleMissionId: string
+    simpleMission?: SimpleMission
+    players: User[]
+}
+
+export interface PairingData {
+    [key: string]: string | PlayersOnPairings[]
 
     id: string
     campaignId: string
     periodId: string
     simpleMissionId: string
-    players: User[]
+    players: PlayersOnPairings[]
+}
+
+export interface PlayersOnPairings {
+    player: User
+    pairing: Pairing
+}
+
+export interface PlayerRegister {
+    id: string;
+    playerId: string;
+    playerUsername: string;
 }

@@ -1,31 +1,22 @@
 import {Box, Button, Flex, IconButton, Select, Table} from "@radix-ui/themes";
 import {type MouseEventHandler, useState} from "react";
-import {Cross2Icon, PlusIcon} from "@radix-ui/react-icons";
+import {CheckIcon, Cross2Icon, PlusIcon} from "@radix-ui/react-icons";
 import axios from "../axios/axiosConfig.ts";
-import type {CampaignPeriod} from "../types.ts";
-
-interface PlayerRegister {
-    id: string;
-    playerId: string;
-    username: string;
-}
-
-interface Mission {
-    id: string;
-    title: string;
-}
+import type {CampaignPeriod, PlayerRegister, SimpleMission} from "../types.ts";
 
 interface Props {
-    players: PlayerRegister[],
-    missions: Mission[],
+    playerRegisters: PlayerRegister[],
+    missions: SimpleMission[],
     period: CampaignPeriod
     onChange: () => void
 }
 
-export default function ({players, period, onChange, missions}: Props) {
+export default function ({playerRegisters, period, onChange, missions}: Props) {
     const [playersList, setPlayersList] = useState<PlayerRegister[]>([])
-    const [playersOptions, setPlayersOptions] = useState<PlayerRegister[]>(players)
-    const [mission, setMission] = useState<Mission>({id: '', title: ''})
+    const [playersOptions, setPlayersOptions] = useState<PlayerRegister[]>(playerRegisters)
+    const [mission, setMission] = useState<SimpleMission>({
+        id: '', creatorId: '', title: '', narrativeDescription: '', missionConditions: ''
+    })
 
     const [addPlayer, setAddPlayer] = useState(false)
     const [playerToAdd, setPlayerToAdd] = useState('')
@@ -44,7 +35,7 @@ export default function ({players, period, onChange, missions}: Props) {
         setPlayersList(playersList.filter(player => player.id !== id))
         setPlayersOptions([
             ...playersOptions,
-            players.find(player => player.id === id) as PlayerRegister
+            playerRegisters.find(player => player.id === id) as PlayerRegister
         ])
     }
 
@@ -82,7 +73,7 @@ export default function ({players, period, onChange, missions}: Props) {
                         Players:
                         {playersList.map((player: PlayerRegister) => (
                             <Flex gap='1' align='center' key={player.id}>
-                                {player.username}
+                                {player.playerUsername}
                                 <IconButton
                                     color='red'
                                     size='1'
@@ -94,15 +85,23 @@ export default function ({players, period, onChange, missions}: Props) {
                             </Flex>
                         ))}
                         {!!playersOptions.length && <Box>
-                            <IconButton onClick={handleAdd}>
-                                <PlusIcon/>
+                            <IconButton
+                                onClick={handleAdd}
+                                color={addPlayer && playerToAdd.length ? 'grass' : undefined}
+                            >
+                                {addPlayer
+                                    ? playerToAdd.length
+                                        ? <CheckIcon/>
+                                        : <Cross2Icon/>
+                                    : <PlusIcon/>
+                                }
                             </IconButton>
                             {addPlayer && <Select.Root defaultValue='' onValueChange={setPlayerToAdd}>
                                 <Select.Trigger placeholder='Choose a player'/>
                                 <Select.Content>
                                     {playersOptions.map((player: PlayerRegister) => (
                                         <Select.Item key={player.id} value={JSON.stringify(player)}>
-                                            {player.username}
+                                            {player.playerUsername}
                                         </Select.Item>
                                     ))}
                                 </Select.Content>

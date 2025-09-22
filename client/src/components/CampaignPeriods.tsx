@@ -4,7 +4,7 @@ import {Button, Card, Container, Flex, Heading, Popover, Spinner, Table} from "@
 import ErrorHandler from "./ErrorHandler.tsx";
 import TextInput from "./TextInput.tsx";
 import PeriodRow from "./PeriodRow.tsx";
-import type {CampaignPeriod, SimpleMission} from "../types.ts";
+import type {CampaignPeriod, CampaignRegister, SimpleMission} from "../types.ts";
 
 interface Props {
     campaignId: string,
@@ -14,7 +14,7 @@ interface Props {
 interface RegData {
     id: string,
     playerId: string,
-    username: string
+    playerUsername: string
 }
 
 export default function ({campaignId, isOwner}: Props) {
@@ -33,7 +33,11 @@ export default function ({campaignId, isOwner}: Props) {
             })
             .then(() => axios.get(`/campaigns/register/campaign/${campaignId}`))
             .then(regsRes => {
-                if (regsRes.status === 200) setCampaignPlayers(regsRes.data)
+                if (regsRes.status === 200) setCampaignPlayers(
+                    regsRes.data.map((reg: CampaignRegister) => {
+                        return {...reg, playerUsername: reg.username}
+                    })
+                )
             })
             .then(() => axios.get(`/missions/simple`))
             .then(res => {

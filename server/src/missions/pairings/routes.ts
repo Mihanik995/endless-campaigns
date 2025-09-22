@@ -83,7 +83,14 @@ pairingsRouter.get('/player/:playerId', verifyToken, async (req: Request, res: R
     try {
         const pairing = await dbClient.playersOnPairings.findMany({
             where: {playerId},
-            include: {pairing: true},
+            include: {
+                pairing: {
+                    include: {
+                        campaign: true,
+                        simpleMission: true,
+                    }
+                }
+            },
         })
         if (!pairing) return res.status(404).json({error: 'No pairing'})
         res.status(200).json(pairing);

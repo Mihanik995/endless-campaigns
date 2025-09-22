@@ -68,13 +68,13 @@ export default function ({isOwner, index, onChange, period, campaignPlayers, mis
 
     return (
         <>
-            <Table.Row
-                onClick={() => {
-                    if (pairings.length) setUnfold(!unfold)
-                }}
-                className={pairings.length ? 'cursor-pointer' : ''}
-            >
-                <Table.RowHeaderCell>
+            <Table.Row>
+                <Table.RowHeaderCell
+                    onClick={() => {
+                        if (pairings.length) setUnfold(!unfold)
+                    }}
+                    className={pairings.length ? 'cursor-pointer' : ''}
+                >
                     <Flex gap='2'>
                         Period {index + 1}
                         {pairings.length
@@ -86,21 +86,21 @@ export default function ({isOwner, index, onChange, period, campaignPlayers, mis
                     </Flex>
                 </Table.RowHeaderCell>
                 <Table.Cell>
-                    <Flex align='center'>
+                    <Flex align='center' gap='2'>
                         {edit
                             ? <TextField.Root
                                 type='date'
                                 name='dateStart'
-                                value={periodChanges.dateStart}
+                                value={periodChanges.dateStart.slice(0,10)}
                                 onChange={handleChange}
                             />
                             : new Date(period.dateStart).toLocaleDateString()}
-                        {' - '}
+                        -
                         {edit
                             ? <TextField.Root
                                 type='date'
                                 name='dateEnd'
-                                value={periodChanges.dateEnd}
+                                value={periodChanges.dateEnd.slice(0,10)}
                                 onChange={handleChange}
                             />
                             : new Date(period.dateEnd).toLocaleDateString()}

@@ -1,5 +1,5 @@
 import type {Request, Response} from "express";
-import type {Campaigns} from "../../../generated/prisma";
+import type {Campaign} from "../../../generated/prisma";
 
 const {Router} = require("express")
 const {PrismaClient} = require("../../../generated/prisma")
@@ -17,7 +17,7 @@ periodsRouter.post('/', verifyToken, async (req: Request, res: Response) => {
     const token = req.header('Authorization');
     try {
         const {userId} = jwt.verify(token, process.env.JWT_SECRET);
-        const campaign = await dbClient.campaigns.findUnique({where: {id: data.campaignId}}) as Campaigns;
+        const campaign = await dbClient.campaign.findUnique({where: {id: data.campaignId}}) as Campaign;
         if (!campaign) return res.status(404).json({error: "Campaign not found"});
         if (userId !== campaign.ownerId) return res.status(403).json({error: "Access denied"});
 

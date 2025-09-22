@@ -30,7 +30,7 @@ export interface Campaign {
 }
 
 export interface CampaignRegister {
-    [key: string]: string | boolean
+    [key: string]: string | boolean | User
 
     id: string
     playerId: string
@@ -38,6 +38,7 @@ export interface CampaignRegister {
     formationName: string
     rosterLink: string
     approved: boolean
+    player: User
 }
 
 export interface CampaignRegisterCreate {
@@ -112,6 +113,8 @@ export interface PlayersOnPairings {
 }
 
 export interface PlayerRegister {
+    [key: string]: string
+
     id: string;
     playerId: string;
     playerUsername: string;

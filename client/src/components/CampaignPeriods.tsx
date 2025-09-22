@@ -4,17 +4,11 @@ import {Button, Card, Container, Flex, Heading, Popover, Spinner, Table} from "@
 import ErrorHandler from "./ErrorHandler.tsx";
 import TextInput from "./TextInput.tsx";
 import PeriodRow from "./PeriodRow.tsx";
-import type {CampaignPeriod, CampaignRegister, SimpleMission} from "../types.ts";
+import type {CampaignPeriod, CampaignRegister, PlayerRegister, SimpleMission} from "../types.ts";
 
 interface Props {
     campaignId: string,
     isOwner: boolean,
-}
-
-interface RegData {
-    id: string,
-    playerId: string,
-    playerUsername: string
 }
 
 export default function ({campaignId, isOwner}: Props) {
@@ -22,7 +16,7 @@ export default function ({campaignId, isOwner}: Props) {
     const [error, setError] = useState<Error>()
     const [change, setChange] = useState(0)
     const [periods, setPeriods] = useState<CampaignPeriod[]>([])
-    const [campaignPlayers, setCampaignPlayers] = useState<RegData[]>([])
+    const [campaignPlayers, setCampaignPlayers] = useState<PlayerRegister[]>([])
     const [missions, setMissions] = useState<SimpleMission[]>([])
 
     useEffect(() => {
@@ -34,7 +28,8 @@ export default function ({campaignId, isOwner}: Props) {
             .then(() => axios.get(`/campaigns/register/campaign/${campaignId}`))
             .then(regsRes => {
                 if (regsRes.status === 200) setCampaignPlayers(
-                    regsRes.data.map((reg: CampaignRegister) => {
+                    regsRes.data.filter((reg: CampaignRegister) => reg.approved)
+                        .map((reg: CampaignRegister) => {
                         return {...reg, playerUsername: reg.username}
                     })
                 )

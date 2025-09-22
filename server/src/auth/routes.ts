@@ -1,5 +1,5 @@
 import type {Request, Response} from "express";
-import type {Users} from "../../generated/prisma";
+import type {User} from "../../generated/prisma";
 
 declare function require(module: string): any;
 
@@ -22,7 +22,7 @@ authRouter.post('/register', (req: Request, res: Response) => {
     const salt = crypto.randomBytes(16)
     crypto.pbkdf2(password, salt, 310000, 32, 'sha256', function (err: Error, hashedPassword: Buffer) {
         if (err) throw new Error(err.message);
-        dbClient.users.create({
+        dbClient.user.create({
             data: {
                 id: uuid(),
                 username,
@@ -30,7 +30,7 @@ authRouter.post('/register', (req: Request, res: Response) => {
                 salt,
                 email
             }
-        }).then((user: Users) => {
+        }).then((user: User) => {
             if (user) {
                 const token = jwt.sign({userId: user.id}, process.env.JWT_SECRET);
                 return transporter.sendMail({
@@ -50,15 +50,15 @@ authRouter.get('/verify/:token', (req: Request, res: Response) => {
     const {token} = req.params;
     const {userId} = jwt.verify(token, process.env.JWT_SECRET);
     if (!userId) return res.status(400).send({error: 'Invalid link'});
-    dbClient.users.update({where: {id: userId}, data: {isActive: true}})
+    dbClient.user.update({where: {id: userId}, data: {isActive: true}})
         .then(() => res.status(200).send({userId}))
         .catch((err: Error) => res.status(500).send({error: err.message}))
 })
 
 authRouter.post('/login', async (req: Request, res: Response) => {
     const {username, password} = req.body;
-    dbClient.users.findUnique({where: {username}})
-        .then((user: Users) => {
+    dbClient.user.findUnique({where: {username}})
+        .then((user: User) => {
             if (!user) return res.status(404).json({error: 'User not found'});
             crypto.pbkdf2(password, user.salt, 310000, 32, 'sha256', function (err: Error, hashedPassword: Buffer) {
                 if (err) {
@@ -106,7 +106,7 @@ authRouter.post('/logout', (req: Request, res: Response) => {
 authRouter.get('/:id', verifyToken, async (req: Request, res: Response) => {
     const {id} = req.params;
     try {
-        const user = await dbClient.users.findUnique({where: {id}})
+        const user = await dbClient.user.findUnique({where: {id}})
         if (!user) return res.status(404).json({error: 'User not found'});
         const {username, email} = user;
         return res.status(200).json({username, email})
@@ -123,10 +123,10 @@ authRouter.put('/:id', verifyToken, async (req: Request, res: Response) => {
         const {userId} = jwt.verify(token, process.env.JWT_SECRET);
         if (userId !== id) return res.status(403).json({error: 'Access denied'});
         if (data.username) {
-            const alreadyUsed = await dbClient.users.findUnique({where: {username: data.username}});
+            const alreadyUsed = await dbClient.user.findUnique({where: {username: data.username}});
             if (!alreadyUsed) return res.status(400).json({error: 'Such username is already occupied'});
         }
-        const user = await dbClient.users.update({where: {id}, data})
+        const user = await dbClient.user.update({where: {id}, data})
         if (!user) return res.status(404).json({error: 'User not found'});
         const {username, email} = user;
         return res.status(200).json({username, email})
@@ -142,11 +142,11 @@ authRouter.put('/:id/change-password', verifyToken, async (req: Request, res: Re
     try {
         const {userId} = jwt.verify(token, process.env.JWT_SECRET);
         if (userId !== id) return res.status(403).json({error: 'Access denied'});
-        const user = await dbClient.users.findUnique({where: {id}})
+        const user = await dbClient.user.findUnique({where: {id}})
         if (!user) return res.status(404).json({error: 'User not found'});
         crypto.pbkdf2(password, user.salt, 310000, 32, 'sha256', function (err: Error, hashedPassword: Buffer) {
             if (err) throw new Error(err.message);
-            const updatedUser = dbClient.users.update({where: {id}, data: {password: hashedPassword}});
+            const updatedUser = dbClient.user.update({where: {id}, data: {password: hashedPassword}});
             return res.status(200).json({updatedUser})
         })
     } catch (error) {
@@ -161,9 +161,9 @@ authRouter.put('/:id/change-email', verifyToken, async (req: Request, res: Respo
     try {
         const {userId} = jwt.verify(token, process.env.JWT_SECRET);
         if (userId !== id) return res.status(403).json({error: 'Access denied'});
-        const alreadyUsed = await dbClient.users.findUnique({where: {email}});
+        const alreadyUsed = await dbClient.user.findUnique({where: {email}});
         if (alreadyUsed) return res.status(400).json({error: 'Such e-mail is already occupied'});
-        const user = await dbClient.users.update({where: {id}, data: {email, isActive: false}});
+        const user = await dbClient.user.update({where: {id}, data: {email, isActive: false}});
         if (!user) return res.status(404).json({error: 'User not found'});
         const verifyToken = jwt.sign({userId: user.id}, process.env.JWT_SECRET);
         await transporter.sendMail({

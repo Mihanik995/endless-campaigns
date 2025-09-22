@@ -7,10 +7,6 @@ import {selectAuth} from "../app/features/auth/authSlice.ts";
 import CampaignRegisterForm from "./CampaignRegisterForm.tsx";
 import ErrorHandler from "./ErrorHandler.tsx";
 
-interface RegData extends CampaignRegister {
-    username: string
-}
-
 interface Props {
     campaignId: string;
     isOwner: boolean;
@@ -19,7 +15,7 @@ interface Props {
 export default function ({campaignId, isOwner}: Props) {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<Error>()
-    const [registers, setRegisters] = useState<RegData[]>([])
+    const [registers, setRegisters] = useState<CampaignRegister[]>([])
 
     const auth = useAppSelector(selectAuth)
 
@@ -77,7 +73,7 @@ export default function ({campaignId, isOwner}: Props) {
                                             : register.approved)
                                         .map((register) => (
                                             <Table.Row key={register.id}>
-                                                <Table.Cell>{register.username}</Table.Cell>
+                                                <Table.Cell>{register.player.username}</Table.Cell>
                                                 <Table.Cell>{register.formationName}</Table.Cell>
                                                 <Table.Cell>
                                                     <Link href={register.rosterLink} target='_blank'>

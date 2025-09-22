@@ -63,7 +63,7 @@ export default function ({playerRegisters, period, onChange, missions}: Props) {
                         <Select.Trigger placeholder='Choose mission'/>
                         <Select.Content>
                             {missions.map((mission) => (
-                                <Select.Item value={JSON.stringify(mission)}>
+                                <Select.Item key={mission.id} value={JSON.stringify(mission)}>
                                     {mission.title}
                                 </Select.Item>
                             ))}

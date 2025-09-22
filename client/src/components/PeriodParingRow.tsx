@@ -1,9 +1,10 @@
-import {Box, Button, Flex, IconButton, Select, Table} from "@radix-ui/themes";
+import {Box, Button, Flex, IconButton, Link, Select, Table} from "@radix-ui/themes";
 import type {CampaignPeriod, Pairing, PlayerRegister, SimpleMission} from "../types.ts";
 import {type MouseEventHandler, useState} from "react";
 import {CheckIcon, Cross2Icon, PlusIcon} from "@radix-ui/react-icons";
 import axios from "../axios/axiosConfig.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
+import {useNavigate} from "react-router";
 
 interface Props {
     pairing: Pairing
@@ -27,6 +28,7 @@ export default function ({pairing, isOwner, missions, playerRegisters, period, o
     const [playerToAdd, setPlayerToAdd] = useState('')
 
     const [error, setError] = useState<Error>()
+    const navigate = useNavigate()
 
     const handleAdd = () => {
         if (addPlayer && playerToAdd.length) {
@@ -138,7 +140,12 @@ export default function ({pairing, isOwner, missions, playerRegisters, period, o
                     </>
                     : <>
                         <Table.Cell>
-                            {pairing.simpleMission?.title}
+                            <Link
+                                href=''
+                                onClick={() => navigate(`/missions/${pairing.simpleMission?.id}`)}
+                            >
+                                {pairing.simpleMission?.title}
+                            </Link>
                         </Table.Cell>
                         <Table.Cell>
                             {pairing.players

@@ -77,9 +77,9 @@ pairingsRouter.get('/period/:periodId', verifyToken, async (req: Request, res: R
             where: {periodId},
             include: {
                 simpleMission: true,
-                players: {include: {player: {
-                            select: {id: true, username: true, email: true}
-                        }}}}
+                players: {include: {player: {select: {id: true, username: true, email: true}}}},
+                winners: {include: {player: {select: {id: true, username: true, email: true}}}}
+            }
         })
         if (!pairing) return res.status(404).json({error: 'No pairing'})
         res.status(200).json(pairing);
@@ -116,7 +116,8 @@ pairingsRouter.get('/', verifyToken, async (req: Request, res: Response) => {
 
 pairingsRouter.put('/:id', verifyToken, async (req: Request, res: Response) => {
     const {id} = req.params;
-    const {campaignId, periodId, playerIds, simpleMissionId} = req.body;
+    const {campaignId, periodId, playerIds, simpleMissionId, winners} = req.body;
+    console.log(winners)
     try {
         const pairing = await dbClient.pairing.findUnique({where: {id}})
         if (!pairing) return res.status(404).json({error: 'No pairing'})
@@ -129,11 +130,18 @@ pairingsRouter.put('/:id', verifyToken, async (req: Request, res: Response) => {
                     create: playerIds.map((id: string) => {
                         return {player: {connect: {id}}}
                     })
+                },
+                winners: {
+                    deleteMany: {},
+                    create: winners.map((id: string) => {
+                        return {player: {connect: {id}}}
+                    })
                 }
             },
         })
         res.status(200).json(updatedPairing);
     } catch (error) {
+        console.log(error)
         res.status(500).json({error})
     }
 })

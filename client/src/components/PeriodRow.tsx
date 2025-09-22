@@ -3,7 +3,7 @@ import {type ChangeEvent, type MouseEventHandler, useEffect, useState} from "rea
 import axios from "../axios/axiosConfig.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
 import PairingCreateRow from "./PairingCreateRow.tsx";
-import type {CampaignPeriod, Pairing, PairingData, PlayerRegister, SimpleMission} from "../types.ts";
+import type {CampaignPeriod, Pairing, PlayerRegister, SimpleMission} from "../types.ts";
 import PeriodPairings from "./PeriodPairings.tsx";
 import {TriangleDownIcon, TriangleUpIcon} from "@radix-ui/react-icons";
 
@@ -29,12 +29,7 @@ export default function ({isOwner, index, onChange, period, campaignPlayers, mis
 
         axios.get(`/missions/pairings/period/${period.id}`)
             .then(res => {
-                if (res.status === 200) setPairings(res.data.map((pairing: PairingData) => {
-                    return {
-                        ...pairing,
-                        players: pairing.players.map((p) => p.player),
-                    }
-                }))
+                if (res.status === 200) setPairings(res.data)
             }).catch(err => setPairingsEError(err as Error))
             .finally(() => setIsLoading(false))
     }, [])

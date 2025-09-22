@@ -51,7 +51,6 @@ periodsRouter.put('/:id', verifyToken, async (req: Request, res: Response) => {
         if (!period) return res.status(404).json({error: "Period not found"});
         return res.status(200).json(period)
     } catch (error) {
-        console.log(error)
         res.status(500).json({error})
     }
 })

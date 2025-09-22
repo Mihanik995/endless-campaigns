@@ -1,4 +1,4 @@
-import {Box, Button, Flex, IconButton, Link, Select, Table} from "@radix-ui/themes";
+import {Box, Button, Flex, IconButton, Link, Select, Table, CheckboxGroup} from "@radix-ui/themes";
 import type {CampaignPeriod, Pairing, PlayerRegister, SimpleMission} from "../types.ts";
 import {type MouseEventHandler, useState} from "react";
 import {CheckIcon, Cross2Icon, PlusIcon} from "@radix-ui/react-icons";
@@ -19,13 +19,14 @@ export default function ({pairing, isOwner, missions, playerRegisters, period, o
     const [edit, setEdit] = useState(false);
     const [mission, setMission] = useState<SimpleMission>(pairing.simpleMission as SimpleMission)
     const [playersList, setPlayersList] = useState<PlayerRegister[]>(
-        playerRegisters.filter(pr => pairing.players.map(p => p.id).includes(pr.playerId))
+        playerRegisters.filter(pr => pairing.players.map(p => p.player.id).includes(pr.playerId))
     )
     const [playersOptions, setPlayersOptions] = useState<PlayerRegister[]>(
         playerRegisters.filter(pr => !playersList.map(p => p.playerId).includes(pr.playerId))
     )
     const [addPlayer, setAddPlayer] = useState(false)
     const [playerToAdd, setPlayerToAdd] = useState('')
+    const [winners, setWinners] = useState<string[]>([])
 
     const [error, setError] = useState<Error>()
     const navigate = useNavigate()
@@ -55,7 +56,8 @@ export default function ({pairing, isOwner, missions, playerRegisters, period, o
             campaignId: period.campaignId,
             periodId: period.id,
             simpleMissionId: mission.id,
-            playerIds: playersList.map(player => player.playerId)
+            playerIds: playersList.map(player => player.playerId),
+            winners
         }).then(res => {
             if (res.status === 200) onChange()
         }).catch(err => setError(err as Error))
@@ -70,12 +72,18 @@ export default function ({pairing, isOwner, missions, playerRegisters, period, o
             }).catch(err => setError(err as Error));
     }
 
+    const handleWinnerClick = (value: string) => {
+        winners.includes(value)
+            ? setWinners(winners.filter(item => item !== value))
+            : setWinners([...winners, value])
+    }
+
     return (
         <>
             <Table.Row>
                 {edit
                     ? <>
-                        <Table.Cell colSpan={2}>
+                        <Table.Cell colSpan={3}>
                             <Flex direction='column' gap='2'>
                                 <Select.Root
                                     defaultValue={JSON.stringify(mission)}
@@ -129,6 +137,20 @@ export default function ({pairing, isOwner, missions, playerRegisters, period, o
                                         </Select.Root>}
                                     </Box>}
                                 </Flex>
+                                <Flex gap='2' align='center'>
+                                    Winners:
+                                    <CheckboxGroup.Root>
+                                        {playersList.map(player => (
+                                            <CheckboxGroup.Item
+                                                key={player.playerId}
+                                                value={player.playerId}
+                                                onClick={() => handleWinnerClick(player.playerId)}
+                                            >
+                                                {player.playerUsername}
+                                            </CheckboxGroup.Item>
+                                        ))}
+                                    </CheckboxGroup.Root>
+                                </Flex>
                             </Flex>
                         </Table.Cell>
                         <Table.Cell>
@@ -149,9 +171,16 @@ export default function ({pairing, isOwner, missions, playerRegisters, period, o
                         </Table.Cell>
                         <Table.Cell>
                             {pairing.players
-                                .map(player => player.username)
+                                .map(player => player.player.username)
                                 .join(' / ')
                             }
+                        </Table.Cell>
+                        <Table.Cell>
+                            {pairing.played
+                                ? pairing.winners.length
+                                    ? pairing.winners.map(winner => winner.player?.username).join(', ')
+                                    : 'No winners'
+                                : 'Not played yet'}
                         </Table.Cell>
                         {isOwner &&
                             <Table.Cell>

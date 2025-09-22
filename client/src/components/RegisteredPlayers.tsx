@@ -73,7 +73,7 @@ export default function ({campaignId, isOwner}: Props) {
                                             : register.approved)
                                         .map((register) => (
                                             <Table.Row key={register.id}>
-                                                <Table.Cell>{register.player.username}</Table.Cell>
+                                                <Table.Cell>{register.player?.username}</Table.Cell>
                                                 <Table.Cell>{register.formationName}</Table.Cell>
                                                 <Table.Cell>
                                                     <Link href={register.rosterLink} target='_blank'>

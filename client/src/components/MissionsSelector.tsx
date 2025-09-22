@@ -5,19 +5,10 @@ import ErrorHandler from "./ErrorHandler.tsx";
 import {useNavigate} from "react-router";
 import MissionCard from "./MissionCard.tsx";
 import {Heading} from "@radix-ui/themes";
-
-interface Missions {
-    [key: string]: string;
-
-    id: string
-    creatorId: string
-    title: string
-    narrativeDescription: string
-    missionConditions: string
-}
+import type {SimpleMission} from "../types.ts";
 
 export default function () {
-    const [missions, setMissions] = useState<Missions[]>([])
+    const [missions, setMissions] = useState<SimpleMission[]>([])
     const [isLoading, setIsLoading] = useState<boolean>(false)
     const [error, setError] = useState<Error>()
 

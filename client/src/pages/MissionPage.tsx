@@ -5,20 +5,11 @@ import {useEffect, useState} from "react";
 import axios from "../axios/axiosConfig.ts";
 import MissionCard from "../components/MissionCard.tsx";
 import ErrorHandler from "../components/ErrorHandler.tsx";
-
-interface MissionData {
-    [key: string]: string
-
-    id: string;
-    creatorId: string;
-    title: string,
-    narrativeDescription: string,
-    missionConditions: string,
-}
+import type {SimpleMission} from "../types.ts";
 
 export default function () {
     const {id: missionId} = useParams()
-    const [mission, setMission] = useState<MissionData>({
+    const [mission, setMission] = useState<SimpleMission>({
         id: '',
         creatorId: '',
         title: '',

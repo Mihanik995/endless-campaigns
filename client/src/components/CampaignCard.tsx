@@ -21,27 +21,16 @@ import {selectAuth} from "../app/features/auth/authSlice.ts";
 import CheckInput from "./CheckInput.tsx";
 import ErrorHandler from "./ErrorHandler.tsx";
 import {cleanCampaign, selectCampaign, updateCampaign} from "../app/features/campaign/campaignSlice.ts";
+import type {Campaign} from "../types.ts";
 
-interface CampaignData {
-    [key: string]: string | boolean | Date | (() => void) | undefined
-
-    id: string;
-    ownerId: string;
-    title: string,
-    description: string,
-    regulations: string,
-    dateStart: string,
-    dateEnd: string,
-    requiresRegisterApproval?: boolean
-}
-
-interface Props extends CampaignData {
+interface Props {
+    campaignData: Campaign
     clickable: boolean
     onDelete: () => void
 }
 
-export default function ({clickable, onDelete, ...campaignData}: Props) {
-    const [campaign, setCampaign] = useState<CampaignData>({...campaignData})
+export default function ({clickable, onDelete, campaignData}: Props) {
+    const [campaign, setCampaign] = useState<Campaign>(campaignData)
     const [edit, setEdit] = useState(false)
     const [error, setError] = useState<Error>()
 

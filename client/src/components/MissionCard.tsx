@@ -20,25 +20,16 @@ import {useAppSelector} from "../app/hooks.ts";
 import {selectAuth} from "../app/features/auth/authSlice.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
 import {useNavigate} from "react-router";
-
-interface MissionData {
-    [key: string]: string
-
-    id: string;
-    creatorId: string;
-    title: string,
-    narrativeDescription: string,
-    missionConditions: string,
-}
+import type {SimpleMission} from "../types.ts";
 
 interface Props {
     clickable: boolean
     onDelete: () => void
-    mission: MissionData
+    mission: SimpleMission
 }
 
 export default function ({clickable, onDelete, mission}: Props) {
-    const [missionData, setMissionData] = useState<MissionData>({...mission})
+    const [missionData, setMissionData] = useState<SimpleMission>({...mission})
     const [edit, setEdit] = useState(false)
     const [error, setError] = useState<Error>()
 

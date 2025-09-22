@@ -1,6 +1,6 @@
 import {Button, Card, Container, Flex, Heading, Link, Spinner, Table} from "@radix-ui/themes";
 import {useEffect, useState} from "react";
-import type {CampaignRegister} from "../../../server/generated/prisma";
+import type {CampaignRegister} from "../types.ts";
 import axios from "../axios/axiosConfig.ts";
 import {useAppSelector} from "../app/hooks.ts";
 import {selectAuth} from "../app/features/auth/authSlice.ts";

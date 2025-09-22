@@ -7,22 +7,14 @@ import axios from "../axios/axiosConfig.ts";
 import {useNavigate} from "react-router";
 import CheckInput from "../components/CheckInput.tsx";
 import ErrorHandler from "../components/ErrorHandler.tsx";
-
-interface CampaignData {
-    [key: string]: string | boolean | Date;
-
-    title: string;
-    description: string;
-    regulations: string;
-    dateStart: string | Date;
-    dateEnd: string | Date;
-    requiresRegisterApproval: boolean
-}
+import type {Campaign} from "../types.ts";
 
 type InputElement = HTMLInputElement | HTMLTextAreaElement
 
 export default function () {
-    const [campaignData, setCampaignData] = useState<CampaignData>({
+    const [campaignData, setCampaignData] = useState<Campaign>({
+        id: '',
+        ownerId: '',
         title: '',
         description: '',
         regulations: '',
@@ -51,13 +43,6 @@ export default function () {
     const handleSubmit: MouseEventHandler<HTMLButtonElement> = function (e) {
         e.preventDefault();
         setIsLoading(true);
-
-        const dateStart = new Date(campaignData.dateStart)
-        dateStart.setHours(0, 0, 0, 0)
-        const dateEnd = new Date(campaignData.dateEnd)
-        dateEnd.setHours(0, 0, 0, 0)
-
-        setCampaignData({...campaignData, dateStart, dateEnd})
 
         axios.post('/campaigns', campaignData)
             .then(res => {

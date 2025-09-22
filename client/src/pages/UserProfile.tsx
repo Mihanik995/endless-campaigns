@@ -10,20 +10,17 @@ import PasswordChangeButton from "../components/PasswordChangeButton.tsx";
 import EmailChangeButton from "../components/EmailChangeButton.tsx";
 import UserCampaigns from "../components/UserCampaigns.tsx";
 import ErrorHandler from "../components/ErrorHandler.tsx";
-
-interface UserData {
-    username: string;
-    email: string;
-}
+import type {User} from "../types.ts";
 
 export default function () {
     const auth = useAppSelector(selectAuth);
     const {idParam} = useParams()
-    const id = idParam ? idParam : auth.id;
+    const id = idParam ? idParam : auth.id as string;
 
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<Error>()
-    const [userData, setUserData] = useState<UserData>({
+    const [userData, setUserData] = useState<User>({
+        id,
         username: '',
         email: '',
     });

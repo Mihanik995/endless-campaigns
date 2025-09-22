@@ -4,17 +4,11 @@ import {Button, Card, Container, Flex, Heading, Popover, Spinner, Table} from "@
 import ErrorHandler from "./ErrorHandler.tsx";
 import TextInput from "./TextInput.tsx";
 import PeriodRow from "./PeriodRow.tsx";
+import type {CampaignPeriod, SimpleMission} from "../types.ts";
 
 interface Props {
     campaignId: string,
     isOwner: boolean,
-}
-
-interface Period {
-    id: string,
-    campaignId: string,
-    dateStart: string,
-    dateEnd: string,
 }
 
 interface RegData {
@@ -23,18 +17,13 @@ interface RegData {
     username: string
 }
 
-interface MissionData {
-    id: string,
-    title: string,
-}
-
 export default function ({campaignId, isOwner}: Props) {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<Error>()
     const [change, setChange] = useState(0)
-    const [periods, setPeriods] = useState<Period[]>([])
+    const [periods, setPeriods] = useState<CampaignPeriod[]>([])
     const [campaignPlayers, setCampaignPlayers] = useState<RegData[]>([])
-    const [missions, setMissions] = useState<MissionData[]>([])
+    const [missions, setMissions] = useState<SimpleMission[]>([])
 
     useEffect(() => {
         setIsLoading(true)
@@ -54,7 +43,7 @@ export default function ({campaignId, isOwner}: Props) {
             .finally(() => setIsLoading(false))
     }, [change]);
 
-    const [newPeriod, setNewPeriod] = useState<Period>({
+    const [newPeriod, setNewPeriod] = useState<CampaignPeriod>({
         id: '',
         campaignId: campaignId,
         dateStart: '',

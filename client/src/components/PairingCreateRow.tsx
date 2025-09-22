@@ -2,18 +2,12 @@ import {Box, Button, Flex, IconButton, Select, Table} from "@radix-ui/themes";
 import {type MouseEventHandler, useState} from "react";
 import {Cross2Icon, PlusIcon} from "@radix-ui/react-icons";
 import axios from "../axios/axiosConfig.ts";
+import type {CampaignPeriod} from "../types.ts";
 
 interface PlayerRegister {
     id: string;
     playerId: string;
     username: string;
-}
-
-interface Period {
-    id: string;
-    campaignId: string;
-    dateStart: string;
-    dateEnd: string;
 }
 
 interface Mission {
@@ -24,7 +18,7 @@ interface Mission {
 interface Props {
     players: PlayerRegister[],
     missions: Mission[],
-    period: Period
+    period: CampaignPeriod
     onChange: () => void
 }
 

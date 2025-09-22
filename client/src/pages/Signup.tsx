@@ -4,16 +4,10 @@ import axios from "axios";
 import {Button, Card, Flex, Heading, Separator, Text} from "@radix-ui/themes";
 import {EnvelopeClosedIcon, LockClosedIcon, PersonIcon} from "@radix-ui/react-icons";
 import TextInput from "../components/TextInput.tsx";
-
-interface RegisterData {
-    username: string;
-    password: string;
-    confirmPassword: string;
-    email: string;
-}
+import type {UserRegister} from "../types.ts";
 
 export default function (): ReactElement {
-    const [registerData, setRegisterData] = useState<RegisterData>({
+    const [registerData, setRegisterData] = useState<UserRegister>({
         username: '',
         password: '',
         confirmPassword: '',

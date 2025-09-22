@@ -1,20 +1,8 @@
 import {createSlice} from "@reduxjs/toolkit";
 import type {RootState} from "../../store.ts";
+import type {Campaign} from "../../../types.ts";
 
-export interface Campaigns {
-    [key: string]: string | boolean | undefined
-
-    id: string
-    ownerId: string
-    title: string
-    description: string
-    regulations: string
-    dateStart: string
-    dateEnd: string
-    requiresRegisterApproval?: boolean
-}
-
-const initialState: Campaigns = {
+const initialState: Campaign = {
     id: localStorage.getItem('ec-campaign-id') || '',
     ownerId: localStorage.getItem('ec-campaign-ownerId') || '',
     title: localStorage.getItem('ec-campaign-title') || '',
@@ -22,7 +10,7 @@ const initialState: Campaigns = {
     regulations: localStorage.getItem('ec-campaign-regulations') || '',
     dateStart: localStorage.getItem('ec-campaign-dateStart') || '',
     dateEnd: localStorage.getItem('ec-campaign-dateEnd') || '',
-    requiresRegisterApproval: JSON.parse(localStorage.getItem('ec-campaign-requiresRegisterApproval') as string) || undefined,
+    requiresRegisterApproval: JSON.parse(localStorage.getItem('ec-campaign-requiresRegisterApproval') as string) || false,
 }
 
 export const campaignSlice = createSlice({
@@ -44,7 +32,7 @@ export const campaignSlice = createSlice({
             state.description = ''
             state.dateStart = ''
             state.dateEnd = ''
-            state.requiresRegisterApproval = undefined
+            state.requiresRegisterApproval = false
 
             localStorage.removeItem('ec-campaign-id')
             localStorage.removeItem('ec-campaign-ownerId')

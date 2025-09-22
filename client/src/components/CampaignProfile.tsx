@@ -6,9 +6,10 @@ import {useAppSelector} from "../app/hooks.ts";
 import {selectAuth} from "../app/features/auth/authSlice.ts";
 import CampaignPeriods from "../components/CampaignPeriods.tsx";
 import {selectCampaign} from "../app/features/campaign/campaignSlice.ts";
+import type {Campaign} from "../types.ts";
 
 export default function () {
-    const campaign = useAppSelector(selectCampaign);
+    const campaign = useAppSelector(selectCampaign) as Campaign;
     const auth = useAppSelector(selectAuth);
 
     const navigate = useNavigate();
@@ -18,7 +19,7 @@ export default function () {
         <Flex minHeight='80vh' align='center' justify='center'>
             <Container width='100vw'>
                 <CampaignCard
-                    {...campaign}
+                    campaignData={campaign}
                     clickable={false}
                     onDelete={() => navigate('/dashboard')}
                 />
@@ -26,7 +27,7 @@ export default function () {
                     <Tabs.Root defaultValue='registers'>
                         <Tabs.List>
                             <Tabs.Trigger value='registers'>Players</Tabs.Trigger>
-                            <Tabs.Trigger value='periods'>Periods</Tabs.Trigger>
+                            <Tabs.Trigger value='periods'>Periods and Pairings</Tabs.Trigger>
                         </Tabs.List>
                         <Tabs.Content value='registers'>
                             <RegisteredPlayers

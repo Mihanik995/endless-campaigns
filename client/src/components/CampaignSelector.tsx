@@ -2,19 +2,19 @@ import {Button, Container, Flex, Heading, Spinner} from "@radix-ui/themes";
 import ErrorHandler from "./ErrorHandler.tsx";
 import CampaignCard from "./CampaignCard.tsx";
 import {useEffect, useState} from "react";
-import type {Campaigns} from "../app/features/campaign/campaignSlice"
 import axios from "../axios/axiosConfig";
 import {useNavigate} from "react-router";
+import type {Campaign} from "../types.ts";
 
 export default function () {
-    const [campaigns, setCampaigns] = useState<Campaigns[]>([])
+    const [campaigns, setCampaigns] = useState<Campaign[]>([])
     const [isLoading, setIsLoading] = useState<boolean>(false)
     const [error, setError] = useState<Error>()
     useEffect(() => {
         setIsLoading(true)
         axios.get('/campaigns')
             .then((res) => {
-                setCampaigns(res.data as Campaigns[])
+                setCampaigns(res.data as Campaign[])
             })
             .catch((err) => setError(err as Error))
             .finally(() => setIsLoading(false))
@@ -35,7 +35,7 @@ export default function () {
                                     {campaigns.map((campaign) => (
                                         <CampaignCard
                                             key={campaign.id}
-                                            {...campaign}
+                                            campaignData={campaign}
                                             clickable={true}
                                             onDelete={() => setCampaigns(campaigns.filter(
                                                 camp => camp.id !== campaign.id

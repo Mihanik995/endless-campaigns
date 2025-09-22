@@ -3,25 +3,14 @@ import {type ChangeEvent, type MouseEventHandler, useState} from "react";
 import axios from "../axios/axiosConfig.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
 import PairingCreateRow from "./PairingCreateRow.tsx";
-
-interface Period {
-    id: string;
-    campaignId: string;
-    dateStart: string;
-    dateEnd: string;
-}
-
-interface Mission {
-    id: string;
-    title: string;
-}
+import type {CampaignPeriod, SimpleMission} from "../types.ts";
 
 interface Props {
     isOwner: boolean;
     index: number
     onChange: () => void
-    period: Period
-    missions: Mission[]
+    period: CampaignPeriod
+    missions: SimpleMission[]
     campaignPlayers: {
         id: string;
         playerId: string;
@@ -30,7 +19,7 @@ interface Props {
 }
 
 export default function ({isOwner, index, onChange, period, campaignPlayers, missions}: Props) {
-    const [periodChanges, setPeriodChanges] = useState<Period>(period)
+    const [periodChanges, setPeriodChanges] = useState<CampaignPeriod>(period)
     const [edit, setEdit] = useState<boolean>(false)
     const [error, setError] = useState<Error>()
 

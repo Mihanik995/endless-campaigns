@@ -6,19 +6,12 @@ import {type ChangeEventHandler, type MouseEventHandler, useState} from "react";
 import axios from "../axios/axiosConfig.ts";
 import {useNavigate} from "react-router";
 import ErrorHandler from "../components/ErrorHandler.tsx";
-
-interface MissionData {
-    [key: string]: string;
-
-    title: string
-    narrativeDescription: string
-    missionConditions: string
-}
+import type {SimpleMissionCreate} from "../types.ts";
 
 type InputElement = HTMLInputElement | HTMLTextAreaElement
 
 export default function () {
-    const [missionData, setMissionData] = useState<MissionData>({
+    const [missionData, setMissionData] = useState<SimpleMissionCreate>({
         title: '',
         narrativeDescription: '',
         missionConditions: '',

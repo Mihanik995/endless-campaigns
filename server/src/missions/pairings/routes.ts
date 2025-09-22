@@ -1,4 +1,5 @@
 import type {Request, Response} from 'express';
+import type {PlayersOnPairings} from '../../../generated/prisma'
 
 const {Router} = require("express");
 const {PrismaClient} = require("../../../generated/prisma");
@@ -128,6 +129,37 @@ pairingsRouter.delete('/:id', verifyToken, async (req: Request, res: Response) =
     try {
         dbClient.pairing.delete({where: {id}})
             .then(() => res.sendStatus(204))
+    } catch (error) {
+        res.status(500).json({error})
+    }
+})
+
+pairingsRouter.post('/:id/set-winner/', verifyToken, async (req: Request, res: Response) => {
+    const {id} = req.params;
+    const winnersIds: string[] = req.body.winnersIds
+    try {
+        const pairing = await dbClient.pairing.findUnique({
+            where: {id},
+            include: {
+                players: {select: {playerId: true}}
+            }
+        })
+        if (!pairing) return res.status(404).json({error: 'No pairing'})
+        for (const playerId of winnersIds) {
+            if (!pairing.players.map((p: PlayersOnPairings) => p.playerId).includes(playerId)) {
+                return res.status(400).json({error: 'No such player in the pairing'})
+            }
+        }
+        const updatedPairing = await dbClient.pairing.update({
+            where: {id},
+            data: {
+                played: true,
+                winners: {create: winnersIds.map((id: string) => {
+                    return {winner: {connect: {id}}}
+                })}
+            }
+        })
+        res.status(200).json(updatedPairing);
     } catch (error) {
         res.status(500).json({error})
     }

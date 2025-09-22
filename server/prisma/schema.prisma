@@ -28,7 +28,7 @@ model User {
 
   pairings PlayersOnPairings[]
 
-  WinnersOnPairings WinnersOnPairings[]
+  wonPairings WinnersOnPairings[]
 }
 
 model Campaign {
@@ -90,7 +90,8 @@ model Pairing {
   simpleMissionId String
   players         PlayersOnPairings[]
 
-  played Boolean @default(false)
+  played  Boolean             @default(false)
+  winners WinnersOnPairings[]
 }
 
 model PlayersOnPairings {
@@ -100,4 +101,13 @@ model PlayersOnPairings {
   pairingId String
 
   @@id([pairingId, playerId])
+}
+
+model WinnersOnPairings {
+  player    User    @relation(fields: [playerId], references: [id])
+  playerId  String
+  pairing   Pairing @relation(fields: [pairingId], references: [id])
+  pairingId String
+
+  @@id([playerId, pairingId])
 }

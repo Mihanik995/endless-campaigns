@@ -17,7 +17,7 @@ export interface UserLogin {
 }
 
 export interface Campaign {
-    [key: string]: string | boolean
+    [key: string]: any
 
     id: string
     ownerId: string
@@ -27,10 +27,11 @@ export interface Campaign {
     dateStart: string
     dateEnd: string
     requiresRegisterApproval: boolean
+    campaignRegisters?: CampaignRegister[]
 }
 
 export interface CampaignRegister {
-    [key: string]: string | boolean | User
+    [key: string]: any
 
     id: string
     playerId: string
@@ -38,7 +39,7 @@ export interface CampaignRegister {
     formationName: string
     rosterLink: string
     approved: boolean
-    player: User
+    player?: User
 }
 
 export interface CampaignRegisterCreate {
@@ -94,7 +95,7 @@ export interface Pairing {
     period?: CampaignPeriod
     simpleMissionId: string
     simpleMission?: SimpleMission
-    players: User[]
+    players: PlayersOnPairings[]
 }
 
 export interface PairingData {
@@ -109,7 +110,9 @@ export interface PairingData {
 
 export interface PlayersOnPairings {
     player: User
+    playerId: string
     pairing: Pairing
+    pairingId: string
 }
 
 export interface PlayerRegister {

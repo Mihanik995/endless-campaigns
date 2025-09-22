@@ -4,6 +4,7 @@ import type {PlayersOnPairings} from '../../../generated/prisma'
 const {Router} = require("express");
 const {PrismaClient} = require("../../../generated/prisma");
 const {v4: uuid} = require("uuid");
+const jwt = require("jsonwebtoken");
 const {verifyToken} = require("../../auth/middleware")
 
 require("dotenv").config();
@@ -79,16 +80,20 @@ pairingsRouter.get('/period/:periodId', verifyToken, async (req: Request, res: R
     }
 })
 
-pairingsRouter.get('/player/:playerId', verifyToken, async (req: Request, res: Response) => {
-    const {playerId} = req.params;
+pairingsRouter.get('/', verifyToken, async (req: Request, res: Response) => {
+    const token = req.header('Authorization')
     try {
+        const {userId: playerId} = jwt.verify(token, process.env.JWT_SECRET)
         const pairing = await dbClient.playersOnPairings.findMany({
             where: {playerId},
             include: {
                 pairing: {
                     include: {
-                        campaign: true,
+                        campaign: {
+                            include: {campaignRegisters: {include: {player: true}}}
+                        },
                         simpleMission: true,
+                        players: {include: {player: {select: {id: true, username: true, email: true}}}}
                     }
                 }
             },

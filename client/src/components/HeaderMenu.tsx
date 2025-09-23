@@ -7,6 +7,7 @@ import {useNavigate} from "react-router";
 import axios from "../axios/axiosConfig.ts"
 import {useState} from "react";
 import ErrorHandler from "./ErrorHandler.tsx";
+import {cleanCampaign} from "../app/features/campaign/campaignSlice.ts";
 
 export default function () {
     const auth = useAppSelector(selectAuth);
@@ -40,7 +41,10 @@ export default function () {
                             onClick={() => {
                                 axios.post('/auth/logout')
                                     .then(response => {
-                                        if (response.status === 200) dispatch(logout());
+                                        if (response.status === 200) {
+                                            dispatch(logout())
+                                            dispatch(cleanCampaign())
+                                        }
                                     }).catch(err => setError(err as Error))
                             }}
                         >

@@ -26,6 +26,8 @@ model User {
   simpleMission     SimpleMission[]
   pairings          PlayersOnPairings[]
   wonPairings       WinnersOnPairings[]
+
+  question Question[]
 }
 
 model Campaign {
@@ -74,6 +76,18 @@ model SimpleMission {
   narrativeDescription String
   missionConditions    String
   pairing              Pairing[]
+
+  question Question[]
+}
+
+model Question {
+  id        String        @id @unique
+  creator   User          @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  creatorId String
+  mission   SimpleMission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  missionId String
+  text      String
+  answer    String?
 }
 
 model Pairing {

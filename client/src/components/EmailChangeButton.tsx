@@ -1,4 +1,4 @@
-import {Button, Flex, Heading, IconButton, Popover, Text, Tooltip} from "@radix-ui/themes";
+import {Button, Flex, IconButton, Popover, Strong, Text, Tooltip} from "@radix-ui/themes";
 import {EnvelopeClosedIcon} from "@radix-ui/react-icons";
 import {useAppDispatch, useAppSelector} from "../app/hooks.ts";
 import {logout, selectAuth} from "../app/features/auth/authSlice.ts";
@@ -23,7 +23,7 @@ export default function () {
 
     return (
         <Popover.Root>
-            <Tooltip content='Change Password'>
+            <Tooltip content='Change E-mail'>
                 <Popover.Trigger>
                     <IconButton radius='full'>
                         <EnvelopeClosedIcon/>
@@ -38,9 +38,8 @@ export default function () {
                         value={newEmail}
                         onChange={(e) => setNewEmail(e.target.value)}
                     />
-                    <Heading>Notice!</Heading>
                     <Text>
-                        After the submission you'll be logged out and have to verify your new e-mail.
+                        <Strong>Notice!</Strong> After the submission you'll be logged out and have to verify your new e-mail.
                     </Text>
                     <Flex gap='2'>
                         <Popover.Close>

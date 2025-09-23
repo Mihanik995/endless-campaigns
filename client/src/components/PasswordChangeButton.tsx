@@ -1,11 +1,10 @@
 import {type ChangeEvent, type MouseEventHandler, useState} from "react";
 import axios from "../axios/axiosConfig.ts";
-import {Button, Flex, Heading, IconButton, Popover, Tooltip} from "@radix-ui/themes";
+import {Button, Flex, IconButton, Popover, Strong, Text, Tooltip} from "@radix-ui/themes";
 import {DotsHorizontalIcon} from "@radix-ui/react-icons";
 import {useAppDispatch, useAppSelector} from "../app/hooks.ts";
 import {logout, selectAuth} from "../app/features/auth/authSlice.ts";
 import TextInput from "./TextInput.tsx";
-import {Text} from "@radix-ui/themes";
 import ErrorHandler from "./ErrorHandler.tsx";
 
 interface NewPassword {
@@ -62,9 +61,8 @@ export default function () {
                         value={newPassword.confirmPassword}
                         onChange={handleChange}
                     />
-                    <Heading>Notice!</Heading>
                     <Text>
-                        After the submission you'll be logged out.
+                        <Strong>Notice!</Strong> After the submission you'll be logged out.
                     </Text>
                     <Flex gap='2'>
                         <Popover.Close>

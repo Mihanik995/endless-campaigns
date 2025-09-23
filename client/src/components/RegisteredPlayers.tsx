@@ -10,9 +10,10 @@ import ErrorHandler from "./ErrorHandler.tsx";
 interface Props {
     campaignId: string;
     isOwner: boolean;
+    requiresApproval: boolean;
 }
 
-export default function ({campaignId, isOwner}: Props) {
+export default function ({campaignId, isOwner, requiresApproval}: Props) {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<Error>()
     const [registers, setRegisters] = useState<CampaignRegister[]>([])
@@ -59,7 +60,7 @@ export default function ({campaignId, isOwner}: Props) {
                     ? <Spinner size='3'/>
                     : !!error
                         ? <ErrorHandler error={error}/>
-                        : registers.length
+                        : registers.filter(reg => isOwner ? true: reg.approved).length
                             ? <Table.Root>
                                 <Table.Header>
                                     <Table.Row>
@@ -121,7 +122,9 @@ export default function ({campaignId, isOwner}: Props) {
                                 </Table.Body>
                             </Table.Root>
                             : <Container width='100vw'>
-                                <Heading align='center'>No registrations found.</Heading>
+                                <Heading align='center'>No {
+                                    requiresApproval ? 'approved ' : ''
+                                }registrations found.</Heading>
                             </Container>
                 }
             </Flex>

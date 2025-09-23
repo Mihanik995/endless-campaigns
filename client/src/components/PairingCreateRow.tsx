@@ -1,4 +1,4 @@
-import {Box, Button, Flex, IconButton, Select, Table} from "@radix-ui/themes";
+import {Box, Button, Flex, IconButton, Select, Table, Text} from "@radix-ui/themes";
 import {type MouseEventHandler, useState} from "react";
 import {CheckIcon, Cross2Icon, PlusIcon} from "@radix-ui/react-icons";
 import axios from "../axios/axiosConfig.ts";
@@ -71,7 +71,9 @@ export default function ({playerRegisters, period, onChange, missions}: Props) {
                     </Select.Root>
                     <Flex gap='2' align='center'>
                         Players:
-                        {playersList.map((player: PlayerRegister) => (
+                        {!playersList.length && !playersOptions.length
+                            ? <Text>no players available.</Text>
+                            : playersList.map((player: PlayerRegister) => (
                             <Flex gap='1' align='center' key={player.id}>
                                 {player.playerUsername}
                                 <IconButton

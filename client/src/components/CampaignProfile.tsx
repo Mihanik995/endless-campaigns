@@ -25,7 +25,6 @@ export default function ({id}: Props) {
     useEffect(() => {
         if (id) {
             setIsLoading(true)
-            console.log('request...')
             axios.get(`campaigns/${id}`)
                 .then(res => {
                     if (res.status === 200) {
@@ -67,6 +66,7 @@ export default function ({id}: Props) {
                                         <RegisteredPlayers
                                             campaignId={campaign.id}
                                             isOwner={isOwner as boolean}
+                                            requiresApproval={campaign.requiresRegisterApproval}
                                         />
                                     </Tabs.Content>
                                     <Tabs.Content value='periods'>

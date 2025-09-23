@@ -27,7 +27,23 @@ export interface Campaign {
     dateStart: string
     dateEnd: string
     requiresRegisterApproval: boolean
+    requiresPairingResultsApproval: boolean
+    requiresPairingReport: boolean
+
     campaignRegisters?: CampaignRegister[]
+}
+
+export interface CampaignCreate {
+    [key: string]: any
+
+    title: string
+    description: string
+    regulations: string
+    dateStart: string
+    dateEnd: string
+    requiresRegisterApproval: boolean
+    requiresPairingResultsApproval: boolean
+    requiresPairingReport: boolean
 }
 
 export interface CampaignRegister {
@@ -96,9 +112,13 @@ export interface Pairing {
     simpleMissionId: string
     simpleMission?: SimpleMission
     players: PlayersOnPairings[]
-
     played: boolean
     winners: WinnersOnPairings[]
+
+    resultsApproved: boolean
+    reportLink?: string
+    resultsRejected: boolean
+    rejectMessage?: string
 }
 
 export interface PairingData {

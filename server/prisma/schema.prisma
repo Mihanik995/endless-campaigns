@@ -15,38 +15,35 @@ datasource db {
 }
 
 model User {
-  id                String             @id @unique
-  username          String             @unique
+  id                String              @id @unique
+  username          String              @unique
   password          Bytes
   salt              Bytes
-  email             String             @unique
-  isActive          Boolean            @default(false)
+  email             String              @unique
+  isActive          Boolean             @default(false)
   campaigns         Campaign[]
   campaignRegisters CampaignRegister[]
-
-  simpleMission SimpleMission[]
-
-  pairings PlayersOnPairings[]
-
-  wonPairings WinnersOnPairings[]
+  simpleMission     SimpleMission[]
+  pairings          PlayersOnPairings[]
+  wonPairings       WinnersOnPairings[]
 }
 
 model Campaign {
-  id          String   @id @unique
-  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  ownerId     String
-  title       String
-  description String
-  regulations String
-  dateStart   DateTime
-  dateEnd     DateTime
-
+  id                       String             @id @unique
+  owner                    User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId                  String
+  title                    String
+  description              String
+  regulations              String
+  dateStart                DateTime
+  dateEnd                  DateTime
   requiresRegisterApproval Boolean            @default(true)
   campaignRegisters        CampaignRegister[]
+  campaignPeriod           CampaignPeriod[]
+  pairing                  Pairing[]
 
-  campaignPeriod CampaignPeriod[]
-
-  pairing Pairing[]
+  requiresPairingResultsApproval Boolean @default(true)
+  requiresPairingReport          Boolean @default(true)
 }
 
 model CampaignRegister {
@@ -61,13 +58,12 @@ model CampaignRegister {
 }
 
 model CampaignPeriod {
-  id         String   @id @unique
-  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  id         String    @id @unique
+  campaign   Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
   campaignId String
   dateStart  DateTime
   dateEnd    DateTime
-
-  pairing Pairing[]
+  pairing    Pairing[]
 }
 
 model SimpleMission {
@@ -89,9 +85,13 @@ model Pairing {
   simpleMission   SimpleMission       @relation(fields: [simpleMissionId], references: [id])
   simpleMissionId String
   players         PlayersOnPairings[]
+  played          Boolean             @default(false)
+  winners         WinnersOnPairings[]
 
-  played  Boolean             @default(false)
-  winners WinnersOnPairings[]
+  resultsApproved Boolean @default(false)
+  reportLink      String?
+  resultsRejected Boolean @default(false)
+  rejectMessage   String?
 }
 
 model PlayersOnPairings {

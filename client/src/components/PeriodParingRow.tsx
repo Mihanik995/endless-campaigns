@@ -1,10 +1,11 @@
-import {Box, Button, Flex, IconButton, Link, Select, Table, CheckboxGroup} from "@radix-ui/themes";
+import {Box, Button, Flex, IconButton, Link, Select, Table, CheckboxGroup, Popover, Text} from "@radix-ui/themes";
 import type {CampaignPeriod, Pairing, PlayerRegister, SimpleMission} from "../types.ts";
 import {type MouseEventHandler, useState} from "react";
 import {CheckIcon, Cross2Icon, PlusIcon} from "@radix-ui/react-icons";
 import axios from "../axios/axiosConfig.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
 import {useNavigate} from "react-router";
+import TextInput from "./TextInput.tsx";
 
 interface Props {
     pairing: Pairing
@@ -76,6 +77,23 @@ export default function ({pairing, isOwner, missions, playerRegisters, period, o
         winners.includes(value)
             ? setWinners(winners.filter(item => item !== value))
             : setWinners([...winners, value])
+    }
+
+    const approveResults: MouseEventHandler<HTMLButtonElement> = (e) => {
+        e.preventDefault();
+        axios.put(`/missions/pairings/${pairing.id}/approve`)
+            .then(res => {
+                if (res.status === 200) onChange()
+            }).catch(err => setError(err as Error))
+    }
+
+    const [rejectMessage, setRejectMessage] = useState('')
+    const rejectResults: MouseEventHandler<HTMLButtonElement> = (e) => {
+        e.preventDefault();
+        axios.put(`/missions/pairings/${pairing.id}/reject`, {rejectMessage})
+            .then(res => {
+                if (res.status === 204) onChange()
+            }).catch(err => setError(err as Error))
     }
 
     return (
@@ -170,10 +188,12 @@ export default function ({pairing, isOwner, missions, playerRegisters, period, o
                             </Link>
                         </Table.Cell>
                         <Table.Cell>
-                            {pairing.players
-                                .map(player => player.player.username)
-                                .join(' / ')
-                            }
+                            <Text align='center'>
+                                {pairing.players
+                                    .map(player => player.player.username)
+                                    .join(' / ')
+                                }
+                            </Text>
                         </Table.Cell>
                         <Table.Cell>
                             {pairing.played
@@ -182,9 +202,43 @@ export default function ({pairing, isOwner, missions, playerRegisters, period, o
                                     : 'No winners'
                                 : 'Not played yet'}
                         </Table.Cell>
+                        <Table.Cell>
+                            {pairing.reportLink
+                                ? <Link href={pairing.reportLink} target='_blank'>
+                                    {pairing.reportLink}
+                                </Link>
+                                : '-'}
+                        </Table.Cell>
                         {isOwner &&
                             <Table.Cell>
                                 <Flex gap='3'>
+                                    {!pairing.resultsApproved &&
+                                        <>
+                                            <Button onClick={approveResults}>Approve results</Button>
+                                            <Popover.Root>
+                                                <Popover.Trigger>
+                                                    <Button>Reject results</Button>
+                                                </Popover.Trigger>
+                                                <Popover.Content>
+                                                    <Flex direction='column' gap='2'>
+                                                        <TextInput
+                                                            label={'Reject message'}
+                                                            name={'rejectMessage'}
+                                                            value={rejectMessage}
+                                                            onChange={(e) => {
+                                                                setRejectMessage(e.target.value)
+                                                            }}
+                                                        />
+                                                        <Popover.Close>
+                                                            <Button>Cancel</Button>
+                                                        </Popover.Close>
+                                                        <Popover.Close>
+                                                            <Button onClick={rejectResults} color='red'>Submit</Button>
+                                                        </Popover.Close>
+                                                    </Flex>
+                                                </Popover.Content>
+                                            </Popover.Root>
+                                        </>}
                                     <Button onClick={() => setEdit(true)}>Edit</Button>
                                     <Button color='red' onClick={handleDeletePairing}>Delete</Button>
                                 </Flex>

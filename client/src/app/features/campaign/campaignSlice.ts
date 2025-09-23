@@ -11,6 +11,8 @@ const initialState: Campaign = {
     dateStart: localStorage.getItem('ec-campaign-dateStart') || '',
     dateEnd: localStorage.getItem('ec-campaign-dateEnd') || '',
     requiresRegisterApproval: JSON.parse(localStorage.getItem('ec-campaign-requiresRegisterApproval') as string) || false,
+    requiresPairingResultsApproval: JSON.parse(localStorage.getItem('ec-campaign-requiresPairingResultsApproval') as string) || false,
+    requiresPairingReport: JSON.parse(localStorage.getItem('ec-campaign-requiresPairingReport') as string) || false,
 }
 
 export const campaignSlice = createSlice({
@@ -20,7 +22,11 @@ export const campaignSlice = createSlice({
         updateCampaign: (state, action) => {
             for (const [key, value] of Object.entries(action.payload)) {
                 state[key] = value as (string | boolean)
-                key === 'requiresRegisterApproval'
+                [
+                    'requiresRegisterApproval',
+                    'requiresPairingResultsApproval',
+                    'requiresPairingReport',
+                ].includes(key)
                     ? localStorage.setItem(`ec-campaign-${key}`, JSON.stringify(value))
                     : localStorage.setItem(`ec-campaign-${key}`, value as string)
             }
@@ -42,6 +48,8 @@ export const campaignSlice = createSlice({
             localStorage.removeItem('ec-campaign-dateStart')
             localStorage.removeItem('ec-campaign-dateEnd')
             localStorage.removeItem('ec-campaign-requiresRegisterApproval')
+            localStorage.removeItem('ec-campaign-requiresPairingResultsApproval')
+            localStorage.removeItem('ec-campaign-requiresPairingReport')
         }
     }
 })

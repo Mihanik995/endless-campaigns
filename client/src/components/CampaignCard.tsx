@@ -2,7 +2,7 @@ import {
     Button,
     Card,
     Container,
-    Flex,
+    Flex, Grid,
     Heading,
     IconButton,
     Link,
@@ -138,6 +138,22 @@ export default function ({clickable, onDelete, campaignData}: Props) {
                                     onClick={() => handleSwitch('requiresRegisterApproval')}
                                     label='Player register requires master approval'
                                 />
+                                <Separator size='4'/>
+                                <Grid my='2' columns="2" gap="3" width="auto">
+                                    <CheckInput
+                                        name='requiresPairingResultsApproval'
+                                        value={Number(campaign.requiresPairingResultsApproval)}
+                                        onClick={() => handleSwitch('requiresPairingResultsApproval')}
+                                        label='Pairings results should be approved by campaign master'
+                                    />
+                                    <CheckInput
+                                        name='requiresPairingReport'
+                                        disabled={!campaign.requiresPairingResultsApproval}
+                                        value={Number(campaign.requiresPairingReport)}
+                                        onClick={() => handleSwitch('requiresPairingReport')}
+                                        label='Players should attach the link to the pairing report'
+                                    />
+                                </Grid>
                             </Flex>
                             <Flex direction='column' align='end' justify='start' gap='3'>
                                 <Tooltip content='Cancel'>

@@ -27,6 +27,7 @@ export const login = createAsyncThunk(
 
 export interface AuthState {
     id?: string;
+    username?: string;
     token?: string,
     loading: boolean,
     error: any,
@@ -35,6 +36,7 @@ export interface AuthState {
 
 const initialState: AuthState = {
     id: localStorage.getItem('ec-id') || undefined,
+    username: localStorage.getItem('ec-username') || undefined,
     token: localStorage.getItem('ec-access') || undefined,
     loading: false,
     error: null as any,
@@ -48,15 +50,19 @@ export const authSlice = createSlice({
         logout: (state) => {
             state.token = undefined
             state.id = undefined
+            state.username = undefined
             state.success = false
             localStorage.removeItem('ec-access')
             localStorage.removeItem('ec-id')
+            localStorage.removeItem('ec-username')
         },
         refresh: (state, action) => {
             state.token = action.payload.accessToken
             state.id = action.payload.userId
+            state.username = action.payload.username
             localStorage.setItem('ec-access', action.payload.accessToken)
             localStorage.setItem('ec-id', action.payload.userId)
+            localStorage.setItem('ec-username', action.payload.username)
             state.success = true
         }
     },
@@ -74,8 +80,10 @@ export const authSlice = createSlice({
             state.success = true
             state.token = action.payload.accessToken
             state.id = action.payload.userId
+            state.username = action.payload.username
             localStorage.setItem('ec-access', action.payload.accessToken)
             localStorage.setItem('ec-id', action.payload.userId)
+            localStorage.setItem('ec-username', action.payload.username)
         })
     }
 })

@@ -24,6 +24,10 @@ export default function () {
             <DropdownMenu.Content>
                 {auth.token
                     ? <>
+                        <DropdownMenu.Label>
+                            {auth.username}
+                        </DropdownMenu.Label>
+                        <DropdownMenu.Separator/>
                         <DropdownMenu.Item onClick={() => navigate('/profile')}>
                             <PersonIcon/>Profile
                         </DropdownMenu.Item>

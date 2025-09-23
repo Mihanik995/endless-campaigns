@@ -70,11 +70,12 @@ authRouter.post('/login', async (req: Request, res: Response) => {
                 if (!user.isActive) return res.status(403).send({error: 'User not verified'});
 
                 const userId = user.id
-                const accessToken = jwt.sign({userId}, process.env.JWT_SECRET, {expiresIn: '5m'})
-                const refreshToken = jwt.sign({userId}, process.env.JWT_SECRET)
+                const username = user.username
+                const accessToken = jwt.sign({userId, username}, process.env.JWT_SECRET, {expiresIn: '5m'})
+                const refreshToken = jwt.sign({userId, username}, process.env.JWT_SECRET)
                 return res.status(200)
                     .cookie('refreshToken', refreshToken, {httpOnly: true})
-                    .json({accessToken, userId});
+                    .json({accessToken, userId, username});
             });
         }).catch((err: Error) => res.status(500).send({error: err.message}));
 });
@@ -84,14 +85,14 @@ authRouter.post('/refresh', async (req: Request, res: Response) => {
     if (!refreshToken) return res.status(401).json({error: 'Authentication failed'});
 
     try {
-        const {userId} = jwt.verify(refreshToken, process.env.JWT_SECRET);
+        const {userId, username} = jwt.verify(refreshToken, process.env.JWT_SECRET);
         if (!userId) return res.status(401).json({error: 'Authentication failed'});
 
-        const accessToken = jwt.sign({userId}, process.env.JWT_SECRET, {expiresIn: '5m'});
-        const newRefreshToken = jwt.sign({userId}, process.env.JWT_SECRET)
+        const accessToken = jwt.sign({userId, username}, process.env.JWT_SECRET, {expiresIn: '5m'});
+        const newRefreshToken = jwt.sign({userId, username}, process.env.JWT_SECRET)
         return res.status(200)
             .cookie('refreshToken', newRefreshToken, {httpOnly: true})
-            .json({accessToken, userId});
+            .json({accessToken, userId, username});
     } catch (error) {
         return res.status(401).json({error: 'Authentication failed'});
     }

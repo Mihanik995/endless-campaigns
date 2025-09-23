@@ -15,8 +15,11 @@ import Dashboard from "./pages/Dashboard.tsx";
 import "@radix-ui/themes/styles.css";
 import './index.css'
 import CreateCampaign from "./pages/CreateCampaign.tsx";
-import CampaignPage from "./pages/CampaignPage.tsx";
+import CampaignPage from "./components/CampaignProfile.tsx";
 import UserProfile from "./pages/UserProfile.tsx";
+import CreateMission from "./pages/CreateMission.tsx";
+import MissionPage from "./pages/MissionPage.tsx";
+import PlayPairing from "./pages/PlayPairing.tsx";
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
@@ -38,6 +41,13 @@ createRoot(document.getElementById('root')!).render(
                             <Route path='campaigns'>
                                 <Route path='new' element={<CreateCampaign/>}/>
                                 <Route path=':id' element={<CampaignPage/>}/>
+                            </Route>
+                            <Route path='missions'>
+                                <Route path='new' element={<CreateMission/>}/>
+                                <Route path=':id' element={<MissionPage/>}/>
+                            </Route>
+                            <Route path='pairings'>
+                                <Route path={':id'} element={<PlayPairing/>}/>
                             </Route>
                         </Route>
                     </Routes>

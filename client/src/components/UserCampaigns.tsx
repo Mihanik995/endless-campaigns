@@ -3,7 +3,7 @@ import {useEffect, useState} from "react";
 import axios from "../axios/axiosConfig.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
 
-interface CampaignsData {
+interface CampaignData {
     id: string;
     title: string;
     regulations: string;
@@ -17,7 +17,7 @@ interface Props {
 export default function ({id}: Props) {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<Error>()
-    const [campaignsData, setCampaignsData] = useState<CampaignsData[]>([])
+    const [campaignsData, setCampaignsData] = useState<CampaignData[]>([])
     useEffect(() => {
         setIsLoading(true)
         axios.get(`/campaigns/register/user/${id}`)

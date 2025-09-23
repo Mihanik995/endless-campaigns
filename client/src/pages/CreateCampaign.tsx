@@ -1,28 +1,20 @@
 import Header from "../components/Header.tsx";
-import {Box, Button, Callout, Card, Container, Flex, Separator, Spinner} from "@radix-ui/themes";
+import {Box, Button, Card, Container, Flex, Separator, Spinner} from "@radix-ui/themes";
 import {type ChangeEventHandler, type MouseEventHandler, useState} from "react";
 import TextInput from "../components/TextInput.tsx";
 import TextAreaInput from "../components/TextAreaInput.tsx";
 import axios from "../axios/axiosConfig.ts";
 import {useNavigate} from "react-router";
-import {InfoCircledIcon} from "@radix-ui/react-icons";
 import CheckInput from "../components/CheckInput.tsx";
-
-interface CampaignData {
-    [key: string]: string | boolean | Date;
-
-    title: string;
-    description: string;
-    regulations: string;
-    dateStart: string | Date;
-    dateEnd: string | Date;
-    requiresRegisterApproval: boolean
-}
+import ErrorHandler from "../components/ErrorHandler.tsx";
+import type {Campaign} from "../types.ts";
 
 type InputElement = HTMLInputElement | HTMLTextAreaElement
 
 export default function () {
-    const [campaignData, setCampaignData] = useState<CampaignData>({
+    const [campaignData, setCampaignData] = useState<Campaign>({
+        id: '',
+        ownerId: '',
         title: '',
         description: '',
         regulations: '',
@@ -51,13 +43,6 @@ export default function () {
     const handleSubmit: MouseEventHandler<HTMLButtonElement> = function (e) {
         e.preventDefault();
         setIsLoading(true);
-
-        const dateStart = new Date(campaignData.dateStart)
-        dateStart.setHours(0, 0, 0, 0)
-        const dateEnd = new Date(campaignData.dateEnd)
-        dateEnd.setHours(0, 0, 0, 0)
-
-        setCampaignData({...campaignData, dateStart, dateEnd})
 
         axios.post('/campaigns', campaignData)
             .then(res => {
@@ -127,15 +112,7 @@ export default function () {
                                 </Button>
                             </Flex>
                         }
-                        {!!error &&
-                            <Callout.Root color='red'>
-                                <Callout.Icon>
-                                    <InfoCircledIcon/>
-                                </Callout.Icon>
-                                <Callout.Text>
-                                    {error}
-                                </Callout.Text>
-                            </Callout.Root>}
+                        {!!error && <ErrorHandler error={error}/>}
                     </Card>
                 </Box>
             </Flex>

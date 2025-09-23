@@ -2,10 +2,10 @@ import {
     Button,
     Card,
     Container,
+    Em,
     Flex,
     Heading,
     IconButton,
-    Link,
     Popover,
     Separator,
     Text,
@@ -15,50 +15,43 @@ import {type ChangeEvent, type MouseEventHandler, useState} from "react";
 import axios from "../axios/axiosConfig.ts"
 import TextInput from "./TextInput.tsx";
 import TextAreaInput from "./TextAreaInput.tsx";
-import {CheckIcon, Cross2Icon, ExitIcon, Pencil2Icon, TrashIcon, UpdateIcon} from "@radix-ui/react-icons";
-import {useAppDispatch, useAppSelector} from "../app/hooks.ts";
+import {CheckIcon, Cross2Icon, Pencil2Icon, TrashIcon} from "@radix-ui/react-icons";
+import {useAppSelector} from "../app/hooks.ts";
 import {selectAuth} from "../app/features/auth/authSlice.ts";
-import CheckInput from "./CheckInput.tsx";
 import ErrorHandler from "./ErrorHandler.tsx";
-import {cleanCampaign, selectCampaign, updateCampaign} from "../app/features/campaign/campaignSlice.ts";
-import type {Campaign} from "../types.ts";
+import {useNavigate} from "react-router";
+import type {SimpleMission} from "../types.ts";
 
 interface Props {
-    campaignData: Campaign
     clickable: boolean
     onDelete: () => void
+    mission: SimpleMission
+    owner?: boolean
 }
 
-export default function ({clickable, onDelete, campaignData}: Props) {
-    const [campaign, setCampaign] = useState<Campaign>(campaignData)
+export default function ({clickable, onDelete, mission, owner}: Props) {
+    const [missionData, setMissionData] = useState<SimpleMission>({...mission})
     const [edit, setEdit] = useState(false)
     const [error, setError] = useState<Error>()
 
     const auth = useAppSelector(selectAuth);
-    const {id} = useAppSelector(selectCampaign);
-    const dispatch = useAppDispatch();
-    const isOwner = auth.id === campaign.ownerId;
+    const isOwner = owner !== undefined ? owner : auth.id === missionData.creatorId;
+
+    const navigate = useNavigate()
 
     const handleChange = (
         e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
     ) => {
-        setCampaign({
-            ...campaign,
+        setMissionData({
+            ...missionData,
             [e.target.name]: e.target.value
-        })
-    }
-
-    const handleSwitch = (name: string) => {
-        setCampaign({
-            ...campaign,
-            [name]: !(campaign[name] as boolean)
         })
     }
 
     const handleDelete: MouseEventHandler<HTMLButtonElement> = (e) => {
         e.preventDefault()
 
-        axios.delete(`/campaigns/${campaign.id}`)
+        axios.delete(`/missions/simple/${missionData.id}`)
             .then((response) => {
                 if (response.status === 204) onDelete()
             }).catch((error) => setError(error as Error))
@@ -67,27 +60,9 @@ export default function ({clickable, onDelete, campaignData}: Props) {
     const handleSubmit: MouseEventHandler<HTMLButtonElement> = (e) => {
         e.preventDefault()
 
-        axios.put(`/campaigns/${campaign.id}`, campaign)
+        axios.put(`/missions/simple/${missionData.id}`, missionData)
             .then((response) => {
-                if (response.status === 200) {
-                    setCampaign({
-                        ...response.data,
-                        dateStart: new Date(response.data.dateStart),
-                        dateEnd: new Date(response.data.dateEnd)
-                    })
-                    setEdit(false)
-                }
-            }).catch((error) => setError(error as Error))
-    }
-
-    const handleUpdate: MouseEventHandler<HTMLButtonElement> = (e) => {
-        e.preventDefault()
-
-        axios.get(`/campaigns/${campaign.id}`)
-            .then((response) => {
-                if (response.status === 200) {
-                    dispatch(updateCampaign(response.data))
-                }
+                if (response.status === 200) setEdit(false)
             }).catch((error) => setError(error as Error))
     }
 
@@ -101,42 +76,20 @@ export default function ({clickable, onDelete, campaignData}: Props) {
                                 <TextInput
                                     label='Title'
                                     name='title'
-                                    value={campaign.title}
+                                    value={missionData.title}
                                     onChange={handleChange}
                                 />
                                 <TextAreaInput
-                                    label='Description'
-                                    name='description'
-                                    value={campaign.description}
+                                    label='Narrative description'
+                                    name='narrativeDescription'
+                                    value={missionData.narrativeDescription}
                                     onChange={handleChange}
                                 />
-                                <TextInput
-                                    label='Regulations'
-                                    name='regulations'
-                                    value={campaign.regulations}
+                                <TextAreaInput
+                                    label='Missionc conditions'
+                                    name='missionConditions'
+                                    value={missionData.missionConditions}
                                     onChange={handleChange}
-                                />
-                                <Flex gap='3' justify='start'>
-                                    <TextInput
-                                        label='Start Date'
-                                        name='dateStart'
-                                        type='date'
-                                        value={campaign.dateStart.slice(0, 10)}
-                                        onChange={handleChange}
-                                    />
-                                    <TextInput
-                                        label='End Date'
-                                        name='dateEnd'
-                                        type='date'
-                                        value={campaign.dateEnd.slice(0, 10)}
-                                        onChange={handleChange}
-                                    />
-                                </Flex>
-                                <CheckInput
-                                    value={Number(campaign.requiresRegisterApproval)}
-                                    name='requiresRegisterApproval'
-                                    onClick={() => handleSwitch('requiresRegisterApproval')}
-                                    label='Player register requires master approval'
                                 />
                             </Flex>
                             <Flex direction='column' align='end' justify='start' gap='3'>
@@ -158,48 +111,17 @@ export default function ({clickable, onDelete, campaignData}: Props) {
                                 direction='column'
                                 align='start'
                                 onClick={() => {
-                                    if (clickable) dispatch(updateCampaign(campaign))
+                                    if (clickable) navigate(`/missions/${missionData.id}`)
                                 }}
                                 className={`${clickable && 'cursor-pointer'}`}
                             >
-                                <Heading>{campaign.title}</Heading>
+                                <Heading>{missionData.title}</Heading>
                                 <Separator size='4' my='2'/>
-                                <Text>{campaign.description}</Text>
+                                <Text><Em>{missionData.narrativeDescription}</Em></Text>
                                 <Separator size='4' my='2'/>
-                                <Text>
-                                    Regulations:{' '}
-                                    <Link href={campaign.regulations} target='_blank'>
-                                        {campaign.regulations}
-                                    </Link>
-                                </Text>
-                                <Separator size='4' my='2'/>
-                                <Text>Dates: {
-                                    new Date(campaign.dateStart).toLocaleDateString()
-                                } - {
-                                    new Date(campaign.dateEnd).toLocaleDateString()
-                                }</Text>
+                                <Text>{missionData.missionConditions}</Text>
                             </Flex>
                             <Flex direction='column' align='end' justify='start' gap='2'>
-                                {!!id.length &&
-                                    <>
-                                        <Tooltip content='Exit'>
-                                            <IconButton
-                                                radius='full'
-                                                onClick={() => dispatch(cleanCampaign())}
-                                            >
-                                                <ExitIcon/>
-                                            </IconButton>
-                                        </Tooltip>
-                                        <Tooltip content='Refresh'>
-                                            <IconButton
-                                                radius='full'
-                                                onClick={handleUpdate}
-                                            >
-                                                <UpdateIcon/>
-                                            </IconButton>
-                                        </Tooltip>
-                                    </>
-                                }
                                 {isOwner &&
                                     <>
                                         <Tooltip content='Edit'>

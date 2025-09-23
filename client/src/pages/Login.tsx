@@ -6,14 +6,10 @@ import {Button, Card, Flex, Heading, Separator} from "@radix-ui/themes";
 import {LockClosedIcon, PersonIcon} from "@radix-ui/react-icons";
 import {Navigate} from "react-router";
 import TextInput from "../components/TextInput.tsx";
-
-interface LoginData {
-    username: string;
-    password: string;
-}
+import type {UserLogin} from "../types.ts";
 
 export default function (): ReactElement {
-    const [loginData, setLoginData] = useState<LoginData>({
+    const [loginData, setLoginData] = useState<UserLogin>({
         username: '',
         password: '',
     })

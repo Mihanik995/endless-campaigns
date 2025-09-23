@@ -1,15 +1,11 @@
 import {Button, Card, Container, Flex, Heading, Link, Spinner, Table} from "@radix-ui/themes";
 import {useEffect, useState} from "react";
-import type {CampaignRegister} from "../../../server/generated/prisma";
+import type {CampaignRegister} from "../types.ts";
 import axios from "../axios/axiosConfig.ts";
 import {useAppSelector} from "../app/hooks.ts";
 import {selectAuth} from "../app/features/auth/authSlice.ts";
 import CampaignRegisterForm from "./CampaignRegisterForm.tsx";
 import ErrorHandler from "./ErrorHandler.tsx";
-
-interface RegData extends CampaignRegister {
-    username: string
-}
 
 interface Props {
     campaignId: string;
@@ -19,7 +15,7 @@ interface Props {
 export default function ({campaignId, isOwner}: Props) {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<Error>()
-    const [registers, setRegisters] = useState<RegData[]>([])
+    const [registers, setRegisters] = useState<CampaignRegister[]>([])
 
     const auth = useAppSelector(selectAuth)
 
@@ -53,15 +49,13 @@ export default function ({campaignId, isOwner}: Props) {
             }).catch(err => setError(err as Error))
     }
 
-    return <Container>
+    return <Container mt='3'>
         <Card size='3'>
             {isLoading
                 ? <Spinner size='3'/>
                 : !!error
                     ? <ErrorHandler error={error}/>
-                    : <>
-                        <Heading mb='2'>Players:</Heading>
-                        {registers.length
+                    : registers.length
                             ? <Table.Root>
                                 <Table.Header>
                                     <Table.Row>
@@ -79,7 +73,7 @@ export default function ({campaignId, isOwner}: Props) {
                                             : register.approved)
                                         .map((register) => (
                                             <Table.Row key={register.id}>
-                                                <Table.Cell>{register.username}</Table.Cell>
+                                                <Table.Cell>{register.player?.username}</Table.Cell>
                                                 <Table.Cell>{register.formationName}</Table.Cell>
                                                 <Table.Cell>
                                                     <Link href={register.rosterLink} target='_blank'>
@@ -125,8 +119,6 @@ export default function ({campaignId, isOwner}: Props) {
                             : <Container width='100vw'>
                                 <Heading align='center'>No registrations found.</Heading>
                             </Container>
-                        }
-                    </>
             }
             {!registers.map(reg => reg.playerId).includes(auth.id as string) &&
                 <>

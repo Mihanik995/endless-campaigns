@@ -1,5 +1,5 @@
 import type {Request, Response} from 'express'
-import type {Campaigns, Users} from "../../../generated/prisma";
+import type {Campaign} from "../../../generated/prisma";
 
 const {Router} = require('express')
 const {PrismaClient} = require('../../../generated/prisma')
@@ -19,7 +19,7 @@ campaignRegisterRouter.post('/', verifyToken, async (req: Request, res: Response
         const {userId: playerId} = jwt.verify(token, process.env.JWT_SECRET)
         const alreadyExists = await dbClient.campaignRegister.findMany({where: {playerId, campaignId}})
         if (alreadyExists) return res.status(400).json({error: 'This player already registered'})
-        const campaign = await dbClient.campaigns.findUnique({where: {id: campaignId}}) as Campaigns
+        const campaign = await dbClient.campaign.findUnique({where: {id: campaignId}}) as Campaign
         if (!campaign) return res.status(404).json({error: 'Campaign not found'})
         const approved = !campaign.requiresRegisterApproval
         const id = uuid()
@@ -34,11 +34,10 @@ campaignRegisterRouter.post('/', verifyToken, async (req: Request, res: Response
 campaignRegisterRouter.get('/campaign/:id', verifyToken, async (req: Request, res: Response) => {
     const {id} = req.params
     try {
-        const regs = await dbClient.campaignRegister.findMany({where: {campaignId: id}})
-        for (const reg of regs) {
-            const user = await dbClient.users.findUnique({where: {id: reg.playerId}}) as Users
-            reg.username = user.username
-        }
+        const regs = await dbClient.campaignRegister.findMany({
+            where: {campaignId: id},
+            include: {player: {select: {id: true, username: true, email: true}}},
+        })
         res.status(200).json(regs)
     } catch (error) {
         res.status(500).json({error})
@@ -50,7 +49,7 @@ campaignRegisterRouter.get('/user/:id', verifyToken, async (req: Request, res: R
     try {
         const regs = await dbClient.campaignRegister.findMany({where: {playerId: id}})
         for (const reg of regs) {
-            const campaign = await dbClient.campaigns.findUnique({where: {id: reg.campaignId}}) as Campaigns
+            const campaign = await dbClient.campaign.findUnique({where: {id: reg.campaignId}}) as Campaign
             reg.title = campaign.title
             reg.regulations = campaign.regulations
         }

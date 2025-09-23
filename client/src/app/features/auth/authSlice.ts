@@ -4,7 +4,7 @@ import type {RootState} from "../../store.ts";
 
 export const login = createAsyncThunk(
     'auth/login',
-    async (data: {username: string, password: string}, {rejectWithValue}) => {
+    async (data: { username: string, password: string }, {rejectWithValue}) => {
         try {
             const res: AxiosResponse = await axios.post(
                 `${import.meta.env.VITE_BACKEND_URL}/auth/login`,
@@ -30,7 +30,7 @@ export interface AuthState {
     username?: string;
     token?: string,
     loading: boolean,
-    error: any,
+    error?: any,
     success: boolean,
 }
 
@@ -39,7 +39,6 @@ const initialState: AuthState = {
     username: localStorage.getItem('ec-username') || undefined,
     token: localStorage.getItem('ec-access') || undefined,
     loading: false,
-    error: null as any,
     success: false,
 }
 

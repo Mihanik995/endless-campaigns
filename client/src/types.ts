@@ -12,8 +12,19 @@ export interface UserRegister {
 }
 
 export interface UserLogin {
+    [key: string]: any
+
     username: string;
     password: string;
+    rememberMe: boolean
+}
+
+export interface UserRestore {
+    id: string
+    username: string
+    password: string
+    confirmPassword: string
+    accessToken: string
 }
 
 export interface Campaign {

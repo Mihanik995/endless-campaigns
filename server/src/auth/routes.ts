@@ -125,7 +125,7 @@ authRouter.put('/:id', verifyToken, async (req: Request, res: Response) => {
         if (userId !== id) return res.status(403).json({error: 'Access denied'});
         if (data.username) {
             const alreadyUsed = await dbClient.user.findUnique({where: {username: data.username}});
-            if (!alreadyUsed) return res.status(400).json({error: 'Such username is already occupied'});
+            if (alreadyUsed) return res.status(400).json({error: 'Such username is already occupied'});
         }
         const user = await dbClient.user.update({where: {id}, data})
         if (!user) return res.status(404).json({error: 'User not found'});

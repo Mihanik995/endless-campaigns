@@ -42,6 +42,7 @@ export default function () {
     }
     const handleSubmitProfileChange: MouseEventHandler<HTMLButtonElement> = (e) => {
         e.preventDefault()
+        console.log(userData)
         axios.put(`/auth/${id}`, userData)
             .then((response) => {
                 if (response.status === 200) {

@@ -101,6 +101,25 @@ export interface SimpleMissionCreate {
     missionConditions: string
 }
 
+export interface Question {
+    [key: string]: any
+
+    id: string
+    creatorId: string
+    creator?: User
+    missionId: string
+    mission?: SimpleMission
+    text: string
+    answer?: string
+}
+
+export interface QuestionCreate {
+    [key: string]: any
+
+    missionId: string
+    text: string
+}
+
 export interface Pairing {
     [key: string]: any
 

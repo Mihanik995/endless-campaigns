@@ -1,8 +1,7 @@
 import {useEffect, useState} from "react";
 import axios from "../axios/axiosConfig.ts";
-import {Button, Container, Flex, Heading, Spinner} from "@radix-ui/themes";
+import {Container, Flex, Heading, Spinner} from "@radix-ui/themes";
 import ErrorHandler from "./ErrorHandler.tsx";
-import {useNavigate} from "react-router";
 import PairingCard from "./PairingCard.tsx";
 import type {PlayersOnPairings} from "../types.ts";
 
@@ -19,8 +18,6 @@ export default function () {
             }).catch(err => setError(err))
             .finally(() => setIsLoading(false))
     }, []);
-
-    const navigate = useNavigate();
 
     return (
         <Flex minHeight='40vh' align='center' justify='center'>
@@ -39,21 +36,9 @@ export default function () {
                                         pairing={pairing.pairing}
                                     />
                                 ))}
-                                    <Button
-                                        mx='2'
-                                        mt='2'
-                                        onClick={() => navigate('/campaigns/new')}
-                                    >
-                                        Create new mission
-                                    </Button>
                                 </>
                                 : <Flex align='center' justify='center' height='50vh'>
-                                    <Button
-                                        onClick={() => navigate('/missions/new')}
-                                        size='4'
-                                    >
-                                        Create your first mission!
-                                    </Button>
+                                    <Heading>You have no pairings for now.</Heading>
                                 </Flex>
                             }
                         </Container>

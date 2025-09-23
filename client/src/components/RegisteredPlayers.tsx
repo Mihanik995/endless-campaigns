@@ -51,11 +51,15 @@ export default function ({campaignId, isOwner}: Props) {
 
     return <Container mt='3'>
         <Card size='3'>
-            {isLoading
-                ? <Spinner size='3'/>
-                : !!error
-                    ? <ErrorHandler error={error}/>
-                    : registers.length
+            <Flex direction='column' gap='3' align='start'>
+                {!registers.map(reg => reg.playerId).includes(auth.id as string) &&
+                    <CampaignRegisterForm campaignId={campaignId}/>
+                }
+                {isLoading
+                    ? <Spinner size='3'/>
+                    : !!error
+                        ? <ErrorHandler error={error}/>
+                        : registers.length
                             ? <Table.Root>
                                 <Table.Header>
                                     <Table.Row>
@@ -119,13 +123,8 @@ export default function ({campaignId, isOwner}: Props) {
                             : <Container width='100vw'>
                                 <Heading align='center'>No registrations found.</Heading>
                             </Container>
-            }
-            {!registers.map(reg => reg.playerId).includes(auth.id as string) &&
-                <>
-                    <br/>
-                    <CampaignRegisterForm campaignId={campaignId}/>
-                </>
-            }
+                }
+            </Flex>
         </Card>
     </Container>
 }

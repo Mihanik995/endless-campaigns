@@ -15,7 +15,7 @@ import Dashboard from "./pages/Dashboard.tsx";
 import "@radix-ui/themes/styles.css";
 import './index.css'
 import CreateCampaign from "./pages/CreateCampaign.tsx";
-import CampaignPage from "./components/CampaignProfile.tsx";
+import CampaignPage from "./pages/CampaignPage.tsx";
 import UserProfile from "./pages/UserProfile.tsx";
 import CreateMission from "./pages/CreateMission.tsx";
 import MissionPage from "./pages/MissionPage.tsx";

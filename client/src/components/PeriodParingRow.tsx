@@ -92,7 +92,7 @@ export default function ({pairing, isOwner, missions, playerRegisters, period, o
         e.preventDefault();
         axios.put(`/missions/pairings/${pairing.id}/reject`, {rejectMessage})
             .then(res => {
-                if (res.status === 204) onChange()
+                if (res.status === 200) onChange()
             }).catch(err => setError(err as Error))
     }
 

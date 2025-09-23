@@ -7,19 +7,21 @@ import {useAppSelector} from "../app/hooks.ts";
 import {selectAuth} from "../app/features/auth/authSlice.ts";
 import {
     Button,
+    Callout,
     Card,
     CheckboxCards,
     Container,
     Flex,
+    Heading,
     IconButton,
     Popover,
     Separator,
-    Spinner, Strong,
+    Spinner,
     Text
 } from "@radix-ui/themes";
 import ErrorHandler from "../components/ErrorHandler.tsx";
 import MissionCard from "../components/MissionCard.tsx";
-import {QuestionMarkIcon} from "@radix-ui/react-icons";
+import {InfoCircledIcon, QuestionMarkIcon} from "@radix-ui/react-icons";
 import TextInput from "../components/TextInput.tsx";
 
 export default function () {
@@ -103,24 +105,21 @@ export default function () {
                                                 : <Text>Pairing results was not approved yet.</Text>
                                             : <Text>There was no winner...</Text>}
                                     </>
-                                    : <Flex justify='center' gap='2'>
+                                    : <Flex justify='center' gap='5'>
                                         {pairing.resultsRejected &&
-                                            <Card>
-                                                <Text color='red'>
-                                                    <Flex
-                                                        direction='column'
-                                                        justify='center'
-                                                        align='center'
-                                                        height='100%'
-                                                        gap='2'
-                                                    >
-                                                        <Strong>
+                                            <Callout.Root color='red'>
+                                                <Flex height='100%' align='center' gap='3'>
+                                                    <Callout.Icon>
+                                                        <InfoCircledIcon/>
+                                                    </Callout.Icon>
+                                                    <Callout.Text>
+                                                        <Heading size='3'>
                                                             Your previous report was rejected with the message:
-                                                        </Strong>
-                                                        {pairing.rejectMessage}
-                                                    </Flex>
-                                                </Text>
-                                            </Card>
+                                                        </Heading>
+                                                        <Text size='3'>{pairing.rejectMessage}</Text>
+                                                    </Callout.Text>
+                                                </Flex>
+                                            </Callout.Root>
                                         }
                                         <Flex direction='column' gap='2'>
                                             <Text weight='medium' size='4'>Choose the winner(s):</Text>

@@ -2,7 +2,8 @@ import {
     Button,
     Card,
     Container,
-    Flex, Grid,
+    Flex,
+    Grid,
     Heading,
     IconButton,
     Link,
@@ -22,6 +23,7 @@ import CheckInput from "./CheckInput.tsx";
 import ErrorHandler from "./ErrorHandler.tsx";
 import {cleanCampaign, selectCampaign, updateCampaign} from "../app/features/campaign/campaignSlice.ts";
 import type {Campaign} from "../types.ts";
+import validateData from "../utils/validators/validateData.ts";
 
 interface Props {
     campaignData: Campaign
@@ -66,18 +68,22 @@ export default function ({clickable, onDelete, campaignData}: Props) {
 
     const handleSubmit: MouseEventHandler<HTMLButtonElement> = (e) => {
         e.preventDefault()
-
-        axios.put(`/campaigns/${campaign.id}`, campaign)
-            .then((response) => {
-                if (response.status === 200) {
-                    setCampaign({
-                        ...response.data,
-                        dateStart: new Date(response.data.dateStart),
-                        dateEnd: new Date(response.data.dateEnd)
-                    })
-                    setEdit(false)
-                }
-            }).catch((error) => setError(error as Error))
+        try {
+            validateData<Campaign>(campaign)
+            axios.put(`/campaigns/${campaign.id}`, campaign)
+                .then((response) => {
+                    if (response.status === 200) {
+                        setCampaign({
+                            ...response.data,
+                            dateStart: new Date(response.data.dateStart),
+                            dateEnd: new Date(response.data.dateEnd)
+                        })
+                        setEdit(false)
+                    }
+                })
+        } catch (error) {
+            setError(error as Error)
+        }
     }
 
     const handleUpdate: MouseEventHandler<HTMLButtonElement> = (e) => {

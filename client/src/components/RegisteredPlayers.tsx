@@ -113,7 +113,7 @@ export default function ({campaignId, isOwner, requiresApproval}: Props) {
                                                             color='red'
                                                             onClick={() => handleDelete(register.id)}
                                                         >
-                                                            Drop register
+                                                            Drop
                                                         </Button>
                                                     }
                                                 </Table.Cell>

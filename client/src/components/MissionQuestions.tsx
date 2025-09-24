@@ -7,6 +7,7 @@ import ErrorHandler from "./ErrorHandler.tsx";
 import {useAppSelector} from "../app/hooks.ts";
 import {selectAuth} from "../app/features/auth/authSlice.ts";
 import TextInput from "./TextInput.tsx";
+import validateString from "../utils/validators/validateString.ts";
 
 interface Props {
     mission: SimpleMission
@@ -32,12 +33,18 @@ export default function ({mission}: Props) {
     }, [change]);
 
     const [newQuestionText, setNewQuestionText] = useState('')
+    const [updateError, setUpdateError] = useState<Error>()
     const handleNewQuestion: MouseEventHandler<HTMLButtonElement> = (e) => {
         e.preventDefault();
-        axios.post(`missions/questions/`, {text: newQuestionText, missionId: mission.id})
-            .then(res => {
-                if (res.status === 201) setQuestions([...questions, res.data])
-            }).catch(err => setError(err as Error))
+        try {
+            validateString('Question', newQuestionText)
+            axios.post(`missions/questions/`, {text: newQuestionText, missionId: mission.id})
+                .then(res => {
+                    if (res.status === 201) setQuestions([...questions, res.data])
+                })
+        } catch (error) {
+            setUpdateError(error as Error)
+        }
     }
 
     return isLoading
@@ -71,6 +78,7 @@ export default function ({mission}: Props) {
                                     onChange={(e) => setNewQuestionText(e.target.value)}
                                     name='newQuestionText'
                                 />
+                                {!!updateError && <ErrorHandler error={updateError}/>}
                                 <Flex gap='2'>
                                     <Popover.Close>
                                         <Button>Close</Button>

@@ -11,6 +11,7 @@ import EmailChangeButton from "../components/EmailChangeButton.tsx";
 import UserCampaigns from "../components/UserCampaigns.tsx";
 import ErrorHandler from "../components/ErrorHandler.tsx";
 import type {User} from "../types.ts";
+import validateData from "../utils/validators/validateData.ts";
 
 export default function () {
     const auth = useAppSelector(selectAuth);
@@ -40,16 +41,22 @@ export default function () {
             [event.target.name]: event.target.value
         })
     }
+
+    const [updateError, setUpdateError] = useState<Error>()
     const handleSubmitProfileChange: MouseEventHandler<HTMLButtonElement> = (e) => {
         e.preventDefault()
-        console.log(userData)
-        axios.put(`/auth/${id}`, userData)
-            .then((response) => {
-                if (response.status === 200) {
-                    setUserData({...response.data})
-                    setEdit(false)
-                }
-            }).catch((error) => setError(error as Error))
+        try {
+            validateData<User>(userData)
+            axios.put(`/auth/${id}`, userData)
+                .then((response) => {
+                    if (response.status === 200) {
+                        setUserData({...response.data})
+                        setEdit(false)
+                    }
+                })
+        } catch (error) {
+            setUpdateError(error as Error)
+        }
     }
 
     return (
@@ -131,6 +138,13 @@ export default function () {
                                                 </Flex>
                                             </Table.Cell>
                                         </Table.Row>
+                                        {!!updateError &&
+                                            <Table.Row>
+                                                <Table.Cell colSpan={3}>
+                                                    <ErrorHandler error={updateError}/>
+                                                </Table.Cell>
+                                            </Table.Row>
+                                        }
                                     </Table.Body>
                                 </Table.Root>
                                 <br/>

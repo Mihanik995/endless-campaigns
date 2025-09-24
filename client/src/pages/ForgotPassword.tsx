@@ -4,6 +4,7 @@ import TextInput from "../components/TextInput.tsx";
 import {type MouseEventHandler, useState} from "react";
 import axios from "../axios/axiosConfig.ts";
 import ErrorHandler from "../components/ErrorHandler.tsx";
+import validateString from "../utils/validators/validateString.ts";
 
 export default function () {
     const [success, setSuccess] = useState(false);
@@ -12,12 +13,17 @@ export default function () {
     const [email, setEmail] = useState('')
     const handleSubmit: MouseEventHandler<HTMLButtonElement> = function (e) {
         e.preventDefault();
-        axios.post('/auth/forgot-password', {email})
-            .then(res => {
-                if (res.status === 200) {
-                    setSuccess(true)
-                }
-            }).catch((err) => setError(err as Error))
+        try {
+            validateString('Email', email)
+            axios.post('/auth/forgot-password', {email})
+                .then(res => {
+                    if (res.status === 200) {
+                        setSuccess(true)
+                    }
+                })
+        } catch (error) {
+            setError(error as Error)
+        }
     }
 
     return <>

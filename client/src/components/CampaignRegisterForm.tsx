@@ -3,6 +3,8 @@ import {type ChangeEvent, type MouseEventHandler, type ReactElement, useState} f
 import TextInput from "./TextInput.tsx";
 import axios from "../axios/axiosConfig.ts";
 import type {CampaignRegisterCreate} from "../types.ts";
+import validateData from "../utils/validators/validateData.ts";
+import ErrorHandler from "./ErrorHandler.tsx";
 
 interface Props {
     campaignId: string
@@ -14,6 +16,7 @@ export default function ({campaignId}: Props): ReactElement {
         formationName: '',
         rosterLink: ''
     })
+    const [error, setError] = useState<Error>()
 
     const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
         setRegisterData({
@@ -25,10 +28,15 @@ export default function ({campaignId}: Props): ReactElement {
     const handleSubmit: MouseEventHandler<HTMLButtonElement> = (event) => {
         event.preventDefault()
 
-        axios.post('/campaigns/register', registerData)
-            .then((response) => {
-                if (response.status === 201) window.location.reload();
-            })
+        try {
+            validateData<CampaignRegisterCreate>(registerData)
+            axios.post('/campaigns/register', registerData)
+                .then((response) => {
+                    if (response.status === 201) window.location.reload();
+                })
+        } catch (error) {
+            setError(error as Error)
+        }
     }
 
     return (
@@ -52,9 +60,15 @@ export default function ({campaignId}: Props): ReactElement {
                             value={registerData.rosterLink}
                             onChange={handleChange}
                         />
-                        <Popover.Close>
-                            <Button onClick={handleSubmit}>Register</Button>
-                        </Popover.Close>
+                        {!!error && <ErrorHandler error={error}/>}
+                        <Flex gap='3'>
+                            <Popover.Close>
+                                Cancel
+                            </Popover.Close>
+                            <Popover.Close>
+                                <Button onClick={handleSubmit} color='grass'>Register</Button>
+                            </Popover.Close>
+                        </Flex>
                     </Flex>
                 </Container>
             </Popover.Content>

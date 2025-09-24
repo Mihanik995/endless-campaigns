@@ -21,6 +21,7 @@ import {selectAuth} from "../app/features/auth/authSlice.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
 import {useNavigate} from "react-router";
 import type {SimpleMission} from "../types.ts";
+import validateData from "../utils/validators/validateData.ts";
 
 interface Props {
     clickable: boolean
@@ -60,10 +61,15 @@ export default function ({clickable, onDelete, mission, owner}: Props) {
     const handleSubmit: MouseEventHandler<HTMLButtonElement> = (e) => {
         e.preventDefault()
 
-        axios.put(`/missions/simple/${missionData.id}`, missionData)
-            .then((response) => {
-                if (response.status === 200) setEdit(false)
-            }).catch((error) => setError(error as Error))
+        try {
+            validateData<SimpleMission>(missionData)
+            axios.put(`/missions/simple/${missionData.id}`, missionData)
+                .then((response) => {
+                    if (response.status === 200) setEdit(false)
+                })
+        } catch (error) {
+            setError(error as Error)
+        }
     }
 
     return (

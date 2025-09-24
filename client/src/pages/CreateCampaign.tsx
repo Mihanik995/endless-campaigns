@@ -8,6 +8,7 @@ import {useNavigate} from "react-router";
 import CheckInput from "../components/CheckInput.tsx";
 import ErrorHandler from "../components/ErrorHandler.tsx";
 import type {CampaignCreate} from "../types.ts";
+import validateData from "../utils/validators/validateData.ts";
 
 type InputElement = HTMLInputElement | HTMLTextAreaElement
 
@@ -23,7 +24,7 @@ export default function () {
         requiresPairingResultsApproval: false,
     })
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState()
+    const [error, setError] = useState<Error>()
     const navigate = useNavigate();
 
     const handleChange: ChangeEventHandler<InputElement> = function (e) {
@@ -44,11 +45,17 @@ export default function () {
         e.preventDefault();
         setIsLoading(true);
 
-        axios.post('/campaigns', campaignData)
-            .then(res => {
-                if (res.status === 201) navigate('/dashboard')
-            }).catch(err => setError(err))
-            .finally(() => setIsLoading(false))
+        try {
+            validateData<CampaignCreate>(campaignData)
+            axios.post('/campaigns', campaignData)
+                .then(res => {
+                    if (res.status === 201) navigate('/dashboard')
+                })
+        } catch (error) {
+            setError(error as Error)
+        } finally {
+            setIsLoading(false);
+        }
     }
 
     return (

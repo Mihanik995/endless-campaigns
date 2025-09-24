@@ -46,62 +46,60 @@ export default function ({question, isMissionOwner, onChange}: Props) {
 
     return (
         <Card>
-            {!!error
-                ? <ErrorHandler error={error}/>
-                : <>
-                    <Text>Q: {question.text}</Text>
-                    {question.answer && <>
+            <Text>Q: {question.text}</Text>
+            {question.answer && <>
+                <Separator size='4' my='2'/>
+                <Text>A: {question.answer}</Text>
+            </>
+            }
+            {isMissionOwner
+                ? !question.answer
+                    ? <>
                         <Separator size='4' my='2'/>
-                        <Text>A: {question.answer}</Text>
+                        <Flex gap='3'>
+                            <TextField.Root
+                                value={answer}
+                                onChange={(e) => setAnswer(e.target.value)}
+                            />
+                            <Button onClick={handleAnswer}>Answer</Button>
+                        </Flex>
                     </>
-                    }
-                    {isMissionOwner
-                        ? !question.answer
+                    : <>
+                        <Separator size='4' my='2'/>
+                        {edit
                             ? <>
-                                <Separator size='4' my='2'/>
-                                <Flex gap='3'>
-                                    <TextField.Root
-                                        value={answer}
-                                        onChange={(e) => setAnswer(e.target.value)}
-                                    />
-                                    <Button onClick={handleAnswer}>Answer</Button>
-                                </Flex>
+                                <TextField.Root
+                                    value={answer}
+                                    onChange={(e) => setAnswer(e.target.value)}
+                                />
+                                <Button onClick={handleAnswer}>Answer</Button>
                             </>
-                            : <>
-                                <Separator size='4' my='2'/>
-                                {edit
-                                    ? <>
-                                        <TextField.Root
-                                            value={answer}
-                                            onChange={(e) => setAnswer(e.target.value)}
-                                        />
-                                        <Button onClick={handleAnswer}>Answer</Button>
-                                    </>
-                                    : <Button onClick={() => setEdit(true)}>Edit answer</Button>
+                            : <Button onClick={() => setEdit(true)}>Edit answer</Button>
+                        }
+                    </>
+                : auth.id === question.creatorId &&
+                <>
+                    <Separator size='4' my='2'/>
+                    {edit
+                        ? <Flex gap='2'>
+                            <TextField.Root
+                                value={editQuestion}
+                                onChange={
+                                    (e) => setEditQuestion(e.target.value)
                                 }
-                            </>
-                        : auth.id === question.creatorId &&
-                        <>
-                            <Separator size='4' my='2'/>
-                            {edit
-                                ? <Flex gap='2'>
-                                    <TextField.Root
-                                        value={editQuestion}
-                                        onChange={
-                                            (e) => setEditQuestion(e.target.value)
-                                        }
-                                    />
-                                    <Button onClick={handleQuestion}>Answer</Button>
-                                </Flex>
-                                : <>
-                                    <Flex gap='2'>
-                                        <Button onClick={() => setEdit(true)}>Edit</Button>
-                                        <Button onClick={handleDelete} color='red'>Delete</Button>
-                                    </Flex>
-                                </>
-                            }
-                        </>}
-                </>}
+                            />
+                            <Button onClick={handleQuestion}>Answer</Button>
+                        </Flex>
+                        : <>
+                            <Flex gap='2'>
+                                <Button onClick={() => setEdit(true)}>Edit</Button>
+                                <Button onClick={handleDelete} color='red'>Delete</Button>
+                            </Flex>
+                        </>
+                    }
+                </>
+            }
+            {!!error && <ErrorHandler error={error}/>}
         </Card>
     )
 }

@@ -5,8 +5,12 @@ import {Button, Card, Flex, Heading, Separator, Text} from "@radix-ui/themes";
 import {EnvelopeClosedIcon, LockClosedIcon, PersonIcon} from "@radix-ui/react-icons";
 import TextInput from "../components/TextInput.tsx";
 import type {UserRegister} from "../types.ts";
+import validateData from "../utils/validators/validateData.ts";
+import validatePassword from "../utils/validators/validatePassword.ts";
+import ErrorHandler from "../components/ErrorHandler.tsx";
 
 export default function (): ReactElement {
+    const [error, setError] = useState<Error>()
     const [registerData, setRegisterData] = useState<UserRegister>({
         username: '',
         password: '',
@@ -23,27 +27,19 @@ export default function (): ReactElement {
 
     const handleSubmit: MouseEventHandler<HTMLButtonElement> = function (e) {
         e.preventDefault();
-        const {username, password, confirmPassword, email} = registerData;
-        if (!(username && password && confirmPassword && email)) {
-            alert("Please fill the required fields");
-            return;
-        }
-        if (password !== confirmPassword) {
-            alert("Password must match");
-            return;
-        }
-        axios.post(
-            `${import.meta.env.VITE_BACKEND_URL}/auth/register`,
-            {username, password, email},
-            {headers: {'Content-Type': 'application/json'}}
-        )
-            .then(res => {
-                if (res.status === 201) {
-                    setSuccess(true)
-                } else {
-                    console.log(res.data)
-                }
+        try {
+            validateData<UserRegister>(registerData)
+            validatePassword<UserRegister>(registerData)
+            axios.post(
+                `${import.meta.env.VITE_BACKEND_URL}/auth/register`,
+                registerData,
+                {headers: {'Content-Type': 'application/json'}}
+            ).then(res => {
+                if (res.status === 201) setSuccess(true)
             })
+        } catch (error) {
+            setError(error as Error)
+        }
     }
 
     const [success, setSuccess] = useState(false)
@@ -103,6 +99,7 @@ export default function (): ReactElement {
                                     </Flex>
                                 </Flex>
                                 <Separator size='4'/>
+                                {!!error && <ErrorHandler error={error}/>}
                                 <Button
                                     onClick={handleSubmit}
                                     size='3'

@@ -182,12 +182,15 @@ authRouter.put('/:id/change-password', verifyToken, async (req: Request, res: Re
     try {
         const {userId} = jwt.verify(token, process.env.JWT_SECRET);
         if (userId !== id) return res.status(403).json({error: 'Access denied'});
-        const user = await dbClient.user.findUnique({where: {id}})
+        const user = await dbClient.user.findUnique({where: {id}}) as User
         if (!user) return res.status(404).json({error: 'User not found'});
+        console.log(user.password)
         crypto.pbkdf2(password, user.salt, 310000, 32, 'sha256', function (err: Error, hashedPassword: Buffer) {
             if (err) throw new Error(err.message);
-            const updatedUser = dbClient.user.update({where: {id}, data: {password: hashedPassword}});
-            return res.status(200).json({updatedUser})
+            dbClient.user.update({where: {id}, data: {password: hashedPassword}})
+                .then((updatedUser: User) => {
+                    return res.status(200).json({updatedUser})
+                })
         })
     } catch (error) {
         res.status(500).json({error})

@@ -4,7 +4,8 @@ import {Button, Card, Container, Flex, Heading, Popover, Spinner, Table} from "@
 import ErrorHandler from "./ErrorHandler.tsx";
 import TextInput from "./TextInput.tsx";
 import PeriodRow from "./PeriodRow.tsx";
-import type {CampaignPeriod, CampaignRegister, PlayerRegister, SimpleMission} from "../types.ts";
+import type {CampaignPeriod, CampaignPeriodCreate, CampaignRegister, PlayerRegister, SimpleMission} from "../types.ts";
+import validateData from "../utils/validators/validateData.ts";
 
 interface Props {
     campaignId: string,
@@ -42,12 +43,12 @@ export default function ({campaignId, isOwner}: Props) {
             .finally(() => setIsLoading(false))
     }, [change]);
 
-    const [newPeriod, setNewPeriod] = useState<CampaignPeriod>({
-        id: '',
+    const [newPeriod, setNewPeriod] = useState<CampaignPeriodCreate>({
         campaignId: campaignId,
         dateStart: '',
         dateEnd: ''
     })
+    const [createError, setCreateError] = useState<Error>()
     const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
         setNewPeriod({
             ...newPeriod,
@@ -56,13 +57,18 @@ export default function ({campaignId, isOwner}: Props) {
     }
     const handleSubmit: MouseEventHandler<HTMLButtonElement> = (e) => {
         e.preventDefault();
-        axios.post('/campaigns/periods', newPeriod)
-            .then(res => {
-                if (res.status === 200) {
-                    setPeriods([...periods, {...res.data}])
-                    setNewPeriod({id: '', campaignId, dateStart: '', dateEnd: ''})
-                }
-            }).catch(error => setError(error as Error))
+        try {
+            validateData<CampaignPeriodCreate>(newPeriod)
+            axios.post('/campaigns/periods', newPeriod)
+                .then(res => {
+                    if (res.status === 200) {
+                        setPeriods([...periods, {...res.data}])
+                        setNewPeriod({id: '', campaignId, dateStart: '', dateEnd: ''})
+                    }
+                })
+        } catch (error) {
+            setCreateError(error as Error)
+        }
     }
 
     return <Container mt='3'>
@@ -126,6 +132,7 @@ export default function ({campaignId, isOwner}: Props) {
                                                         value={newPeriod.dateEnd.slice(0, 10)}
                                                         onChange={handleChange}
                                                     />
+                                                    {!!createError && <ErrorHandler error={createError}/>}
                                                     <Flex gap='2'>
                                                         <Popover.Close>
                                                             <Button>Cancel</Button>

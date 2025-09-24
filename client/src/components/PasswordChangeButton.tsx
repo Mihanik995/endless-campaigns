@@ -6,8 +6,12 @@ import {useAppDispatch, useAppSelector} from "../app/hooks.ts";
 import {logout, selectAuth} from "../app/features/auth/authSlice.ts";
 import TextInput from "./TextInput.tsx";
 import ErrorHandler from "./ErrorHandler.tsx";
+import validatePassword from "../utils/validators/validatePassword.ts";
+import validateData from "../utils/validators/validateData.ts";
 
 interface NewPassword {
+    [key: string]: string;
+
     password: string;
     confirmPassword: string;
 }
@@ -29,11 +33,16 @@ export default function () {
     }
     const handleSubmit: MouseEventHandler<HTMLButtonElement> = (e) => {
         e.preventDefault()
-        if (newPassword.password !== newPassword.confirmPassword) return
-        axios.put(`/auth/${id}/change-password`, {password: newPassword.password})
-            .then((response) => {
-                if (response.status === 200) dispatch(logout())
-            }).catch(err => setError(err as Error));
+        try {
+            validateData<NewPassword>(newPassword)
+            validatePassword<NewPassword>(newPassword)
+            axios.put(`/auth/${id}/change-password`, {password: newPassword.password})
+                .then((response) => {
+                    if (response.status === 200) dispatch(logout())
+                })
+        } catch (error) {
+            setError(error as Error)
+        }
     }
 
     return (

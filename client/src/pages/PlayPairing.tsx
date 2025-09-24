@@ -23,6 +23,7 @@ import ErrorHandler from "../components/ErrorHandler.tsx";
 import MissionCard from "../components/MissionCard.tsx";
 import {InfoCircledIcon, QuestionMarkIcon} from "@radix-ui/react-icons";
 import TextInput from "../components/TextInput.tsx";
+import validateString from "../utils/validators/validateString.ts";
 
 export default function () {
     const [error, setError] = useState<Error>()
@@ -63,10 +64,15 @@ export default function () {
     const navigate = useNavigate()
     const handleSubmit: MouseEventHandler<HTMLButtonElement> = (e) => {
         e.preventDefault();
-        axios.post(`/missions/pairings/${id}/set-winners`, {winners, reportLink})
-            .then(res => {
-                if (res.status === 200) navigate('/dashboard')
-            })
+        try {
+            if (pairing.campaign?.requiresPairingReport) validateString('Report link', reportLink)
+            axios.post(`/missions/pairings/${id}/set-winners`, {winners, reportLink})
+                .then(res => {
+                    if (res.status === 200) navigate('/dashboard')
+                })
+        } catch (error) {
+            setError(error as Error)
+        }
     }
 
     return <>

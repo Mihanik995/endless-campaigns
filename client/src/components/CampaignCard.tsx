@@ -57,17 +57,14 @@ export default function ({clickable, onDelete, campaignData}: Props) {
         })
     }
 
-    const handleDelete: MouseEventHandler<HTMLButtonElement> = (e) => {
-        e.preventDefault()
-
+    const handleDelete: MouseEventHandler<HTMLButtonElement> = () => {
         axios.delete(`/campaigns/${campaign.id}`)
             .then((response) => {
                 if (response.status === 204) onDelete()
             }).catch((error) => setError(error as Error))
     }
 
-    const handleSubmit: MouseEventHandler<HTMLButtonElement> = (e) => {
-        e.preventDefault()
+    const handleSubmit: MouseEventHandler<HTMLButtonElement> = () => {
         try {
             validateData<Campaign>(campaign)
             axios.put(`/campaigns/${campaign.id}`, campaign)
@@ -86,9 +83,7 @@ export default function ({clickable, onDelete, campaignData}: Props) {
         }
     }
 
-    const handleUpdate: MouseEventHandler<HTMLButtonElement> = (e) => {
-        e.preventDefault()
-
+    const handleUpdate: MouseEventHandler<HTMLButtonElement> = () => {
         axios.get(`/campaigns/${campaign.id}`)
             .then((response) => {
                 if (response.status === 200) {

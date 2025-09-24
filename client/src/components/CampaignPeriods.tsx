@@ -1,11 +1,10 @@
-import {type ChangeEvent, type MouseEventHandler, useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import axios from "../axios/axiosConfig.ts";
-import {Button, Card, Container, Flex, Heading, Popover, Spinner, Table} from "@radix-ui/themes";
+import {Card, Container, Flex, Heading, Spinner, Table} from "@radix-ui/themes";
 import ErrorHandler from "./ErrorHandler.tsx";
-import TextInput from "./TextInput.tsx";
 import PeriodRow from "./PeriodRow.tsx";
-import type {CampaignPeriod, CampaignPeriodCreate, CampaignRegister, PlayerRegister, SimpleMission} from "../types.ts";
-import validateData from "../utils/validators/validateData.ts";
+import type {CampaignPeriod, CampaignRegister, PlayerRegister, SimpleMission} from "../types.ts";
+import CreatePeriodButton from "./CreatePeriodButton.tsx";
 
 interface Props {
     campaignId: string,
@@ -31,8 +30,8 @@ export default function ({campaignId, isOwner}: Props) {
                 if (regsRes.status === 200) setCampaignPlayers(
                     regsRes.data.filter((reg: CampaignRegister) => reg.approved)
                         .map((reg: CampaignRegister) => {
-                        return {...reg, playerUsername: reg.player?.username}
-                    })
+                            return {...reg, playerUsername: reg.player?.username}
+                        })
                 )
             })
             .then(() => axios.get(`/missions/simple`))
@@ -43,34 +42,6 @@ export default function ({campaignId, isOwner}: Props) {
             .finally(() => setIsLoading(false))
     }, [change]);
 
-    const [newPeriod, setNewPeriod] = useState<CampaignPeriodCreate>({
-        campaignId: campaignId,
-        dateStart: '',
-        dateEnd: ''
-    })
-    const [createError, setCreateError] = useState<Error>()
-    const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-        setNewPeriod({
-            ...newPeriod,
-            [event.target.name]: event.target.value
-        })
-    }
-    const handleSubmit: MouseEventHandler<HTMLButtonElement> = (e) => {
-        e.preventDefault();
-        try {
-            validateData<CampaignPeriodCreate>(newPeriod)
-            axios.post('/campaigns/periods', newPeriod)
-                .then(res => {
-                    if (res.status === 200) {
-                        setPeriods([...periods, {...res.data}])
-                        setNewPeriod({id: '', campaignId, dateStart: '', dateEnd: ''})
-                    }
-                })
-        } catch (error) {
-            setCreateError(error as Error)
-        }
-    }
-
     return <Container mt='3'>
         <Card size='3'>
             {isLoading
@@ -79,7 +50,7 @@ export default function ({campaignId, isOwner}: Props) {
                     ? <Table.Root>
                         <Table.Header>
                             <Table.Row>
-                                <Table.ColumnHeaderCell/>
+                                <Table.ColumnHeaderCell minWidth='100px'/>
                                 <Table.ColumnHeaderCell>
                                     Dates
                                 </Table.ColumnHeaderCell>
@@ -112,45 +83,14 @@ export default function ({campaignId, isOwner}: Props) {
                                     <Table.Cell/>
                                     <Table.Cell/>
                                     <Table.Cell>
-                                        <Popover.Root>
-                                            <Popover.Trigger>
-                                                <Button>Add another period</Button>
-                                            </Popover.Trigger>
-                                            <Popover.Content>
-                                                <Flex direction='column' gap='2'>
-                                                    <TextInput
-                                                        label='Start Date'
-                                                        name='dateStart'
-                                                        type='date'
-                                                        value={newPeriod.dateStart.slice(0, 10)}
-                                                        onChange={handleChange}
-                                                    />
-                                                    <TextInput
-                                                        label='End Date'
-                                                        name='dateEnd'
-                                                        type='date'
-                                                        value={newPeriod.dateEnd.slice(0, 10)}
-                                                        onChange={handleChange}
-                                                    />
-                                                    {!!createError && <ErrorHandler error={createError}/>}
-                                                    <Flex gap='2'>
-                                                        <Popover.Close>
-                                                            <Button>Cancel</Button>
-                                                        </Popover.Close>
-                                                        <Popover.Close>
-                                                            <Button
-                                                                color='grass'
-                                                                onClick={handleSubmit}
-                                                            >
-                                                                Submit
-                                                            </Button>
-                                                        </Popover.Close>
-                                                    </Flex>
-                                                </Flex>
-                                            </Popover.Content>
-                                        </Popover.Root>
+                                        <CreatePeriodButton
+                                            campaignId={campaignId}
+                                            periods={periods}
+                                            setPeriods={setPeriods}
+                                        />
                                     </Table.Cell>
-                                </Table.Row>}
+                                </Table.Row>
+                            }
                         </Table.Body>
                     </Table.Root>
                     : <Flex
@@ -161,46 +101,17 @@ export default function ({campaignId, isOwner}: Props) {
                     >
                         <Heading>No periods found</Heading>
                         {isOwner &&
-                            <Popover.Root>
-                                <Popover.Trigger>
-                                    <Button size='3'>Add a period</Button>
-                                </Popover.Trigger>
-                                <Popover.Content>
-                                    <Flex direction='column' gap='2'>
-                                        <TextInput
-                                            label='Start Date'
-                                            name='dateStart'
-                                            type='date'
-                                            value={newPeriod.dateStart.slice(0, 10)}
-                                            onChange={handleChange}
-                                        />
-                                        <TextInput
-                                            label='End Date'
-                                            name='dateEnd'
-                                            type='date'
-                                            value={newPeriod.dateEnd.slice(0, 10)}
-                                            onChange={handleChange}
-                                        />
-                                        <Flex gap='2'>
-                                            <Popover.Close>
-                                                <Button>Cancel</Button>
-                                            </Popover.Close>
-                                            <Popover.Close>
-                                                <Button
-                                                    color='grass'
-                                                    onClick={handleSubmit}
-                                                >
-                                                    Submit
-                                                </Button>
-                                            </Popover.Close>
-                                        </Flex>
-                                    </Flex>
-                                </Popover.Content>
-                            </Popover.Root>
+                            <CreatePeriodButton
+                                campaignId={campaignId}
+                                periods={periods}
+                                setPeriods={setPeriods}
+                            />
                         }
                     </Flex>
             }
-            {!!error && <ErrorHandler error={error}/>}
+            {
+                !!error && <ErrorHandler error={error}/>
+            }
         </Card>
     </Container>
 }

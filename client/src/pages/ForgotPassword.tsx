@@ -11,8 +11,7 @@ export default function () {
     const [error, setError] = useState<Error>()
 
     const [email, setEmail] = useState('')
-    const handleSubmit: MouseEventHandler<HTMLButtonElement> = function (e) {
-        e.preventDefault();
+    const handleSubmit: MouseEventHandler<HTMLButtonElement> = function () {
         try {
             validateString('Email', email)
             axios.post('/auth/forgot-password', {email})

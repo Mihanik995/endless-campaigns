@@ -62,8 +62,7 @@ export default function () {
     }
 
     const navigate = useNavigate()
-    const handleSubmit: MouseEventHandler<HTMLButtonElement> = (e) => {
-        e.preventDefault();
+    const handleSubmit: MouseEventHandler<HTMLButtonElement> = () => {
         try {
             if (pairing.campaign?.requiresPairingReport) validateString('Report link', reportLink)
             axios.post(`/missions/pairings/${id}/set-winners`, {winners, reportLink})

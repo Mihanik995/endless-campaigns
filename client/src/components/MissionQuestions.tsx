@@ -34,8 +34,7 @@ export default function ({mission}: Props) {
 
     const [newQuestionText, setNewQuestionText] = useState('')
     const [updateError, setUpdateError] = useState<Error>()
-    const handleNewQuestion: MouseEventHandler<HTMLButtonElement> = (e) => {
-        e.preventDefault();
+    const handleNewQuestion: MouseEventHandler<HTMLButtonElement> = () => {
         try {
             validateString('Question', newQuestionText)
             axios.post(`missions/questions/`, {text: newQuestionText, missionId: mission.id})
@@ -54,7 +53,17 @@ export default function ({mission}: Props) {
             : <Flex direction='column' gap='3'>
                 <Heading>Questions</Heading>
                 {questions.length
-                    ? <Grid columns={questions.length > 3 ? '3' : `${questions.length}`} gap='3' width='auto'>
+                    ? <Grid
+                        columns={
+                            {
+                                initial: '1',
+                                xs: questions.length > 2 ? '2' : `${questions.length}`,
+                                sm: questions.length > 3 ? '3' : `${questions.length}`
+                            }
+                        }
+                        gap='3'
+                        width='auto'
+                    >
                         {questions.map(q => (
                             <MissionQuestionCard
                                 key={q.id}

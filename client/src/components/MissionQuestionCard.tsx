@@ -17,8 +17,7 @@ export default function ({question, isMissionOwner, onChange}: Props) {
 
     const [answer, setAnswer] = useState<string>(question.answer || '');
     const [error, setError] = useState<Error>()
-    const handleAnswer: MouseEventHandler<HTMLButtonElement> = (e) => {
-        e.preventDefault()
+    const handleAnswer: MouseEventHandler<HTMLButtonElement> = () => {
         axios.put(`/missions/questions/${question.id}`, {answer})
             .then(res => {
                 if (res.status === 200) onChange()
@@ -26,16 +25,14 @@ export default function ({question, isMissionOwner, onChange}: Props) {
     }
 
     const [editQuestion, setEditQuestion] = useState(question.text)
-    const handleQuestion: MouseEventHandler<HTMLButtonElement> = (e) => {
-        e.preventDefault()
+    const handleQuestion: MouseEventHandler<HTMLButtonElement> = () => {
         axios.put(`/missions/questions/${question.id}`, {text: editQuestion})
             .then(res => {
                 if (res.status === 200) onChange()
             }).catch(err => setError(err as Error))
     }
 
-    const handleDelete: MouseEventHandler<HTMLButtonElement> = (e) => {
-        e.preventDefault()
+    const handleDelete: MouseEventHandler<HTMLButtonElement> = () => {
         axios.delete(`/missions/questions/${question.id}`)
             .then(res => {
                 if (res.status === 204) onChange()

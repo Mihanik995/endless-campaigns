@@ -42,9 +42,7 @@ export default function ({playerRegisters, period, onChange, missions}: Props) {
     }
 
     const [error, setError] = useState<Error>()
-    const handleSubmit: MouseEventHandler<HTMLButtonElement> = (e) => {
-        e.preventDefault()
-
+    const handleSubmit: MouseEventHandler<HTMLButtonElement> = () => {
         try {
             const data: PairingCreate = {
                 campaignId: period.campaignId,

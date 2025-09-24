@@ -7,7 +7,7 @@ function verificationEmail (token: string): string {
 
 function restoreAccessEmail (token: string): string {
     return `<h3>We've got your request!</h3>
-<p>To restore access to your account, please pass <a href="${process.env.FRONTED_URL}/auth/restore-access/${token}">the link</a>.</p>`
+<p>To restore access to your account, please follow <a href="${process.env.FRONTED_URL}/auth/restore-access/${token}">the link</a>.</p>`
 }
 
 module.exports = {verificationEmail, restoreAccessEmail}

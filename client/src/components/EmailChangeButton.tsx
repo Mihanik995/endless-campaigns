@@ -14,8 +14,7 @@ export default function () {
     const [error, setError] = useState<Error>()
 
     const [newEmail, setNewEmail] = useState<string>('')
-    const handleSubmit: MouseEventHandler<HTMLButtonElement> = (e) => {
-        e.preventDefault()
+    const handleSubmit: MouseEventHandler<HTMLButtonElement> = () => {
         try {
             validateString('Email', newEmail)
             axios.put(`/auth/${id}/change-email`, {email: newEmail})
@@ -45,7 +44,8 @@ export default function () {
                         onChange={(e) => setNewEmail(e.target.value)}
                     />
                     <Text>
-                        <Strong>Notice!</Strong> After the submission you'll be logged out and have to verify your new e-mail.
+                        <Strong>Notice!</Strong> After the submission you'll be logged out and have to verify your new
+                        e-mail.
                     </Text>
                     {!!error && <ErrorHandler error={error}/>}
                     <Flex gap='2'>

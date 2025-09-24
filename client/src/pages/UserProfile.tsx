@@ -43,8 +43,7 @@ export default function () {
     }
 
     const [updateError, setUpdateError] = useState<Error>()
-    const handleSubmitProfileChange: MouseEventHandler<HTMLButtonElement> = (e) => {
-        e.preventDefault()
+    const handleSubmitProfileChange: MouseEventHandler<HTMLButtonElement> = () => {
         try {
             validateData<User>(userData)
             axios.put(`/auth/${id}`, userData)

@@ -50,9 +50,7 @@ export default function ({pairing, isOwner, missions, playerRegisters, period, o
         ])
     }
 
-    const handleSubmit: MouseEventHandler<HTMLButtonElement> = (e) => {
-        e.preventDefault()
-
+    const handleSubmit: MouseEventHandler<HTMLButtonElement> = () => {
         axios.put(`/missions/pairings/${pairing.id}`, {
             campaignId: period.campaignId,
             periodId: period.id,
@@ -64,9 +62,7 @@ export default function ({pairing, isOwner, missions, playerRegisters, period, o
         }).catch(err => setError(err as Error))
     }
 
-    const handleDeletePairing: MouseEventHandler<HTMLButtonElement> = (e) => {
-        e.preventDefault();
-
+    const handleDeletePairing: MouseEventHandler<HTMLButtonElement> = () => {
         axios.delete(`/missions/pairings/${pairing.id}`)
             .then(res => {
                 if (res.status === 204) onChange()
@@ -79,8 +75,7 @@ export default function ({pairing, isOwner, missions, playerRegisters, period, o
             : setWinners([...winners, value])
     }
 
-    const approveResults: MouseEventHandler<HTMLButtonElement> = (e) => {
-        e.preventDefault();
+    const approveResults: MouseEventHandler<HTMLButtonElement> = () => {
         axios.put(`/missions/pairings/${pairing.id}/approve`)
             .then(res => {
                 if (res.status === 200) onChange()
@@ -88,8 +83,7 @@ export default function ({pairing, isOwner, missions, playerRegisters, period, o
     }
 
     const [rejectMessage, setRejectMessage] = useState('')
-    const rejectResults: MouseEventHandler<HTMLButtonElement> = (e) => {
-        e.preventDefault();
+    const rejectResults: MouseEventHandler<HTMLButtonElement> = () => {
         axios.put(`/missions/pairings/${pairing.id}/reject`, {rejectMessage})
             .then(res => {
                 if (res.status === 200) onChange()
@@ -187,7 +181,7 @@ export default function ({pairing, isOwner, missions, playerRegisters, period, o
                                 {pairing.simpleMission?.title}
                             </Link>
                         </Table.Cell>
-                        <Table.Cell>
+                        <Table.Cell minWidth='150px'>
                             <Text align='center'>
                                 {pairing.players
                                     .map(player => player.player.username)
@@ -205,7 +199,9 @@ export default function ({pairing, isOwner, missions, playerRegisters, period, o
                         <Table.Cell>
                             {pairing.reportLink
                                 ? <Link href={pairing.reportLink} target='_blank'>
-                                    {pairing.reportLink}
+                                    {pairing.reportLink.length > 20
+                                        ? `${pairing.reportLink.slice(0, 20)}...`
+                                        : pairing.reportLink}
                                 </Link>
                                 : '-'}
                         </Table.Cell>

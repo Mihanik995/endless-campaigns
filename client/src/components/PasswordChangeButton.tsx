@@ -31,8 +31,7 @@ export default function () {
             [event.target.name]: event.target.value
         })
     }
-    const handleSubmit: MouseEventHandler<HTMLButtonElement> = (e) => {
-        e.preventDefault()
+    const handleSubmit: MouseEventHandler<HTMLButtonElement> = () => {
         try {
             validateData<NewPassword>(newPassword)
             validatePassword<NewPassword>(newPassword)

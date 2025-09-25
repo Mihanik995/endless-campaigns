@@ -7,6 +7,7 @@ import axios from "../axios/axiosConfig.ts";
 import {useNavigate} from "react-router";
 import ErrorHandler from "../components/ErrorHandler.tsx";
 import type {SimpleMissionCreate} from "../types.ts";
+import validateData from "../utils/validators/validateData.ts";
 
 type InputElement = HTMLInputElement | HTMLTextAreaElement
 
@@ -27,15 +28,20 @@ export default function () {
         })
     }
 
-    const handleSubmit: MouseEventHandler<HTMLButtonElement> = function (e) {
-        e.preventDefault();
+    const handleSubmit: MouseEventHandler<HTMLButtonElement> = function () {
         setIsLoading(true);
 
-        axios.post('/missions/simple', missionData)
-            .then(res => {
-                if (res.status === 201) navigate('/dashboard')
-            }).catch(err => setError(err))
-            .finally(() => setIsLoading(false))
+        try {
+            validateData<SimpleMissionCreate>(missionData)
+            axios.post('/missions/simple', missionData)
+                .then(res => {
+                    if (res.status === 201) navigate('/dashboard')
+                })
+        } catch (error) {
+            setError(error as Error)
+        } finally {
+            setIsLoading(false);
+        }
     }
 
     return (

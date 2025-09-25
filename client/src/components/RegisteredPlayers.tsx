@@ -10,9 +10,10 @@ import ErrorHandler from "./ErrorHandler.tsx";
 interface Props {
     campaignId: string;
     isOwner: boolean;
+    requiresApproval: boolean;
 }
 
-export default function ({campaignId, isOwner}: Props) {
+export default function ({campaignId, isOwner, requiresApproval}: Props) {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<Error>()
     const [registers, setRegisters] = useState<CampaignRegister[]>([])
@@ -51,11 +52,15 @@ export default function ({campaignId, isOwner}: Props) {
 
     return <Container mt='3'>
         <Card size='3'>
-            {isLoading
-                ? <Spinner size='3'/>
-                : !!error
-                    ? <ErrorHandler error={error}/>
-                    : registers.length
+            <Flex direction='column' gap='3' align='start'>
+                {!registers.map(reg => reg.playerId).includes(auth.id as string) &&
+                    <CampaignRegisterForm campaignId={campaignId}/>
+                }
+                {isLoading
+                    ? <Spinner size='3'/>
+                    : !!error
+                        ? <ErrorHandler error={error}/>
+                        : registers.filter(reg => isOwner ? true: reg.approved).length
                             ? <Table.Root>
                                 <Table.Header>
                                     <Table.Row>
@@ -108,7 +113,7 @@ export default function ({campaignId, isOwner}: Props) {
                                                             color='red'
                                                             onClick={() => handleDelete(register.id)}
                                                         >
-                                                            Drop register
+                                                            Drop
                                                         </Button>
                                                     }
                                                 </Table.Cell>
@@ -117,15 +122,12 @@ export default function ({campaignId, isOwner}: Props) {
                                 </Table.Body>
                             </Table.Root>
                             : <Container width='100vw'>
-                                <Heading align='center'>No registrations found.</Heading>
+                                <Heading align='center'>No {
+                                    requiresApproval ? 'approved ' : ''
+                                }registrations found.</Heading>
                             </Container>
-            }
-            {!registers.map(reg => reg.playerId).includes(auth.id as string) &&
-                <>
-                    <br/>
-                    <CampaignRegisterForm campaignId={campaignId}/>
-                </>
-            }
+                }
+            </Flex>
         </Card>
     </Container>
 }

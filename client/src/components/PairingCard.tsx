@@ -9,14 +9,10 @@ interface Props {
 export default function ({pairing}: Props) {
     const navigate = useNavigate()
 
-    console.log('pairing', pairing)
     const campaignRegisters = pairing.campaign?.campaignRegisters as CampaignRegister[];
-    console.log('campaignRegisters', campaignRegisters)
     const pairingPlayersIds = pairing.players.map(player => player.playerId)
-    console.log('pairingPlayersIds', pairingPlayersIds)
     const pairingPlayersRegs = campaignRegisters
         .filter(reg => pairingPlayersIds.includes(reg.playerId))
-    console.log('pairingPlayersRegs', pairingPlayersRegs)
 
     return (
         <Container width='100vw'>

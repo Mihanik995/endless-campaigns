@@ -15,12 +15,14 @@ export default function () {
                     width='100vw'
                 >
                     <Flex
-                        gap='3'
                         justify='between'
                         align='center'
 
                         py="4"
-                        px="6"
+                        px={{
+                            initial: '3',
+                            xs: '6'
+                        }}
                         className='shadow-2xl z-20 backdrop-blur-2xl'
                     >
                         <Logo/>

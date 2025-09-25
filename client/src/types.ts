@@ -1,10 +1,14 @@
 export interface User {
+    [key: string]: any
+
     id: string
     username: string
     email: string
 }
 
 export interface UserRegister {
+    [key: string]: any
+
     username: string
     email: string
     password: string
@@ -12,8 +16,11 @@ export interface UserRegister {
 }
 
 export interface UserLogin {
+    [key: string]: any
+
     username: string;
     password: string;
+    rememberMe: boolean
 }
 
 export interface Campaign {
@@ -27,7 +34,23 @@ export interface Campaign {
     dateStart: string
     dateEnd: string
     requiresRegisterApproval: boolean
+    requiresPairingResultsApproval: boolean
+    requiresPairingReport: boolean
+
     campaignRegisters?: CampaignRegister[]
+}
+
+export interface CampaignCreate {
+    [key: string]: any
+
+    title: string
+    description: string
+    regulations: string
+    dateStart: string
+    dateEnd: string
+    requiresRegisterApproval: boolean
+    requiresPairingResultsApproval: boolean
+    requiresPairingReport: boolean
 }
 
 export interface CampaignRegister {
@@ -85,6 +108,18 @@ export interface SimpleMissionCreate {
     missionConditions: string
 }
 
+export interface Question {
+    [key: string]: any
+
+    id: string
+    creatorId: string
+    creator?: User
+    missionId: string
+    mission?: SimpleMission
+    text: string
+    answer?: string
+}
+
 export interface Pairing {
     [key: string]: any
 
@@ -96,22 +131,27 @@ export interface Pairing {
     simpleMissionId: string
     simpleMission?: SimpleMission
     players: PlayersOnPairings[]
-
     played: boolean
     winners: WinnersOnPairings[]
+
+    resultsApproved: boolean
+    reportLink?: string
+    resultsRejected: boolean
+    rejectMessage?: string
 }
 
-export interface PairingData {
+export interface PairingCreate {
     [key: string]: any
 
-    id: string
     campaignId: string
     periodId: string
     simpleMissionId: string
-    players: PlayersOnPairings[]
+    playerIds: string[]
 }
 
 export interface PlayersOnPairings {
+    [key: string]: any
+
     player: User
     playerId: string
     pairing: Pairing
@@ -127,6 +167,8 @@ export interface PlayerRegister {
 }
 
 interface WinnersOnPairings {
+    [key: string]: any
+
     player?: User
     playerId: String
     pairing?: Pairing

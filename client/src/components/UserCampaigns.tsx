@@ -66,7 +66,7 @@ export default function ({id}: Props) {
                                 </Table.Header>
                                 <Table.Body>
                                     {campaignsData.map(reg => (
-                                        <Table.Row>
+                                        <Table.Row key={reg.id}>
                                             <Table.RowHeaderCell>
                                                 {reg.title}
                                             </Table.RowHeaderCell>
@@ -80,7 +80,7 @@ export default function ({id}: Props) {
                                                 <Popover.Root>
                                                     <Popover.Trigger>
                                                         <Button color='red'>
-                                                            Delete
+                                                            Drop
                                                         </Button>
                                                     </Popover.Trigger>
                                                     <Popover.Content>

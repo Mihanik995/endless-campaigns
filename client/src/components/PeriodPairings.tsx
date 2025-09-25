@@ -24,6 +24,9 @@ export default function ({isOwner, pairings, missions, playerRegisters, period, 
                 <Table.ColumnHeaderCell>
                     Winner(s)
                 </Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>
+                    Report Link
+                </Table.ColumnHeaderCell>
                 {isOwner &&
                     <Table.ColumnHeaderCell>
                         Actions

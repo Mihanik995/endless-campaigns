@@ -117,7 +117,6 @@ pairingsRouter.get('/', verifyToken, async (req: Request, res: Response) => {
 pairingsRouter.put('/:id', verifyToken, async (req: Request, res: Response) => {
     const {id} = req.params;
     const {campaignId, periodId, playerIds, simpleMissionId, winners} = req.body;
-    console.log(winners)
     try {
         const pairing = await dbClient.pairing.findUnique({where: {id}})
         if (!pairing) return res.status(404).json({error: 'No pairing'})
@@ -158,12 +157,14 @@ pairingsRouter.delete('/:id', verifyToken, async (req: Request, res: Response) =
 
 pairingsRouter.post('/:id/set-winners/', verifyToken, async (req: Request, res: Response) => {
     const {id} = req.params;
-    const winnersIds: string[] = req.body.winners
+    const winnersIds = req.body.winners as string[]
+    const reportLink = req.body.reportLink as string
     try {
         const pairing = await dbClient.pairing.findUnique({
             where: {id},
             include: {
-                players: {select: {playerId: true}}
+                players: {select: {playerId: true}},
+                campaign: {select: {requiresPairingResultsApproval: true}}
             }
         })
         if (!pairing) return res.status(404).json({error: 'No pairing'})
@@ -176,6 +177,10 @@ pairingsRouter.post('/:id/set-winners/', verifyToken, async (req: Request, res: 
             where: {id},
             data: {
                 played: true,
+                reportLink,
+                resultsApproved: !pairing.campaign.requiresPairingResultsApproval,
+                resultsRejected: false,
+                rejectMessage: undefined,
                 winners: {create: winnersIds.map((id: string) => {
                     return {player: {connect: {id}}}
                 })}
@@ -184,6 +189,45 @@ pairingsRouter.post('/:id/set-winners/', verifyToken, async (req: Request, res: 
         res.status(200).json(updatedPairing);
     } catch (error) {
         console.log(error)
+        res.status(500).json({error})
+    }
+})
+
+pairingsRouter.put('/:id/approve', verifyToken, async (req: Request, res: Response) => {
+    const {id} = req.params;
+    try {
+        const pairing = await dbClient.pairing.findUnique({where: {id}})
+        if (!pairing) return res.status(404).json({error: 'No pairing'})
+        const approvedPairing = await dbClient.pairing.update({
+            where: {id},
+            data: {
+                resultsApproved: true
+            }
+        })
+        res.status(200).json(approvedPairing);
+    } catch (error) {
+        res.status(500).json({error})
+    }
+})
+
+pairingsRouter.put('/:id/reject', verifyToken, async (req: Request, res: Response) => {
+    const {id} = req.params
+    const {rejectMessage} = req.body
+    try {
+        const pairing = await dbClient.pairing.findUnique({where: {id}})
+        if (!pairing) return res.status(404).json({error: 'No pairing'})
+        const approvedPairing = await dbClient.pairing.update({
+            where: {id},
+            data: {
+                winners: {deleteMany: {}},
+                played: false,
+                reportLink: undefined,
+                resultsRejected: true,
+                rejectMessage
+            }
+        })
+        res.status(200).json(approvedPairing);
+    } catch (error) {
         res.status(500).json({error})
     }
 })

@@ -9,7 +9,7 @@ const {PrismaClient} = require('../../generated/prisma')
 const {v4: uuid} = require('uuid');
 const jwt = require('jsonwebtoken');
 const transporter = require('../config/nodemailer')
-const verificationEmail = require('../../templates/verificationEmail')
+const {verificationEmail, restoreAccessEmail} = require('../../templates/emailTemplates')
 const {verifyToken} = require('./middleware')
 
 require('dotenv').config();
@@ -56,7 +56,7 @@ authRouter.get('/verify/:token', (req: Request, res: Response) => {
 })
 
 authRouter.post('/login', async (req: Request, res: Response) => {
-    const {username, password} = req.body;
+    const {username, password, rememberMe} = req.body;
     dbClient.user.findUnique({where: {username}})
         .then((user: User) => {
             if (!user) return res.status(404).json({error: 'User not found'});
@@ -70,11 +70,18 @@ authRouter.post('/login', async (req: Request, res: Response) => {
                 if (!user.isActive) return res.status(403).send({error: 'User not verified'});
 
                 const userId = user.id
-                const accessToken = jwt.sign({userId}, process.env.JWT_SECRET, {expiresIn: '5m'})
-                const refreshToken = jwt.sign({userId}, process.env.JWT_SECRET)
+                const username = user.username
+                const accessToken = jwt.sign({userId, username}, process.env.JWT_SECRET, {expiresIn: '5m'})
+                const refreshTokenExpires = rememberMe
+                    ? 90 * 24 * 60 * 60
+                    : 3 * 24 * 60 * 60
+                const refreshToken = jwt.sign({
+                    userId,
+                    username
+                }, process.env.JWT_SECRET, {expiresIn: refreshTokenExpires})
                 return res.status(200)
-                    .cookie('refreshToken', refreshToken, {httpOnly: true})
-                    .json({accessToken, userId});
+                    .cookie('refreshToken', refreshToken, {httpOnly: true, maxAge: refreshTokenExpires * 1000})
+                    .json({accessToken, userId, username});
             });
         }).catch((err: Error) => res.status(500).send({error: err.message}));
 });
@@ -84,16 +91,49 @@ authRouter.post('/refresh', async (req: Request, res: Response) => {
     if (!refreshToken) return res.status(401).json({error: 'Authentication failed'});
 
     try {
-        const {userId} = jwt.verify(refreshToken, process.env.JWT_SECRET);
+        const {userId, username} = jwt.verify(refreshToken, process.env.JWT_SECRET);
         if (!userId) return res.status(401).json({error: 'Authentication failed'});
 
-        const accessToken = jwt.sign({userId}, process.env.JWT_SECRET, {expiresIn: '5m'});
-        const newRefreshToken = jwt.sign({userId}, process.env.JWT_SECRET)
-        return res.status(200)
-            .cookie('refreshToken', newRefreshToken, {httpOnly: true})
-            .json({accessToken, userId});
+        const accessToken = jwt.sign({userId, username}, process.env.JWT_SECRET, {expiresIn: '5m'});
+        return res.status(200).json({accessToken, userId, username});
     } catch (error) {
         return res.status(401).json({error: 'Authentication failed'});
+    }
+})
+
+authRouter.post('/forgot-password', async (req: Request, res: Response) => {
+    const {email} = req.body;
+    try {
+        const user = await dbClient.user.findUnique({where: {email}}) as User
+        if (!user) return res.status(404).json({error: 'User not found'});
+        const token = jwt.sign({userId: user.id, username: user.username}, process.env.JWT_SECRET)
+        console.log(token)
+        await transporter.sendMail({
+            from: process.env.SENDER_EMAIL,
+            to: email,
+            subject: 'Access Restoration',
+            html: restoreAccessEmail(token)
+        })
+        res.sendStatus(200)
+    } catch (error) {
+        console.log(error)
+        res.status(500).send({error});
+    }
+})
+
+authRouter.get('/restore-access/:token', async (req: Request, res: Response) => {
+    const {token} = req.params;
+    try {
+        const {userId, username} = jwt.verify(token, process.env.JWT_SECRET);
+        if (!userId) return res.status(401).json({error: 'Authentication failed'});
+        const accessToken = jwt.sign({userId, username}, process.env.JWT_SECRET, {expiresIn: '5m'});
+        const refreshToken = jwt.sign({userId, username}, process.env.JWT_SECRET, {expiresIn: '3d'})
+        res.status(200)
+            .cookie('refreshToken', refreshToken, {httpOnly: true, maxAge: 3 * 24 * 60 * 60})
+            .json({userId, username, accessToken});
+    } catch (error) {
+        console.log(error)
+        res.status(500).send({error});
     }
 })
 
@@ -124,7 +164,7 @@ authRouter.put('/:id', verifyToken, async (req: Request, res: Response) => {
         if (userId !== id) return res.status(403).json({error: 'Access denied'});
         if (data.username) {
             const alreadyUsed = await dbClient.user.findUnique({where: {username: data.username}});
-            if (!alreadyUsed) return res.status(400).json({error: 'Such username is already occupied'});
+            if (alreadyUsed) return res.status(400).json({error: 'Such username is already occupied'});
         }
         const user = await dbClient.user.update({where: {id}, data})
         if (!user) return res.status(404).json({error: 'User not found'});
@@ -142,12 +182,15 @@ authRouter.put('/:id/change-password', verifyToken, async (req: Request, res: Re
     try {
         const {userId} = jwt.verify(token, process.env.JWT_SECRET);
         if (userId !== id) return res.status(403).json({error: 'Access denied'});
-        const user = await dbClient.user.findUnique({where: {id}})
+        const user = await dbClient.user.findUnique({where: {id}}) as User
         if (!user) return res.status(404).json({error: 'User not found'});
+        console.log(user.password)
         crypto.pbkdf2(password, user.salt, 310000, 32, 'sha256', function (err: Error, hashedPassword: Buffer) {
             if (err) throw new Error(err.message);
-            const updatedUser = dbClient.user.update({where: {id}, data: {password: hashedPassword}});
-            return res.status(200).json({updatedUser})
+            dbClient.user.update({where: {id}, data: {password: hashedPassword}})
+                .then((updatedUser: User) => {
+                    return res.status(200).json({updatedUser})
+                })
         })
     } catch (error) {
         res.status(500).json({error})

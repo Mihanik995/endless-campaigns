@@ -1,14 +1,17 @@
 import {type ChangeEvent, type MouseEventHandler, useState} from "react";
 import axios from "../axios/axiosConfig.ts";
-import {Button, Flex, Heading, IconButton, Popover, Tooltip} from "@radix-ui/themes";
+import {Button, Flex, IconButton, Popover, Strong, Text, Tooltip} from "@radix-ui/themes";
 import {DotsHorizontalIcon} from "@radix-ui/react-icons";
 import {useAppDispatch, useAppSelector} from "../app/hooks.ts";
 import {logout, selectAuth} from "../app/features/auth/authSlice.ts";
 import TextInput from "./TextInput.tsx";
-import {Text} from "@radix-ui/themes";
 import ErrorHandler from "./ErrorHandler.tsx";
+import validatePassword from "../utils/validators/validatePassword.ts";
+import validateData from "../utils/validators/validateData.ts";
 
 interface NewPassword {
+    [key: string]: string;
+
     password: string;
     confirmPassword: string;
 }
@@ -28,13 +31,17 @@ export default function () {
             [event.target.name]: event.target.value
         })
     }
-    const handleSubmit: MouseEventHandler<HTMLButtonElement> = (e) => {
-        e.preventDefault()
-        if (newPassword.password !== newPassword.confirmPassword) return
-        axios.put(`/auth/${id}/change-password`, {password: newPassword.password})
-            .then((response) => {
-                if (response.status === 200) dispatch(logout())
-            }).catch(err => setError(err as Error));
+    const handleSubmit: MouseEventHandler<HTMLButtonElement> = () => {
+        try {
+            validateData<NewPassword>(newPassword)
+            validatePassword<NewPassword>(newPassword)
+            axios.put(`/auth/${id}/change-password`, {password: newPassword.password})
+                .then((response) => {
+                    if (response.status === 200) dispatch(logout())
+                })
+        } catch (error) {
+            setError(error as Error)
+        }
     }
 
     return (
@@ -62,9 +69,8 @@ export default function () {
                         value={newPassword.confirmPassword}
                         onChange={handleChange}
                     />
-                    <Heading>Notice!</Heading>
                     <Text>
-                        After the submission you'll be logged out.
+                        <Strong>Notice!</Strong> After the submission you'll be logged out.
                     </Text>
                     <Flex gap='2'>
                         <Popover.Close>

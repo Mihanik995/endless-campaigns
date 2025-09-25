@@ -15,11 +15,13 @@ import Dashboard from "./pages/Dashboard.tsx";
 import "@radix-ui/themes/styles.css";
 import './index.css'
 import CreateCampaign from "./pages/CreateCampaign.tsx";
-import CampaignPage from "./components/CampaignProfile.tsx";
+import CampaignPage from "./pages/CampaignPage.tsx";
 import UserProfile from "./pages/UserProfile.tsx";
 import CreateMission from "./pages/CreateMission.tsx";
 import MissionPage from "./pages/MissionPage.tsx";
 import PlayPairing from "./pages/PlayPairing.tsx";
+import ForgotPassword from "./pages/ForgotPassword.tsx";
+import RestoreAccess from "./pages/RestoreAccess.tsx";
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
@@ -32,6 +34,8 @@ createRoot(document.getElementById('root')!).render(
                             <Route path='signup' element={<Signup/>}/>
                             <Route path='login' element={<Login/>}/>
                             <Route path='verify/:token' element={<Verify/>}/>
+                            <Route path='forgot-password' element={<ForgotPassword/>}/>
+                            <Route path='restore-access/:token' element={<RestoreAccess/>}/>
                         </Route>
                         <Route element={<ProtectedRoute/>}>
                             <Route path='profile' element={<UserProfile/>}>

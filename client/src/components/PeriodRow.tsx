@@ -41,16 +41,14 @@ export default function ({isOwner, index, onChange, period, campaignPlayers, mis
         })
     }
 
-    const handleSubmit: MouseEventHandler<HTMLButtonElement> = (e) => {
-        e.preventDefault()
+    const handleSubmit: MouseEventHandler<HTMLButtonElement> = () => {
         axios.put(`campaigns/periods/${period.id}`, periodChanges)
             .then(res => {
                 if (res.status === 200) onChange()
             }).catch(err => setError(err as Error))
     }
 
-    const handleDelete: MouseEventHandler<HTMLButtonElement> = (e) => {
-        e.preventDefault()
+    const handleDelete: MouseEventHandler<HTMLButtonElement> = () => {
         axios.delete(`campaigns/periods/${period.id}`)
             .then(res => {
                 if (res.status === 204) onChange()

@@ -1,8 +1,10 @@
-import {Box, Button, Flex, IconButton, Select, Table} from "@radix-ui/themes";
+import {Box, Button, Flex, IconButton, Select, Table, Text} from "@radix-ui/themes";
 import {type MouseEventHandler, useState} from "react";
 import {CheckIcon, Cross2Icon, PlusIcon} from "@radix-ui/react-icons";
 import axios from "../axios/axiosConfig.ts";
-import type {CampaignPeriod, PlayerRegister, SimpleMission} from "../types.ts";
+import type {CampaignPeriod, PairingCreate, PlayerRegister, SimpleMission} from "../types.ts";
+import validateData from "../utils/validators/validateData.ts";
+import ErrorHandler from "./ErrorHandler.tsx";
 
 interface Props {
     playerRegisters: PlayerRegister[],
@@ -39,17 +41,22 @@ export default function ({playerRegisters, period, onChange, missions}: Props) {
         ])
     }
 
-    const handleSubmit: MouseEventHandler<HTMLButtonElement> = (e) => {
-        e.preventDefault()
-
-        axios.post('/missions/pairings', {
-            campaignId: period.campaignId,
-            periodId: period.id,
-            simpleMissionId: mission.id,
-            playerIds: playersList.map(player => player.playerId)
-        }).then(res => {
-            if (res.status === 201) onChange()
-        })
+    const [error, setError] = useState<Error>()
+    const handleSubmit: MouseEventHandler<HTMLButtonElement> = () => {
+        try {
+            const data: PairingCreate = {
+                campaignId: period.campaignId,
+                periodId: period.id,
+                simpleMissionId: mission.id,
+                playerIds: playersList.map(player => player.playerId)
+            }
+            validateData<PairingCreate>(data)
+            axios.post('/missions/pairings', data).then(res => {
+                if (res.status === 201) onChange()
+            })
+        } catch (error) {
+            setError(error as Error)
+        }
     }
 
     return (
@@ -71,19 +78,21 @@ export default function ({playerRegisters, period, onChange, missions}: Props) {
                     </Select.Root>
                     <Flex gap='2' align='center'>
                         Players:
-                        {playersList.map((player: PlayerRegister) => (
-                            <Flex gap='1' align='center' key={player.id}>
-                                {player.playerUsername}
-                                <IconButton
-                                    color='red'
-                                    size='1'
-                                    radius='full'
-                                    onClick={() => handleDelete(player.id)}
-                                >
-                                    <Cross2Icon/>
-                                </IconButton>
-                            </Flex>
-                        ))}
+                        {!playersList.length && !playersOptions.length
+                            ? <Text>no players available.</Text>
+                            : playersList.map((player: PlayerRegister) => (
+                                <Flex gap='1' align='center' key={player.id}>
+                                    {player.playerUsername}
+                                    <IconButton
+                                        color='red'
+                                        size='1'
+                                        radius='full'
+                                        onClick={() => handleDelete(player.id)}
+                                    >
+                                        <Cross2Icon/>
+                                    </IconButton>
+                                </Flex>
+                            ))}
                         {!!playersOptions.length && <Box>
                             <IconButton
                                 onClick={handleAdd}
@@ -111,7 +120,10 @@ export default function ({playerRegisters, period, onChange, missions}: Props) {
                 </Flex>
             </Table.Cell>
             <Table.Cell>
-                <Button color='grass' onClick={handleSubmit}>Submit</Button>
+                <Flex direction='column' gap='2' align='start'>
+                    {!!error && <ErrorHandler error={error}/>}
+                    <Button color='grass' onClick={handleSubmit}>Submit</Button>
+                </Flex>
             </Table.Cell>
         </Table.Row>
     )

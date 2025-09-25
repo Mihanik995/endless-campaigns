@@ -3,6 +3,7 @@ import {
     Card,
     Container,
     Flex,
+    Grid,
     Heading,
     IconButton,
     Link,
@@ -22,6 +23,7 @@ import CheckInput from "./CheckInput.tsx";
 import ErrorHandler from "./ErrorHandler.tsx";
 import {cleanCampaign, selectCampaign, updateCampaign} from "../app/features/campaign/campaignSlice.ts";
 import type {Campaign} from "../types.ts";
+import validateData from "../utils/validators/validateData.ts";
 
 interface Props {
     campaignData: Campaign
@@ -55,34 +57,33 @@ export default function ({clickable, onDelete, campaignData}: Props) {
         })
     }
 
-    const handleDelete: MouseEventHandler<HTMLButtonElement> = (e) => {
-        e.preventDefault()
-
+    const handleDelete: MouseEventHandler<HTMLButtonElement> = () => {
         axios.delete(`/campaigns/${campaign.id}`)
             .then((response) => {
                 if (response.status === 204) onDelete()
             }).catch((error) => setError(error as Error))
     }
 
-    const handleSubmit: MouseEventHandler<HTMLButtonElement> = (e) => {
-        e.preventDefault()
-
-        axios.put(`/campaigns/${campaign.id}`, campaign)
-            .then((response) => {
-                if (response.status === 200) {
-                    setCampaign({
-                        ...response.data,
-                        dateStart: new Date(response.data.dateStart),
-                        dateEnd: new Date(response.data.dateEnd)
-                    })
-                    setEdit(false)
-                }
-            }).catch((error) => setError(error as Error))
+    const handleSubmit: MouseEventHandler<HTMLButtonElement> = () => {
+        try {
+            validateData<Campaign>(campaign)
+            axios.put(`/campaigns/${campaign.id}`, campaign)
+                .then((response) => {
+                    if (response.status === 200) {
+                        setCampaign({
+                            ...response.data,
+                            dateStart: new Date(response.data.dateStart),
+                            dateEnd: new Date(response.data.dateEnd)
+                        })
+                        setEdit(false)
+                    }
+                })
+        } catch (error) {
+            setError(error as Error)
+        }
     }
 
-    const handleUpdate: MouseEventHandler<HTMLButtonElement> = (e) => {
-        e.preventDefault()
-
+    const handleUpdate: MouseEventHandler<HTMLButtonElement> = () => {
         axios.get(`/campaigns/${campaign.id}`)
             .then((response) => {
                 if (response.status === 200) {
@@ -138,6 +139,22 @@ export default function ({clickable, onDelete, campaignData}: Props) {
                                     onClick={() => handleSwitch('requiresRegisterApproval')}
                                     label='Player register requires master approval'
                                 />
+                                <Separator size='4'/>
+                                <Grid my='2' columns="2" gap="3" width="auto">
+                                    <CheckInput
+                                        name='requiresPairingResultsApproval'
+                                        value={Number(campaign.requiresPairingResultsApproval)}
+                                        onClick={() => handleSwitch('requiresPairingResultsApproval')}
+                                        label='Pairings results should be approved by campaign master'
+                                    />
+                                    <CheckInput
+                                        name='requiresPairingReport'
+                                        disabled={!campaign.requiresPairingResultsApproval}
+                                        value={Number(campaign.requiresPairingReport)}
+                                        onClick={() => handleSwitch('requiresPairingReport')}
+                                        label='Players should attach the link to the pairing report'
+                                    />
+                                </Grid>
                             </Flex>
                             <Flex direction='column' align='end' justify='start' gap='3'>
                                 <Tooltip content='Cancel'>

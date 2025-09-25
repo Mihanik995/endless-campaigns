@@ -1,10 +1,11 @@
 import {createAsyncThunk, createSlice} from "@reduxjs/toolkit";
 import axios, {type AxiosResponse} from "axios";
 import type {RootState} from "../../store.ts";
+import type {UserLogin} from "../../../types.ts";
 
 export const login = createAsyncThunk(
     'auth/login',
-    async (data: {username: string, password: string}, {rejectWithValue}) => {
+    async (data: UserLogin, {rejectWithValue}) => {
         try {
             const res: AxiosResponse = await axios.post(
                 `${import.meta.env.VITE_BACKEND_URL}/auth/login`,
@@ -17,9 +18,9 @@ export const login = createAsyncThunk(
             return res.data
         } catch (error: any) {
             if (error.response && error.response.data.message) {
-                return rejectWithValue(error.response.data.message)
+                return rejectWithValue(error.response.data)
             } else {
-                return rejectWithValue(error.message)
+                return rejectWithValue(error)
             }
         }
     }
@@ -27,17 +28,18 @@ export const login = createAsyncThunk(
 
 export interface AuthState {
     id?: string;
+    username?: string;
     token?: string,
     loading: boolean,
-    error: any,
+    error?: any,
     success: boolean,
 }
 
 const initialState: AuthState = {
     id: localStorage.getItem('ec-id') || undefined,
+    username: localStorage.getItem('ec-username') || undefined,
     token: localStorage.getItem('ec-access') || undefined,
     loading: false,
-    error: null as any,
     success: false,
 }
 
@@ -48,15 +50,19 @@ export const authSlice = createSlice({
         logout: (state) => {
             state.token = undefined
             state.id = undefined
+            state.username = undefined
             state.success = false
             localStorage.removeItem('ec-access')
             localStorage.removeItem('ec-id')
+            localStorage.removeItem('ec-username')
         },
         refresh: (state, action) => {
             state.token = action.payload.accessToken
             state.id = action.payload.userId
+            state.username = action.payload.username
             localStorage.setItem('ec-access', action.payload.accessToken)
             localStorage.setItem('ec-id', action.payload.userId)
+            localStorage.setItem('ec-username', action.payload.username)
             state.success = true
         }
     },
@@ -74,8 +80,10 @@ export const authSlice = createSlice({
             state.success = true
             state.token = action.payload.accessToken
             state.id = action.payload.userId
+            state.username = action.payload.username
             localStorage.setItem('ec-access', action.payload.accessToken)
             localStorage.setItem('ec-id', action.payload.userId)
+            localStorage.setItem('ec-username', action.payload.username)
         })
     }
 })

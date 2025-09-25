@@ -25,7 +25,8 @@ export default function (): ReactElement {
         })
     }
 
-    const handleSubmit: MouseEventHandler<HTMLButtonElement> = function () {
+    const handleSubmit: MouseEventHandler<HTMLButtonElement> = function (e) {
+        e.preventDefault();
         try {
             validateData<UserRegister>(registerData)
             validatePassword<UserRegister>(registerData)

@@ -1,34 +1,35 @@
 import type {Request, Response} from "express";
 
+const app = require('./src/config/server')
+const transporter = require('./src/config/nodemailer')
 
-declare function require(module: string): any;
-const express = require('express');
-const cors = require("cors");
-const dotenv = require("dotenv");
+const authRouter = require('./src/auth/routes')
+const campaignsRouter = require('./src/campaigns/routes')
+const missionsRouter = require('./src/missions/routes')
+const {verifyToken} = require('./src/auth/middleware')
 
-dotenv.config();
+app.use('/auth', authRouter)
+app.use('/campaigns', campaignsRouter)
+app.use('/missions', missionsRouter)
 
-const allowedOrigins = (process.env.CORS_ORIGINS as string).split(' ')
-console.log(allowedOrigins)
+app.get('/test', verifyToken, (req: Request, res: Response) => {
+    res.status(200).send({message: 'Test passed successfully!'})
+})
 
-const app = express();
-app.use(cors({
-    origin: function (
-        origin: string,
-        callback: (err: Error | null, origin?: boolean) => void
-    ){
-        if (allowedOrigins.includes(origin) || !origin) {
-            callback(null, true);
-        } else {
-            callback(new Error(`Origin ${origin} not allowed by CORS`));
-        }
+app.post('/send-me-email', (req: Request, res: Response) => {
+    try {
+        transporter.sendMail({
+            from: process.env.SENDER_EMAIL,
+            to: 'www.mihanik95@yandex.ru',
+            subject: 'Hello from server!',
+            html: '<h1>Hello from server!</h1>',
+        })
+        res.status(200).send({message: 'Message sent successfully!'})
+    } catch (err) {
+        res.sendStatus(500)
     }
-}));
-
-app.get('/api', (req: Request, res: Response) => {
-    res.status(200).json({msg: "Hello from server!"})
 })
 
 app.listen(5000, () => {
-    console.log("Server started on port 3000");
+    console.log("Server started on port 5000");
 });

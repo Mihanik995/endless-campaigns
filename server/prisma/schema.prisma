@@ -1,0 +1,127 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String              @id @unique
+  username          String              @unique
+  password          Bytes
+  salt              Bytes
+  email             String              @unique
+  isActive          Boolean             @default(false)
+  campaigns         Campaign[]
+  campaignRegisters CampaignRegister[]
+  simpleMission     SimpleMission[]
+  pairings          PlayersOnPairings[]
+  wonPairings       WinnersOnPairings[]
+
+  question Question[]
+}
+
+model Campaign {
+  id                       String             @id @unique
+  owner                    User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId                  String
+  title                    String
+  description              String
+  regulations              String
+  dateStart                DateTime
+  dateEnd                  DateTime
+  requiresRegisterApproval Boolean            @default(true)
+  campaignRegisters        CampaignRegister[]
+  campaignPeriod           CampaignPeriod[]
+  pairing                  Pairing[]
+
+  requiresPairingResultsApproval Boolean @default(true)
+  requiresPairingReport          Boolean @default(true)
+}
+
+model CampaignRegister {
+  id            String   @id @unique
+  player        User     @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  playerId      String
+  campaign      Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  campaignId    String
+  formationName String
+  rosterLink    String
+  approved      Boolean
+}
+
+model CampaignPeriod {
+  id         String    @id @unique
+  campaign   Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  campaignId String
+  dateStart  DateTime
+  dateEnd    DateTime
+  pairing    Pairing[]
+}
+
+model SimpleMission {
+  id                   String    @id @unique
+  creator              User      @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  creatorId            String
+  title                String
+  narrativeDescription String
+  missionConditions    String
+  pairing              Pairing[]
+
+  question Question[]
+}
+
+model Question {
+  id        String        @id @unique
+  creator   User          @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  creatorId String
+  mission   SimpleMission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  missionId String
+  text      String
+  answer    String?
+}
+
+model Pairing {
+  id              String              @id @unique
+  campaign        Campaign            @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  campaignId      String
+  period          CampaignPeriod      @relation(fields: [periodId], references: [id], onDelete: Cascade)
+  periodId        String
+  simpleMission   SimpleMission       @relation(fields: [simpleMissionId], references: [id])
+  simpleMissionId String
+  players         PlayersOnPairings[]
+  played          Boolean             @default(false)
+  winners         WinnersOnPairings[]
+
+  resultsApproved Boolean @default(false)
+  reportLink      String?
+  resultsRejected Boolean @default(false)
+  rejectMessage   String?
+}
+
+model PlayersOnPairings {
+  player    User    @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  playerId  String
+  pairing   Pairing @relation(fields: [pairingId], references: [id], onDelete: Cascade)
+  pairingId String
+
+  @@id([pairingId, playerId])
+}
+
+model WinnersOnPairings {
+  player    User    @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  playerId  String
+  pairing   Pairing @relation(fields: [pairingId], references: [id], onDelete: Cascade)
+  pairingId String
+
+  @@id([playerId, pairingId])
+}

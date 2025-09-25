@@ -1,0 +1,235 @@
+import type {Request, Response} from 'express';
+import type {PlayersOnPairings} from '../../../generated/prisma'
+
+const {Router} = require("express");
+const {PrismaClient} = require("../../../generated/prisma");
+const {v4: uuid} = require("uuid");
+const jwt = require("jsonwebtoken");
+const {verifyToken} = require("../../auth/middleware")
+
+require("dotenv").config();
+
+const pairingsRouter = new Router();
+const dbClient = new PrismaClient();
+
+pairingsRouter.post('/', verifyToken, async (req: Request, res: Response) => {
+    const {campaignId, periodId, playerIds, simpleMissionId} = req.body;
+    try {
+        const id = uuid()
+        const pairing = await dbClient.pairing.create({
+            data: {
+                id, campaignId, periodId, simpleMissionId, players: {
+                    create: playerIds.map((id: string) => {
+                        return {player: {connect: {id}}}
+                    })
+                }
+            }
+        })
+        res.status(201).json(pairing);
+    } catch (error) {
+        res.status(500).json({error})
+    }
+})
+
+pairingsRouter.get('/:id', verifyToken, async (req: Request, res: Response) => {
+    const {id} = req.params;
+    try {
+        const pairing = await dbClient.pairing.findUnique({
+            where: {id},
+            include: {
+                simpleMission: true,
+                campaign: {include: {campaignRegisters: true}},
+                players: {include: {player: {select: {id: true, username: true, email: true}}}},
+                winners: {include: {player: {select: {id: true, username: true, email: true}}}}
+            }
+        })
+        if (!pairing) return res.status(404).json({error: 'No pairing'})
+        res.status(200).json(pairing);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({error})
+    }
+})
+
+pairingsRouter.get('/campaign/:campaignId', verifyToken, async (req: Request, res: Response) => {
+    const {campaignId} = req.params;
+    try {
+        const pairing = await dbClient.pairing.findMany({
+            where: {campaignId},
+            include: {
+                simpleMission: true,
+                players: {include: {player: {
+                            select: {id: true, username: true, email: true}
+                        }}}
+            }
+        })
+        if (!pairing) return res.status(404).json({error: 'No pairing'})
+        res.status(200).json(pairing);
+    } catch (error) {
+        res.status(500).json({error})
+    }
+})
+
+pairingsRouter.get('/period/:periodId', verifyToken, async (req: Request, res: Response) => {
+    const {periodId} = req.params;
+    try {
+        const pairing = await dbClient.pairing.findMany({
+            where: {periodId},
+            include: {
+                simpleMission: true,
+                players: {include: {player: {select: {id: true, username: true, email: true}}}},
+                winners: {include: {player: {select: {id: true, username: true, email: true}}}}
+            }
+        })
+        if (!pairing) return res.status(404).json({error: 'No pairing'})
+        res.status(200).json(pairing);
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({error})
+    }
+})
+
+pairingsRouter.get('/', verifyToken, async (req: Request, res: Response) => {
+    const token = req.header('Authorization')
+    try {
+        const {userId: playerId} = jwt.verify(token, process.env.JWT_SECRET)
+        const pairing = await dbClient.playersOnPairings.findMany({
+            where: {playerId},
+            include: {
+                pairing: {
+                    include: {
+                        campaign: {
+                            include: {campaignRegisters: {include: {player: true}}}
+                        },
+                        simpleMission: true,
+                        players: {include: {player: {select: {id: true, username: true, email: true}}}}
+                    }
+                }
+            },
+        })
+        if (!pairing) return res.status(404).json({error: 'No pairing'})
+        res.status(200).json(pairing);
+    } catch (error) {
+        res.status(500).json({error})
+    }
+})
+
+pairingsRouter.put('/:id', verifyToken, async (req: Request, res: Response) => {
+    const {id} = req.params;
+    const {campaignId, periodId, playerIds, simpleMissionId, winners} = req.body;
+    try {
+        const pairing = await dbClient.pairing.findUnique({where: {id}})
+        if (!pairing) return res.status(404).json({error: 'No pairing'})
+        const updatedPairing = await dbClient.pairing.update({
+            where: {id},
+            data: {
+                campaignId, periodId, simpleMissionId,
+                players: {
+                    deleteMany: {},
+                    create: playerIds.map((id: string) => {
+                        return {player: {connect: {id}}}
+                    })
+                },
+                winners: {
+                    deleteMany: {},
+                    create: winners.map((id: string) => {
+                        return {player: {connect: {id}}}
+                    })
+                }
+            },
+        })
+        res.status(200).json(updatedPairing);
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({error})
+    }
+})
+
+pairingsRouter.delete('/:id', verifyToken, async (req: Request, res: Response) => {
+    const {id} = req.params;
+    try {
+        dbClient.pairing.delete({where: {id}})
+            .then(() => res.sendStatus(204))
+    } catch (error) {
+        res.status(500).json({error})
+    }
+})
+
+pairingsRouter.post('/:id/set-winners/', verifyToken, async (req: Request, res: Response) => {
+    const {id} = req.params;
+    const winnersIds = req.body.winners as string[]
+    const reportLink = req.body.reportLink as string
+    try {
+        const pairing = await dbClient.pairing.findUnique({
+            where: {id},
+            include: {
+                players: {select: {playerId: true}},
+                campaign: {select: {requiresPairingResultsApproval: true}}
+            }
+        })
+        if (!pairing) return res.status(404).json({error: 'No pairing'})
+        for (const playerId of winnersIds) {
+            if (!pairing.players.map((p: PlayersOnPairings) => p.playerId).includes(playerId)) {
+                return res.status(400).json({error: 'No such player in the pairing'})
+            }
+        }
+        const updatedPairing = await dbClient.pairing.update({
+            where: {id},
+            data: {
+                played: true,
+                reportLink,
+                resultsApproved: !pairing.campaign.requiresPairingResultsApproval,
+                resultsRejected: false,
+                rejectMessage: undefined,
+                winners: {create: winnersIds.map((id: string) => {
+                    return {player: {connect: {id}}}
+                })}
+            }
+        })
+        res.status(200).json(updatedPairing);
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({error})
+    }
+})
+
+pairingsRouter.put('/:id/approve', verifyToken, async (req: Request, res: Response) => {
+    const {id} = req.params;
+    try {
+        const pairing = await dbClient.pairing.findUnique({where: {id}})
+        if (!pairing) return res.status(404).json({error: 'No pairing'})
+        const approvedPairing = await dbClient.pairing.update({
+            where: {id},
+            data: {
+                resultsApproved: true
+            }
+        })
+        res.status(200).json(approvedPairing);
+    } catch (error) {
+        res.status(500).json({error})
+    }
+})
+
+pairingsRouter.put('/:id/reject', verifyToken, async (req: Request, res: Response) => {
+    const {id} = req.params
+    const {rejectMessage} = req.body
+    try {
+        const pairing = await dbClient.pairing.findUnique({where: {id}})
+        if (!pairing) return res.status(404).json({error: 'No pairing'})
+        const approvedPairing = await dbClient.pairing.update({
+            where: {id},
+            data: {
+                winners: {deleteMany: {}},
+                played: false,
+                reportLink: undefined,
+                resultsRejected: true,
+                rejectMessage
+            }
+        })
+        res.status(200).json(approvedPairing);
+    } catch (error) {
+        res.status(500).json({error})
+    }
+})
+
+module.exports = pairingsRouter

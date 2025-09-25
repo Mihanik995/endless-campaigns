@@ -42,7 +42,10 @@ authRouter.post('/register', (req: Request, res: Response) => {
             }
         })
             .then(() => res.sendStatus(201))
-            .catch((err: Error) => res.status(500).send({error: err.message}))
+            .catch((err: Error) => {
+                console.log(err)
+                res.status(500).send({error: err.message})
+            })
     })
 })
 

@@ -8,6 +8,7 @@ export default defineConfig({
   preview: {
     port: 8080,
     strictPort: true,
+      allowedHosts: ['endless-campaigns.onrender.com', 'www.endless-campaigns.com']
   },
   server: {
     port: 8080,

@@ -96,7 +96,7 @@ model Pairing {
   campaignId      String
   period          CampaignPeriod      @relation(fields: [periodId], references: [id], onDelete: Cascade)
   periodId        String
-  simpleMission   SimpleMission       @relation(fields: [simpleMissionId], references: [id])
+  simpleMission   SimpleMission       @relation(fields: [simpleMissionId], references: [id], onDelete: Cascade)
   simpleMissionId String
   players         PlayersOnPairings[]
   played          Boolean             @default(false)

@@ -2,7 +2,7 @@ import {type ReactElement, useEffect, useState} from "react";
 import axios from "../axios/axiosConfig.ts";
 import {useParams} from "react-router";
 import Header from "../components/Header.tsx";
-import {Card, Heading, Spinner, Text} from "@radix-ui/themes";
+import {Card, Flex, Heading, Spinner, Text} from "@radix-ui/themes";
 import ErrorHandler from "../components/ErrorHandler.tsx";
 
 export default function (): ReactElement {
@@ -25,16 +25,18 @@ export default function (): ReactElement {
     return (
         <>
             <Header/>
-            <Card size='3'>
-                {isLoading
-                    ? <Spinner size='3'/>
-                    : success
-                        ? <>
-                            <Heading>Your verification passed successfully!</Heading>
-                            <Text>You can Log in now!</Text>
-                        </>
+            <Flex height='100vh' align='center' justify='center'>
+                <Card size='3'>
+                    {isLoading
+                        ? <Spinner size='3'/>
+                        : success
+                            ? <>
+                                <Heading>Your verification passed successfully!</Heading>
+                                <Text>You can Log in now!</Text>
+                            </>
 
-                        : !!error && <ErrorHandler error={error}/>}
-            </Card>
+                            : !!error && <ErrorHandler error={error}/>}
+                </Card>
+            </Flex>
         </>)
 }

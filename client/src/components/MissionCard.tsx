@@ -71,7 +71,10 @@ export default function ({clickable, onDelete, mission, owner}: Props) {
     return (
         <Container width='100vw'>
             <Card size='3' m='2'>
-                <Flex gap='3'>
+                <Flex gap='3' direction={{
+                    initial: 'column',
+                    xs: 'row'
+                }}>
                     {edit
                         ? <>
                             <Flex width='100vw' direction='column' gap='3'>
@@ -94,7 +97,10 @@ export default function ({clickable, onDelete, mission, owner}: Props) {
                                     onChange={handleChange}
                                 />
                             </Flex>
-                            <Flex direction='column' align='end' justify='start' gap='3'>
+                            <Flex direction={{
+                                initial: 'row',
+                                xs: 'column'
+                            }} align='end' justify='start' gap='3'>
                                 <Tooltip content='Cancel'>
                                     <IconButton radius='full' onClick={() => setEdit(false)}>
                                         <Cross2Icon/>
@@ -123,7 +129,10 @@ export default function ({clickable, onDelete, mission, owner}: Props) {
                                 <Separator size='4' my='2'/>
                                 <Text>{missionData.missionConditions}</Text>
                             </Flex>
-                            <Flex direction='column' align='end' justify='start' gap='2'>
+                            <Flex direction={{
+                                initial: 'row',
+                                xs: 'column'
+                            }} align='end' justify='start' gap='2'>
                                 {isOwner &&
                                     <>
                                         <Tooltip content='Edit'>

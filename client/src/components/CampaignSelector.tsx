@@ -22,13 +22,13 @@ export default function () {
 
     const navigate = useNavigate();
     return (
-        <Flex minHeight='80vh' align='center' justify='center'>
+        <Flex minHeight='40vh' align='center' justify='center'>
             {isLoading
                 ? <Spinner size='3' m='4'/>
                 : !!error
                     ? <ErrorHandler error={error}/>
                     : <Container className='mt-3'>
-                        <Heading className='px-8'>Campaigns</Heading>
+                        <Heading m='2'>Campaigns</Heading>
                         <Container width='100vw'>
                             {campaigns.length
                                 ? <>

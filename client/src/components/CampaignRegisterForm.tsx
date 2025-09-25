@@ -63,7 +63,7 @@ export default function ({campaignId}: Props): ReactElement {
                         {!!error && <ErrorHandler error={error}/>}
                         <Flex gap='3'>
                             <Popover.Close>
-                                Cancel
+                                <Button>Cancel</Button>
                             </Popover.Close>
                             <Popover.Close>
                                 <Button onClick={handleSubmit} color='grass'>Register</Button>

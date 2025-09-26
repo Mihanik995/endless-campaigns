@@ -23,12 +23,10 @@ model User {
   isActive          Boolean             @default(false)
   campaigns         Campaign[]
   campaignRegisters CampaignRegister[]
-  simpleMission     SimpleMission[]
   pairings          PlayersOnPairings[]
   wonPairings       WinnersOnPairings[]
   question          Question[]
-
-  MultiStepMissionEntryPoint MultiStepMissionEntryPoint[]
+  mission           Mission[]
 }
 
 model Campaign {
@@ -68,39 +66,34 @@ model CampaignPeriod {
   pairing    Pairing[]
 }
 
-model SimpleMission {
+model Mission {
   id                   String     @id @unique
   creator              User       @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   creatorId            String
   title                String
   narrativeDescription String
-  missionConditions    String
   pairing              Pairing[]
   question             Question[]
+
+  missionConditions String?
+
+  startNode   MissionNode? @relation(fields: [startNodeId], references: [id], onDelete: Cascade)
+  startNodeId String?
 }
 
-model MultiStepMissionEntryPoint {
-  id                   String    @id @unique
-  creator              User      @relation(fields: [creatorId], references: [id], onDelete: Cascade)
-  creatorId            String
-  title                String
-  narrativeDescription String
-  pairing              Pairing[]
-
-  question Question[]
+model MissionNode {
+  id      String    @id @unique
+  mission Mission[]
 }
 
 model Question {
-  id        String         @id @unique
-  creator   User           @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  id        String  @id @unique
+  creator   User    @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   creatorId String
-  mission   SimpleMission? @relation(fields: [missionId], references: [id], onDelete: Cascade)
-  missionId String?
+  mission   Mission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  missionId String
   text      String
   answer    String?
-
-  multiStepMissionEntryPoint   MultiStepMissionEntryPoint? @relation(fields: [multiStepMissionEntryPointId], references: [id], onDelete: Cascade)
-  multiStepMissionEntryPointId String?
 }
 
 model Pairing {
@@ -109,8 +102,8 @@ model Pairing {
   campaignId      String
   period          CampaignPeriod      @relation(fields: [periodId], references: [id], onDelete: Cascade)
   periodId        String
-  simpleMission   SimpleMission?      @relation(fields: [simpleMissionId], references: [id], onDelete: Cascade)
-  simpleMissionId String?
+  mission         Mission             @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  missionId       String
   players         PlayersOnPairings[]
   played          Boolean             @default(false)
   winners         WinnersOnPairings[]
@@ -118,9 +111,6 @@ model Pairing {
   reportLink      String?
   resultsRejected Boolean             @default(false)
   rejectMessage   String?
-
-  MultiStepMissionEntryPoint   MultiStepMissionEntryPoint? @relation(fields: [MultiStepMissionEntryPointId], references: [id], onDelete: Cascade)
-  MultiStepMissionEntryPointId String?
 }
 
 model PlayersOnPairings {

@@ -98,7 +98,13 @@ export interface Mission {
     title: string
     narrativeDescription: string
     missionConditions?: string
-    type: 'simple' | 'multi-step'
+    startNodeId?: string
+    startNode?: MissionNode
+}
+
+export interface MissionNode {
+    id: string
+    mission?: Mission
 }
 
 export interface MissionCreate {
@@ -107,7 +113,6 @@ export interface MissionCreate {
     title: string
     narrativeDescription: string
     missionConditions?: string
-    type: 'simple' | 'multi-step'
 }
 
 export interface Question {
@@ -130,8 +135,8 @@ export interface Pairing {
     campaign?: Campaign
     periodId: string
     period?: CampaignPeriod
-    simpleMissionId: string
-    simpleMission?: Mission
+    missionId: string
+    mission?: Mission
     players: PlayersOnPairings[]
     played: boolean
     winners: WinnersOnPairings[]
@@ -147,7 +152,7 @@ export interface PairingCreate {
 
     campaignId: string
     periodId: string
-    simpleMissionId: string
+    missionId: string
     playerIds: string[]
 }
 

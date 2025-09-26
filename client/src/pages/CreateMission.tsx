@@ -8,15 +8,17 @@ import {useNavigate} from "react-router";
 import ErrorHandler from "../components/ErrorHandler.tsx";
 import type {MissionCreate} from "../types.ts";
 import validateData from "../utils/validators/validateData.ts";
+import validateString from "../utils/validators/validateString.ts";
 
 type InputElement = HTMLInputElement | HTMLTextAreaElement
+type Type = 'simple' | 'multi-step'
 
 export default function () {
     const [missionData, setMissionData] = useState<MissionCreate>({
         title: '',
         narrativeDescription: '',
-        type: 'multi-step'
     })
+    const [type, setType] = useState<Type>()
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<Error>()
     const navigate = useNavigate()
@@ -28,21 +30,15 @@ export default function () {
         })
     }
 
-    const handleChoice = (value: 'simple' | 'multi-step') => {
-        setMissionData({
-            ...missionData,
-            type: value
-        })
-    }
-
     const handleSubmit: MouseEventHandler<HTMLButtonElement> = function () {
         setIsLoading(true);
 
         try {
+            validateString('Type', type as string)
             validateData<MissionCreate>(missionData)
-            axios.post(`/missions/${missionData.type}`, missionData)
+            axios.post(`/missions`, missionData)
                 .then(res => {
-                    if (res.status === 201) navigate('/dashboard')
+                    if (res.status === 201) navigate(`/missions/${res.data.id}`)
                 })
         } catch (error) {
             setError(error as Error)
@@ -66,7 +62,7 @@ export default function () {
                                     value={missionData.title}
                                     onChange={handleChange}
                                 />
-                                <Select.Root onValueChange={handleChoice}>
+                                <Select.Root onValueChange={(value) => setType(value as Type)}>
                                     <Select.Trigger placeholder={'Select mission type'}/>
                                     <Select.Content>
                                         <Select.Item value='simple'>Simple mission</Select.Item>
@@ -79,7 +75,7 @@ export default function () {
                                     value={missionData.narrativeDescription}
                                     onChange={handleChange}
                                 />
-                                {missionData.type === 'simple' &&
+                                {type === 'simple' &&
                                     <TextAreaInput
                                         label='Mission conditions'
                                         name='missionConditions'

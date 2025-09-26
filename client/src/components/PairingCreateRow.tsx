@@ -47,7 +47,7 @@ export default function ({playerRegisters, period, onChange, missions}: Props) {
             const data: PairingCreate = {
                 campaignId: period.campaignId,
                 periodId: period.id,
-                simpleMissionId: mission.id,
+                missionId: mission.id,
                 playerIds: playersList.map(player => player.playerId)
             }
             validateData<PairingCreate>(data)

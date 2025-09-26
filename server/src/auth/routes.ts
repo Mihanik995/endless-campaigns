@@ -43,7 +43,6 @@ authRouter.post('/register', (req: Request, res: Response) => {
         })
             .then(() => res.sendStatus(201))
             .catch((err: Error) => {
-                console.log(err)
                 res.status(500).send({error: err.message})
             })
     })
@@ -110,7 +109,6 @@ authRouter.post('/forgot-password', async (req: Request, res: Response) => {
         const user = await dbClient.user.findUnique({where: {email}}) as User
         if (!user) return res.status(404).json({error: 'User not found'});
         const token = jwt.sign({userId: user.id, username: user.username}, process.env.JWT_SECRET)
-        console.log(token)
         await transporter.sendMail({
             from: process.env.SENDER_EMAIL,
             to: email,
@@ -119,7 +117,6 @@ authRouter.post('/forgot-password', async (req: Request, res: Response) => {
         })
         res.sendStatus(200)
     } catch (error) {
-        console.log(error)
         res.status(500).send({error});
     }
 })
@@ -135,7 +132,6 @@ authRouter.get('/restore-access/:token', async (req: Request, res: Response) => 
             .cookie('refreshToken', refreshToken, {httpOnly: true, maxAge: 3 * 24 * 60 * 60})
             .json({userId, username, accessToken});
     } catch (error) {
-        console.log(error)
         res.status(500).send({error});
     }
 })
@@ -187,7 +183,6 @@ authRouter.put('/:id/change-password', verifyToken, async (req: Request, res: Re
         if (userId !== id) return res.status(403).json({error: 'Access denied'});
         const user = await dbClient.user.findUnique({where: {id}}) as User
         if (!user) return res.status(404).json({error: 'User not found'});
-        console.log(user.password)
         crypto.pbkdf2(password, user.salt, 310000, 32, 'sha256', function (err: Error, hashedPassword: Buffer) {
             if (err) throw new Error(err.message);
             dbClient.user.update({where: {id}, data: {password: hashedPassword}})

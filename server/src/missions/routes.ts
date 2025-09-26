@@ -1,48 +1,32 @@
 import type {Request, Response} from 'express'
-import type {
-    MultiStepMissionEntryPoint,
-    SimpleMission
-} from "../../generated/prisma";
 
 const {Router} = require('express');
 const {verifyToken} = require('../auth/middleware')
 const jwt = require('jsonwebtoken');
+const {v4: uuid} = require('uuid');
 const {PrismaClient} = require('../../generated/prisma');
 
 require('dotenv').config()
 
-const simpleMissionsRouter = require('./simple-missions/routes')
-const multiStepMissionsRoutes = require('./multi-step-missions/routes')
 const pairingsRouter = require('./pairings/routes')
 const questionsRouter = require('./questions/routes')
 
 const missionsRouter = new Router();
 const dbClient = new PrismaClient();
 
-missionsRouter.use('/simple', simpleMissionsRouter)
-missionsRouter.use('/multi-step', multiStepMissionsRoutes)
 missionsRouter.use('/pairings', pairingsRouter)
 missionsRouter.use('/questions', questionsRouter)
 
-missionsRouter.get('/', verifyToken, async (req: Request, res: Response) => {
-    const token = req.header('Authorization');
+missionsRouter.post('/', verifyToken, async (req: Request, res: Response) => {
+    const data = req.body
+    const token = req.header('Authorization')
     try {
-        const {userId: creatorId} = jwt.verify(token, process.env.JWT_SECRET);
-        const simpleMissions = ((
-            await dbClient.simpleMission.findMany({where: {creatorId}})
-        ) as SimpleMission[])
-            .map(simpleMission => {
-                return {...simpleMission, type: 'simple'}
-            })
-        const multiStepMissions = ((
-            await dbClient.multiStepMissionEntryPoint.findMany({where: {creatorId}})
-        ) as MultiStepMissionEntryPoint[])
-            .map(multiStepMission => {
-                return {...multiStepMission, type: 'multi-step'}
-            })
-        res.status(200).json([...simpleMissions, ...multiStepMissions])
+        const {userId} = jwt.verify(token, process.env.JWT_SECRET)
+        data.id = uuid()
+        data.creatorId = userId
+        const mission = await dbClient.mission.create({data})
+        res.status(201).json(mission)
     } catch (error) {
-        console.log(error)
         res.status(500).json({error})
     }
 })
@@ -50,15 +34,50 @@ missionsRouter.get('/', verifyToken, async (req: Request, res: Response) => {
 missionsRouter.get('/:id', verifyToken, async (req: Request, res: Response) => {
     const id = req.params.id
     try {
-        const simpleMission = await dbClient.simpleMission.findUnique({where: {id}})
-        if (!simpleMission) {
-            const multiStepMission =  await dbClient.multiStepMissionEntryPoint.findUnique({where: {id}})
-            if (!multiStepMission) {
-                return res.status(404).json({error: 'No mission found'})
-            }
-            return res.status(200).json({...multiStepMission, type: 'multi-step'})
-        }
-        return res.status(200).json({...simpleMission, type: 'simple'})
+        const missions = await dbClient.mission.findUnique({where: {id}})
+        res.status(200).json(missions)
+    } catch (error) {
+        res.status(500).json({error})
+    }
+})
+
+missionsRouter.get('/', verifyToken, async (req: Request, res: Response) => {
+    const token = req.header('Authorization')
+    try {
+        const {userId} = jwt.verify(token, process.env.JWT_SECRET)
+        const missions = await dbClient.mission.findMany({where: {creatorId: userId}})
+        res.status(200).json(missions)
+    } catch (error) {
+        res.status(500).json({error})
+    }
+})
+
+missionsRouter.put('/:id', verifyToken, async (req: Request, res: Response) => {
+    const id = req.params.id
+    const token = req.header('Authorization')
+    const data = req.body
+    try {
+        const {userId} = jwt.verify(token, process.env.JWT_SECRET)
+        const mission = await dbClient.mission.findUnique({where: {id}})
+        if (!mission) return res.status(404).json({message: 'Mission not found'})
+        if (mission.creatorId !== userId) return res.status(401).json({error: 'Access denied'})
+        const updatedMission = await dbClient.mission.update({where: {id}, data})
+        res.status(200).json(updatedMission)
+    } catch (error) {
+        res.status(500).json({error})
+    }
+})
+
+missionsRouter.delete('/:id', verifyToken, async (req: Request, res: Response) => {
+    const id = req.params.id
+    const token = req.header('Authorization')
+    try {
+        const {userId} = jwt.verify(token, process.env.JWT_SECRET)
+        const mission = await dbClient.mission.findUnique({where: {id}})
+        if (!mission) return res.status(404).json({message: 'Mission not found'})
+        if (mission.creatorId !== userId) return res.status(401).json({error: 'Access denied'})
+        dbClient.mission.delete({where: {id}})
+            .then(() => res.sendStatus(204))
     } catch (error) {
         res.status(500).json({error})
     }

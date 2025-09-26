@@ -34,7 +34,7 @@ export default function ({campaignId, isOwner}: Props) {
                         })
                 )
             })
-            .then(() => axios.get(`/missions/simple`))
+            .then(() => axios.get(`/missions`))
             .then(res => {
                 if (res.status === 200) setMissions(res.data)
             })

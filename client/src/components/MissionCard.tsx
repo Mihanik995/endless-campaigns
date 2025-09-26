@@ -31,7 +31,7 @@ interface Props {
 }
 
 export default function ({clickable, onDelete, mission, owner}: Props) {
-    const [missionData, setMissionData] = useState<Mission>({...mission})
+    const [missionData, setMissionData] = useState<Mission>(mission)
     const [edit, setEdit] = useState(false)
     const [error, setError] = useState<Error>()
 
@@ -50,7 +50,7 @@ export default function ({clickable, onDelete, mission, owner}: Props) {
     }
 
     const handleDelete: MouseEventHandler<HTMLButtonElement> = () => {
-        axios.delete(`/missions/${missionData.type}/${missionData.id}`)
+        axios.delete(`/missions/${missionData.id}`)
             .then((response) => {
                 if (response.status === 204) onDelete()
             }).catch((error) => setError(error as Error))
@@ -59,7 +59,7 @@ export default function ({clickable, onDelete, mission, owner}: Props) {
     const handleSubmit: MouseEventHandler<HTMLButtonElement> = () => {
         try {
             validateData<Mission>(missionData)
-            axios.put(`/missions/${missionData.type}/${missionData.id}`, missionData)
+            axios.put(`/missions/${missionData.id}`, missionData)
                 .then((response) => {
                     if (response.status === 200) setEdit(false)
                 })
@@ -90,7 +90,7 @@ export default function ({clickable, onDelete, mission, owner}: Props) {
                                     value={missionData.narrativeDescription}
                                     onChange={handleChange}
                                 />
-                                {mission.type === 'simple' &&
+                                {!!mission.missionConditions &&
                                     <TextAreaInput
                                         label='Missionc conditions'
                                         name='missionConditions'
@@ -128,7 +128,7 @@ export default function ({clickable, onDelete, mission, owner}: Props) {
                                 <Heading>{missionData.title}</Heading>
                                 <Separator size='4' my='2'/>
                                 <Text><Em>{missionData.narrativeDescription}</Em></Text>
-                                {missionData.type === 'simple' &&
+                                {!!missionData.missionConditions &&
                                     <>
                                         <Separator size='4' my='2'/>
                                         <Text>{missionData.missionConditions}</Text>

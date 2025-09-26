@@ -1,7 +1,7 @@
 import Header from "../components/Header.tsx";
 import {type MouseEventHandler, useEffect, useState} from "react";
 import {useNavigate, useParams} from "react-router";
-import type {CampaignRegister, Pairing, PlayersOnPairings, Mission} from "../types.ts";
+import type {CampaignRegister, Mission, Pairing, PlayersOnPairings} from "../types.ts";
 import axios from "../axios/axiosConfig.ts";
 import {useAppSelector} from "../app/hooks.ts";
 import {selectAuth} from "../app/features/auth/authSlice.ts";
@@ -30,11 +30,12 @@ export default function () {
     const id = useParams().id as string
     const auth = useAppSelector(selectAuth)
     const [pairing, setPairing] = useState<Pairing>({
-        id: '', campaignId: '', periodId: '', simpleMissionId: '',
+        id: '', campaignId: '', periodId: '', missionId: '',
         played: false, players: [], winners: [], resultsApproved: false,
         resultsRejected: false,
     })
     const [isLoading, setIsLoading] = useState(false)
+
     useEffect(() => {
         setIsLoading(true)
         axios.get(`/missions/pairings/${id}`)
@@ -84,13 +85,15 @@ export default function () {
                         : !!error
                             ? <ErrorHandler error={error}/>
                             : <Flex direction='column' align='center' gap='2'>
-                                <MissionCard
-                                    clickable={false}
-                                    onDelete={() => {
-                                    }}
-                                    mission={pairing?.simpleMission as Mission}
-                                    owner={false}
-                                />
+                                {pairing.mission &&
+                                    <MissionCard
+                                        clickable={false}
+                                        onDelete={() => {
+                                        }}
+                                        mission={pairing.mission as Mission}
+                                        owner={false}
+                                    />
+                                }
                                 <Separator size='4' my='2'/>
                                 {pairing.played
                                     ? <>
@@ -110,19 +113,22 @@ export default function () {
                                                 : <Text>Pairing results was not approved yet.</Text>
                                             : <Text>There was no winner...</Text>}
                                     </>
-                                    : <Flex justify='center' gap='5'>
+                                    : <Flex justify='center' direction={{
+                                        initial: 'column',
+                                        xs: 'row'
+                                    }} gap='5'>
                                         {pairing.resultsRejected &&
                                             <Callout.Root color='red'>
-                                                <Flex height='100%' align='center' gap='3'>
+                                                <Flex height='100%' align='center' gap='3' maxWidth={{xs: '40vw'}}>
                                                     <Callout.Icon>
                                                         <InfoCircledIcon/>
                                                     </Callout.Icon>
-                                                    <Callout.Text>
+                                                    <Flex direction='column'>
                                                         <Heading size='3'>
                                                             Your previous report was rejected with the message:
                                                         </Heading>
                                                         <Text size='3'>{pairing.rejectMessage}</Text>
-                                                    </Callout.Text>
+                                                    </Flex>
                                                 </Flex>
                                             </Callout.Root>
                                         }

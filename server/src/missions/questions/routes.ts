@@ -22,6 +22,7 @@ questionsRouter.post("/", verifyToken, async (req: Request, res: Response) => {
         })
         res.status(201).json(question)
     } catch (error) {
+        console.error(error)
         res.status(500).json({error})
     }
 })
@@ -29,9 +30,7 @@ questionsRouter.post("/", verifyToken, async (req: Request, res: Response) => {
 questionsRouter.get("/mission/:missionId", verifyToken, async (req: Request, res: Response) => {
     const {missionId} = req.params;
     try {
-        const questions = await dbClient.question.findMany({
-            where: {missionId}
-        })
+        const questions = await dbClient.question.findMany({where: {missionId}})
         res.status(200).json(questions)
     } catch (error) {
         res.status(500).json({error})

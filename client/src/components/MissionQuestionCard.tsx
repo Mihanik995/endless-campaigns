@@ -59,6 +59,7 @@ export default function ({question, isMissionOwner, onChange}: Props) {
                                 onChange={(e) => setAnswer(e.target.value)}
                             />
                             <Button onClick={handleAnswer}>Answer</Button>
+                            <Button onClick={handleDelete} color='red'>Delete</Button>
                         </Flex>
                     </>
                     : <>
@@ -69,9 +70,12 @@ export default function ({question, isMissionOwner, onChange}: Props) {
                                     value={answer}
                                     onChange={(e) => setAnswer(e.target.value)}
                                 />
-                                <Button onClick={handleAnswer}>Answer</Button>
+                                <Button onClick={handleAnswer}>Submit</Button>
                             </>
-                            : <Button onClick={() => setEdit(true)}>Edit answer</Button>
+                            : <Flex gap='2'>
+                                <Button onClick={() => setEdit(true)}>Edit answer</Button>
+                                <Button onClick={handleDelete} color='red'>Delete question</Button>
+                            </Flex>
                         }
                     </>
                 : auth.id === question.creatorId &&
@@ -85,7 +89,7 @@ export default function ({question, isMissionOwner, onChange}: Props) {
                                     (e) => setEditQuestion(e.target.value)
                                 }
                             />
-                            <Button onClick={handleQuestion}>Answer</Button>
+                            <Button onClick={handleQuestion}>Submit</Button>
                         </Flex>
                         : <>
                             <Flex gap='2'>

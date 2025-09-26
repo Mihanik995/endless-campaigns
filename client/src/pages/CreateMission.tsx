@@ -1,21 +1,21 @@
 import Header from "../components/Header.tsx";
-import {Box, Button, Card, Flex, Separator, Spinner} from "@radix-ui/themes";
+import {Box, Button, Card, Flex, Select, Separator, Spinner} from "@radix-ui/themes";
 import TextInput from "../components/TextInput.tsx";
 import TextAreaInput from "../components/TextAreaInput.tsx";
 import {type ChangeEventHandler, type MouseEventHandler, useState} from "react";
 import axios from "../axios/axiosConfig.ts";
 import {useNavigate} from "react-router";
 import ErrorHandler from "../components/ErrorHandler.tsx";
-import type {SimpleMissionCreate} from "../types.ts";
+import type {MissionCreate} from "../types.ts";
 import validateData from "../utils/validators/validateData.ts";
 
 type InputElement = HTMLInputElement | HTMLTextAreaElement
 
 export default function () {
-    const [missionData, setMissionData] = useState<SimpleMissionCreate>({
+    const [missionData, setMissionData] = useState<MissionCreate>({
         title: '',
         narrativeDescription: '',
-        missionConditions: '',
+        type: 'multi-step'
     })
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<Error>()
@@ -28,12 +28,19 @@ export default function () {
         })
     }
 
+    const handleChoice = (value: 'simple' | 'multi-step') => {
+        setMissionData({
+            ...missionData,
+            type: value
+        })
+    }
+
     const handleSubmit: MouseEventHandler<HTMLButtonElement> = function () {
         setIsLoading(true);
 
         try {
-            validateData<SimpleMissionCreate>(missionData)
-            axios.post('/missions/simple', missionData)
+            validateData<MissionCreate>(missionData)
+            axios.post(`/missions/${missionData.type}`, missionData)
                 .then(res => {
                     if (res.status === 201) navigate('/dashboard')
                 })
@@ -59,25 +66,34 @@ export default function () {
                                     value={missionData.title}
                                     onChange={handleChange}
                                 />
+                                <Select.Root onValueChange={handleChoice}>
+                                    <Select.Trigger placeholder={'Select mission type'}/>
+                                    <Select.Content>
+                                        <Select.Item value='simple'>Simple mission</Select.Item>
+                                        <Select.Item value='multi-step'>Multi-step mission</Select.Item>
+                                    </Select.Content>
+                                </Select.Root>
                                 <TextAreaInput
                                     label='Narrative description'
                                     name='narrativeDescription'
                                     value={missionData.narrativeDescription}
                                     onChange={handleChange}
                                 />
-                                <TextAreaInput
-                                    label='Mission conditions'
-                                    name='missionConditions'
-                                    value={missionData.missionConditions}
-                                    onChange={handleChange}
-                                />
+                                {missionData.type === 'simple' &&
+                                    <TextAreaInput
+                                        label='Mission conditions'
+                                        name='missionConditions'
+                                        value={missionData.missionConditions as string}
+                                        onChange={handleChange}
+                                    />
+                                }
                                 <Separator size='4'/>
                                 <Button onClick={handleSubmit}>
                                     Create
                                 </Button>
                             </Flex>
                         }
-                        {!!error && <ErrorHandler error={error}/> }
+                        {!!error && <ErrorHandler error={error}/>}
                     </Card>
                 </Box>
             </Flex>

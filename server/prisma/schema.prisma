@@ -26,26 +26,26 @@ model User {
   simpleMission     SimpleMission[]
   pairings          PlayersOnPairings[]
   wonPairings       WinnersOnPairings[]
+  question          Question[]
 
-  question Question[]
+  MultiStepMissionEntryPoint MultiStepMissionEntryPoint[]
 }
 
 model Campaign {
-  id                       String             @id @unique
-  owner                    User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  ownerId                  String
-  title                    String
-  description              String
-  regulations              String
-  dateStart                DateTime
-  dateEnd                  DateTime
-  requiresRegisterApproval Boolean            @default(true)
-  campaignRegisters        CampaignRegister[]
-  campaignPeriod           CampaignPeriod[]
-  pairing                  Pairing[]
-
-  requiresPairingResultsApproval Boolean @default(true)
-  requiresPairingReport          Boolean @default(true)
+  id                             String             @id @unique
+  owner                          User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId                        String
+  title                          String
+  description                    String
+  regulations                    String
+  dateStart                      DateTime
+  dateEnd                        DateTime
+  requiresRegisterApproval       Boolean            @default(true)
+  campaignRegisters              CampaignRegister[]
+  campaignPeriod                 CampaignPeriod[]
+  pairing                        Pairing[]
+  requiresPairingResultsApproval Boolean            @default(true)
+  requiresPairingReport          Boolean            @default(true)
 }
 
 model CampaignRegister {
@@ -69,25 +69,38 @@ model CampaignPeriod {
 }
 
 model SimpleMission {
+  id                   String     @id @unique
+  creator              User       @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  creatorId            String
+  title                String
+  narrativeDescription String
+  missionConditions    String
+  pairing              Pairing[]
+  question             Question[]
+}
+
+model MultiStepMissionEntryPoint {
   id                   String    @id @unique
   creator              User      @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   creatorId            String
   title                String
   narrativeDescription String
-  missionConditions    String
   pairing              Pairing[]
 
   question Question[]
 }
 
 model Question {
-  id        String        @id @unique
-  creator   User          @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  id        String         @id @unique
+  creator   User           @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   creatorId String
-  mission   SimpleMission @relation(fields: [missionId], references: [id], onDelete: Cascade)
-  missionId String
+  mission   SimpleMission? @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  missionId String?
   text      String
   answer    String?
+
+  multiStepMissionEntryPoint   MultiStepMissionEntryPoint? @relation(fields: [multiStepMissionEntryPointId], references: [id], onDelete: Cascade)
+  multiStepMissionEntryPointId String?
 }
 
 model Pairing {
@@ -96,16 +109,18 @@ model Pairing {
   campaignId      String
   period          CampaignPeriod      @relation(fields: [periodId], references: [id], onDelete: Cascade)
   periodId        String
-  simpleMission   SimpleMission       @relation(fields: [simpleMissionId], references: [id], onDelete: Cascade)
-  simpleMissionId String
+  simpleMission   SimpleMission?      @relation(fields: [simpleMissionId], references: [id], onDelete: Cascade)
+  simpleMissionId String?
   players         PlayersOnPairings[]
   played          Boolean             @default(false)
   winners         WinnersOnPairings[]
-
-  resultsApproved Boolean @default(false)
+  resultsApproved Boolean             @default(false)
   reportLink      String?
-  resultsRejected Boolean @default(false)
+  resultsRejected Boolean             @default(false)
   rejectMessage   String?
+
+  MultiStepMissionEntryPoint   MultiStepMissionEntryPoint? @relation(fields: [MultiStepMissionEntryPointId], references: [id], onDelete: Cascade)
+  MultiStepMissionEntryPointId String?
 }
 
 model PlayersOnPairings {

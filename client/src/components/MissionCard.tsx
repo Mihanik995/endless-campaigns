@@ -20,18 +20,18 @@ import {useAppSelector} from "../app/hooks.ts";
 import {selectAuth} from "../app/features/auth/authSlice.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
 import {useNavigate} from "react-router";
-import type {SimpleMission} from "../types.ts";
+import type {Mission} from "../types.ts";
 import validateData from "../utils/validators/validateData.ts";
 
 interface Props {
     clickable: boolean
     onDelete: () => void
-    mission: SimpleMission
+    mission: Mission
     owner?: boolean
 }
 
 export default function ({clickable, onDelete, mission, owner}: Props) {
-    const [missionData, setMissionData] = useState<SimpleMission>({...mission})
+    const [missionData, setMissionData] = useState<Mission>({...mission})
     const [edit, setEdit] = useState(false)
     const [error, setError] = useState<Error>()
 
@@ -50,7 +50,7 @@ export default function ({clickable, onDelete, mission, owner}: Props) {
     }
 
     const handleDelete: MouseEventHandler<HTMLButtonElement> = () => {
-        axios.delete(`/missions/simple/${missionData.id}`)
+        axios.delete(`/missions/${missionData.type}/${missionData.id}`)
             .then((response) => {
                 if (response.status === 204) onDelete()
             }).catch((error) => setError(error as Error))
@@ -58,8 +58,8 @@ export default function ({clickable, onDelete, mission, owner}: Props) {
 
     const handleSubmit: MouseEventHandler<HTMLButtonElement> = () => {
         try {
-            validateData<SimpleMission>(missionData)
-            axios.put(`/missions/simple/${missionData.id}`, missionData)
+            validateData<Mission>(missionData)
+            axios.put(`/missions/${missionData.type}/${missionData.id}`, missionData)
                 .then((response) => {
                     if (response.status === 200) setEdit(false)
                 })
@@ -90,12 +90,14 @@ export default function ({clickable, onDelete, mission, owner}: Props) {
                                     value={missionData.narrativeDescription}
                                     onChange={handleChange}
                                 />
-                                <TextAreaInput
-                                    label='Missionc conditions'
-                                    name='missionConditions'
-                                    value={missionData.missionConditions}
-                                    onChange={handleChange}
-                                />
+                                {mission.type === 'simple' &&
+                                    <TextAreaInput
+                                        label='Missionc conditions'
+                                        name='missionConditions'
+                                        value={missionData.missionConditions as string}
+                                        onChange={handleChange}
+                                    />
+                                }
                             </Flex>
                             <Flex direction={{
                                 initial: 'row',
@@ -126,8 +128,12 @@ export default function ({clickable, onDelete, mission, owner}: Props) {
                                 <Heading>{missionData.title}</Heading>
                                 <Separator size='4' my='2'/>
                                 <Text><Em>{missionData.narrativeDescription}</Em></Text>
-                                <Separator size='4' my='2'/>
-                                <Text>{missionData.missionConditions}</Text>
+                                {missionData.type === 'simple' &&
+                                    <>
+                                        <Separator size='4' my='2'/>
+                                        <Text>{missionData.missionConditions}</Text>
+                                    </>
+                                }
                             </Flex>
                             <Flex direction={{
                                 initial: 'row',

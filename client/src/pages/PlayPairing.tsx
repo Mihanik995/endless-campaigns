@@ -1,7 +1,7 @@
 import Header from "../components/Header.tsx";
 import {type MouseEventHandler, useEffect, useState} from "react";
 import {useNavigate, useParams} from "react-router";
-import type {CampaignRegister, Pairing, PlayersOnPairings, SimpleMission} from "../types.ts";
+import type {CampaignRegister, Pairing, PlayersOnPairings, Mission} from "../types.ts";
 import axios from "../axios/axiosConfig.ts";
 import {useAppSelector} from "../app/hooks.ts";
 import {selectAuth} from "../app/features/auth/authSlice.ts";
@@ -88,7 +88,7 @@ export default function () {
                                     clickable={false}
                                     onDelete={() => {
                                     }}
-                                    mission={pairing?.simpleMission as SimpleMission}
+                                    mission={pairing?.simpleMission as Mission}
                                     owner={false}
                                 />
                                 <Separator size='4' my='2'/>

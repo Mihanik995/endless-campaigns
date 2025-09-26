@@ -3,7 +3,7 @@ import axios from "../axios/axiosConfig.ts";
 import {Card, Container, Flex, Heading, Spinner, Table} from "@radix-ui/themes";
 import ErrorHandler from "./ErrorHandler.tsx";
 import PeriodRow from "./PeriodRow.tsx";
-import type {CampaignPeriod, CampaignRegister, PlayerRegister, SimpleMission} from "../types.ts";
+import type {CampaignPeriod, CampaignRegister, PlayerRegister, Mission} from "../types.ts";
 import CreatePeriodButton from "./CreatePeriodButton.tsx";
 
 interface Props {
@@ -17,7 +17,7 @@ export default function ({campaignId, isOwner}: Props) {
     const [change, setChange] = useState(0)
     const [periods, setPeriods] = useState<CampaignPeriod[]>([])
     const [campaignPlayers, setCampaignPlayers] = useState<PlayerRegister[]>([])
-    const [missions, setMissions] = useState<SimpleMission[]>([])
+    const [missions, setMissions] = useState<Mission[]>([])
 
     useEffect(() => {
         setIsLoading(true)

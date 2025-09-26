@@ -1,5 +1,5 @@
 import {Box, Button, Flex, IconButton, Link, Select, Table, CheckboxGroup, Popover, Text} from "@radix-ui/themes";
-import type {CampaignPeriod, Pairing, PlayerRegister, SimpleMission} from "../types.ts";
+import type {CampaignPeriod, Pairing, PlayerRegister, Mission} from "../types.ts";
 import {type MouseEventHandler, useState} from "react";
 import {CheckIcon, Cross2Icon, PlusIcon} from "@radix-ui/react-icons";
 import axios from "../axios/axiosConfig.ts";
@@ -10,7 +10,7 @@ import TextInput from "./TextInput.tsx";
 interface Props {
     pairing: Pairing
     isOwner: boolean
-    missions: SimpleMission[]
+    missions: Mission[]
     playerRegisters: PlayerRegister[]
     period: CampaignPeriod
     onChange: () => void
@@ -18,7 +18,7 @@ interface Props {
 
 export default function ({pairing, isOwner, missions, playerRegisters, period, onChange}: Props) {
     const [edit, setEdit] = useState(false);
-    const [mission, setMission] = useState<SimpleMission>(pairing.simpleMission as SimpleMission)
+    const [mission, setMission] = useState<Mission>(pairing.simpleMission as Mission)
     const [playersList, setPlayersList] = useState<PlayerRegister[]>(
         playerRegisters.filter(pr => pairing.players.map(p => p.player.id).includes(pr.playerId))
     )

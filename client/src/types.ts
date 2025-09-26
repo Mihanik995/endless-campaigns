@@ -90,22 +90,24 @@ export interface CampaignPeriodCreate {
     dateEnd: string
 }
 
-export interface SimpleMission {
-    [key: string]: string
+export interface Mission {
+    [key: string]: any
 
     id: string
     creatorId: string
     title: string
     narrativeDescription: string
-    missionConditions: string
+    missionConditions?: string
+    type: 'simple' | 'multi-step'
 }
 
-export interface SimpleMissionCreate {
-    [key: string]: string
+export interface MissionCreate {
+    [key: string]: any
 
     title: string
     narrativeDescription: string
-    missionConditions: string
+    missionConditions?: string
+    type: 'simple' | 'multi-step'
 }
 
 export interface Question {
@@ -115,7 +117,7 @@ export interface Question {
     creatorId: string
     creator?: User
     missionId: string
-    mission?: SimpleMission
+    mission?: Mission
     text: string
     answer?: string
 }
@@ -129,7 +131,7 @@ export interface Pairing {
     periodId: string
     period?: CampaignPeriod
     simpleMissionId: string
-    simpleMission?: SimpleMission
+    simpleMission?: Mission
     players: PlayersOnPairings[]
     played: boolean
     winners: WinnersOnPairings[]

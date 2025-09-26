@@ -5,16 +5,16 @@ import ErrorHandler from "./ErrorHandler.tsx";
 import {useNavigate} from "react-router";
 import MissionCard from "./MissionCard.tsx";
 import {Heading} from "@radix-ui/themes";
-import type {SimpleMission} from "../types.ts";
+import type {Mission} from "../types.ts";
 
 export default function () {
-    const [missions, setMissions] = useState<SimpleMission[]>([])
+    const [missions, setMissions] = useState<Mission[]>([])
     const [isLoading, setIsLoading] = useState<boolean>(false)
     const [error, setError] = useState<Error>()
 
     useEffect(() => {
         setIsLoading(true)
-        axios.get('/missions/simple')
+        axios.get('/missions')
             .then(res => {
                 if (res.status === 200) setMissions(res.data)
             }).catch(err => setError(err))
@@ -46,7 +46,7 @@ export default function () {
                                     <Button
                                         mx='2'
                                         mt='2'
-                                        onClick={() => navigate('/campaigns/new')}
+                                        onClick={() => navigate('/missions/new')}
                                     >
                                         Create new mission
                                     </Button></>

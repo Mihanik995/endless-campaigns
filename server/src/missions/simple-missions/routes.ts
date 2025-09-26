@@ -12,7 +12,7 @@ const simpleMissionsRouter = Router()
 const dbClient = new PrismaClient()
 
 simpleMissionsRouter.post("/", verifyToken, async (req: Request, res: Response) => {
-    const data = req.body
+    const data = {...req.body, type: undefined};
     const token = req.header("Authorization")
     try {
         const {userId} = jwt.verify(token, process.env.JWT_SECRET)
@@ -40,7 +40,6 @@ simpleMissionsRouter.get("/:id", verifyToken, async (req: Request, res: Response
     const {id} = req.params
     try {
         const mission = await dbClient.simpleMission.findUnique({where: {id}})
-        if (!mission) return res.status(404).json({error: "Mission Not Found"})
         res.status(200).json(mission)
     } catch (error) {
         res.status(500).json({error})
@@ -50,7 +49,7 @@ simpleMissionsRouter.get("/:id", verifyToken, async (req: Request, res: Response
 simpleMissionsRouter.put("/:id", verifyToken, async (req: Request, res: Response) => {
     const {id} = req.params
     const token = req.header("Authorization")
-    const data = req.body
+    const data = {...req.body, type: undefined};
     try {
         const {userId} = jwt.verify(token, process.env.JWT_SECRET)
         const mission = await dbClient.simpleMission.findUnique({where: {id}})

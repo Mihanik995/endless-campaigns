@@ -1,11 +1,11 @@
 import {Table} from "@radix-ui/themes";
-import type {CampaignPeriod, Pairing, PlayerRegister, SimpleMission} from "../types.ts";
+import type {CampaignPeriod, Pairing, PlayerRegister, Mission} from "../types.ts";
 import PeriodParingRow from "./PeriodParingRow.tsx";
 
 interface Props {
     isOwner: boolean
     pairings: Pairing[]
-    missions: SimpleMission[]
+    missions: Mission[]
     playerRegisters: PlayerRegister[]
     period: CampaignPeriod
     onChange: () => void

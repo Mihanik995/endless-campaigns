@@ -31,7 +31,7 @@ export default function ({id}: NodeProps) {
                 open={createOpen}
                 setOpen={setCreateOpen}
             />
-            <Handle type="source" position={Position.Bottom} isConnectable={false}/>
+            <Handle type="source" position={Position.Bottom} isConnectable={!startNodeConn}/>
         </>
     )
 }

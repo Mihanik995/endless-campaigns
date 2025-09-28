@@ -67,7 +67,9 @@ export default function ({source, startNode = false, open, setOpen}: Props) {
                             id: startNode ? '0' : `${source.id}-${res.data.id}`,
                             source: source.id,
                             target: res.data.id,
+                            type: startNode ? undefined : 'customEdge',
                             animated: true
+
                         })
                     }
                 })

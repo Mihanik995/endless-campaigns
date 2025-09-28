@@ -3,7 +3,7 @@ import {
     applyEdgeChanges,
     applyNodeChanges,
     Background, Controls,
-    type Edge,
+    type Edge, type EdgeTypes,
     type Node,
     type NodeTypes,
     type OnConnect,
@@ -25,10 +25,11 @@ import axios from "../axios/axiosConfig.ts";
 import EntryPointNode from "../components/EntryPointNode.tsx";
 import {useAppSelector} from "../app/hooks.ts";
 import {selectTheme} from "../app/features/theme/themeSlice.ts";
+import CustomEdge from "../components/CustomEdge.tsx";
 
 export default function () {
-    const {theme} = useAppSelector(selectTheme) as string
-    const {id} = useParams() as string
+    const theme = useAppSelector(selectTheme).theme as 'light' | 'dark'
+    const id = useParams().id as string
 
     const [nodes, setNodes] = useState<Node[]>([])
     const [edges, setEdges] = useState<Edge[]>([])
@@ -80,6 +81,7 @@ export default function () {
                         id: link.id,
                         source: link.fromId,
                         target: link.toId,
+                        type: 'customEdge',
                         animated: true
                     }
                 }))
@@ -123,6 +125,9 @@ export default function () {
         missionNode: MissionNode,
         entryPoint: EntryPointNode
     }
+    const edgeTypes: EdgeTypes = {
+        customEdge: CustomEdge
+    }
 
     return (
         <ReactFlowProvider>
@@ -142,6 +147,7 @@ export default function () {
                                         nodes={nodes}
                                         nodeTypes={nodeTypes}
                                         edges={edges}
+                                        edgeTypes={edgeTypes}
                                         onNodesChange={onNodesChange}
                                         onEdgesChange={onEdgesChange}
                                         onConnect={onConnect}

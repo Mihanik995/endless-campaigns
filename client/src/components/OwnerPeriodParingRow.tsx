@@ -1,22 +1,22 @@
-import {Box, Button, Flex, IconButton, Link, Select, Table, CheckboxGroup, Popover, Text} from "@radix-ui/themes";
-import type {CampaignPeriod, Pairing, PlayerRegister, Mission} from "../types.ts";
+import {Box, Button, CheckboxGroup, ContextMenu, Flex, IconButton, Link, Select, Table, Text} from "@radix-ui/themes";
+import type {CampaignPeriod, Mission, Pairing, PlayerRegister} from "../types.ts";
 import {type MouseEventHandler, useState} from "react";
 import {CheckIcon, Cross2Icon, PlusIcon} from "@radix-ui/react-icons";
 import axios from "../axios/axiosConfig.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
 import {useNavigate} from "react-router";
-import TextInput from "./TextInput.tsx";
+import RejectPairingResultsDialog from "./RejectPairingResultsDialog.tsx";
+import CheckPassedNodesDialog from "./CheckPassedNodesDialog.tsx";
 
 interface Props {
     pairing: Pairing
-    isOwner: boolean
     missions: Mission[]
     playerRegisters: PlayerRegister[]
     period: CampaignPeriod
     onChange: () => void
 }
 
-export default function ({pairing, isOwner, missions, playerRegisters, period, onChange}: Props) {
+export default function ({pairing, missions, playerRegisters, period, onChange}: Props) {
     const [edit, setEdit] = useState(false);
     const [mission, setMission] = useState<Mission>(pairing.simpleMission as Mission)
     const [playersList, setPlayersList] = useState<PlayerRegister[]>(
@@ -62,7 +62,7 @@ export default function ({pairing, isOwner, missions, playerRegisters, period, o
         }).catch(err => setError(err as Error))
     }
 
-    const handleDeletePairing: MouseEventHandler<HTMLButtonElement> = () => {
+    const handleDeletePairing = (): void => {
         axios.delete(`/missions/pairings/${pairing.id}`)
             .then(res => {
                 if (res.status === 204) onChange()
@@ -75,23 +75,17 @@ export default function ({pairing, isOwner, missions, playerRegisters, period, o
             : setWinners([...winners, value])
     }
 
-    const approveResults: MouseEventHandler<HTMLButtonElement> = () => {
+    const approveResults = (): void => {
         axios.put(`/missions/pairings/${pairing.id}/approve`)
             .then(res => {
                 if (res.status === 200) onChange()
             }).catch(err => setError(err as Error))
     }
 
-    const [rejectMessage, setRejectMessage] = useState('')
-    const rejectResults: MouseEventHandler<HTMLButtonElement> = () => {
-        axios.put(`/missions/pairings/${pairing.id}/reject`, {rejectMessage})
-            .then(res => {
-                if (res.status === 200) onChange()
-            }).catch(err => setError(err as Error))
-    }
+    const [rejectOpen, setRejectOpen] = useState(false)
+    const [nodesOpen, setNodesOpen] = useState(false)
 
-    return (
-        <>
+    return <>
             <Table.Row>
                 {edit
                     ? <>
@@ -205,49 +199,56 @@ export default function ({pairing, isOwner, missions, playerRegisters, period, o
                                 </Link>
                                 : '-'}
                         </Table.Cell>
-                        {isOwner &&
-                            <Table.Cell>
-                                <Flex gap='3'>
-                                    {!pairing.resultsApproved &&
-                                        <>
-                                            <Button onClick={approveResults}>Approve results</Button>
-                                            <Popover.Root>
-                                                <Popover.Trigger>
-                                                    <Button>Reject results</Button>
-                                                </Popover.Trigger>
-                                                <Popover.Content>
-                                                    <Flex direction='column' gap='2'>
-                                                        <TextInput
-                                                            label={'Reject message'}
-                                                            name={'rejectMessage'}
-                                                            value={rejectMessage}
-                                                            onChange={(e) => {
-                                                                setRejectMessage(e.target.value)
-                                                            }}
-                                                        />
-                                                        <Popover.Close>
-                                                            <Button>Cancel</Button>
-                                                        </Popover.Close>
-                                                        <Popover.Close>
-                                                            <Button onClick={rejectResults} color='red'>Submit</Button>
-                                                        </Popover.Close>
-                                                    </Flex>
-                                                </Popover.Content>
-                                            </Popover.Root>
-                                        </>}
-                                    <Button onClick={() => setEdit(true)}>Edit</Button>
-                                    <Button color='red' onClick={handleDeletePairing}>Delete</Button>
-                                </Flex>
-                            </Table.Cell>
-                        }
+                        <ContextMenu.Root>
+                            <ContextMenu.Trigger>
+                                <Table.Cell>
+                                    <Button>Right-click / Hold</Button>
+                                </Table.Cell>
+                            </ContextMenu.Trigger>
+                            <ContextMenu.Content>
+                                {!pairing.resultsApproved && <>
+                                    <ContextMenu.Item onSelect={approveResults}>
+                                        Approve results
+                                    </ContextMenu.Item>
+                                    <ContextMenu.Item onSelect={() => setRejectOpen(true)}>
+                                        Reject results
+                                    </ContextMenu.Item>
+                                    {pairing.mission?.startNode &&
+                                        <ContextMenu.Item onSelect={() => setNodesOpen(true)}>
+                                            Check nodes passed
+                                        </ContextMenu.Item>
+                                    }
+                                    <ContextMenu.Separator/>
+                                </>}
+                                <ContextMenu.Item onSelect={() => setEdit(true)}>
+                                    Edit
+                                </ContextMenu.Item>
+                                <ContextMenu.Item color='red' onSelect={handleDeletePairing}>
+                                    Delete
+                                </ContextMenu.Item>
+                            </ContextMenu.Content>
+                        </ContextMenu.Root>
                     </>
                 }
             </Table.Row>
-            {!!error && <Table.Row>
-                <Table.Cell colSpan={isOwner ? 3 : 2}>
-                    <ErrorHandler error={error}/>
-                </Table.Cell>
-            </Table.Row>}
+            {
+                !!error && <Table.Row>
+                    <Table.Cell colSpan={3}>
+                        <ErrorHandler error={error}/>
+                    </Table.Cell>
+                </Table.Row>
+            }
+            <RejectPairingResultsDialog
+                open={rejectOpen}
+                setOpen={setRejectOpen}
+                pairing={pairing}
+                onChange={onChange}
+            />
+            <CheckPassedNodesDialog
+                open={nodesOpen}
+                setOpen={setNodesOpen}
+                pairing={pairing}
+                onChange={onChange}
+            />
         </>
-    )
 }

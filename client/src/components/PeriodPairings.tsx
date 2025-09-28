@@ -1,6 +1,7 @@
 import {Table} from "@radix-ui/themes";
 import type {CampaignPeriod, Pairing, PlayerRegister, Mission} from "../types.ts";
-import PeriodParingRow from "./PeriodParingRow.tsx";
+import OwnerPeriodParingRow from "./OwnerPeriodParingRow.tsx";
+import GuestPeriodParingRow from "./GuestPeriodParingRow.tsx";
 
 interface Props {
     isOwner: boolean
@@ -34,17 +35,19 @@ export default function ({isOwner, pairings, missions, playerRegisters, period, 
             </Table.Row>
         </Table.Header>
         <Table.Body>
-            {pairings.map((pairing) => (
-                <PeriodParingRow
+            {pairings.map((pairing) => isOwner
+                ? <OwnerPeriodParingRow
                     key={pairing.id}
                     pairing={pairing}
-                    isOwner={isOwner}
                     missions={missions}
                     playerRegisters={playerRegisters}
                     period={period}
                     onChange={onChange}
                 />
-            ))}
+                : <GuestPeriodParingRow
+                    pairing={pairing}
+                />
+            )}
         </Table.Body>
     </Table.Root>
 }

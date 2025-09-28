@@ -131,6 +131,19 @@ nodesRouter.post('/passed/:id', verifyToken, async (req: Request, res: Response)
     }
 })
 
+nodesRouter.get('/passed/pairing/:id', verifyToken, async (req: Request, res: Response) => {
+    const pairingId = req.params.id
+    try {
+        const nodesPassed = await dbClient.nodesPassedOnPairing.findMany({
+            where: {pairingId},
+            include: {node: true}
+        })
+        res.status(200).send(nodesPassed)
+    } catch (error) {
+        res.status(500).json({error})
+    }
+})
+
 nodesRouter.post('/cancel-pass/:id', verifyToken, async (req: Request, res: Response) => {
     const nodeId = req.params.id
     const {pairingId} = req.body

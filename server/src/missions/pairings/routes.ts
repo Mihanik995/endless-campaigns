@@ -76,7 +76,7 @@ pairingsRouter.get('/period/:periodId', verifyToken, async (req: Request, res: R
         const pairing = await dbClient.pairing.findMany({
             where: {periodId},
             include: {
-                mission: true,
+                mission: {include: {startNode: true}},
                 players: {include: {player: {select: {id: true, username: true, email: true}}}},
                 winners: {include: {player: {select: {id: true, username: true, email: true}}}}
             }

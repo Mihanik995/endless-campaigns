@@ -1,7 +1,7 @@
 import type {MissionNode, Pairing} from "../types.ts";
 import {Button, Card, Container, Em, Flex, Heading, Separator, Spinner, Text} from "@radix-ui/themes";
 import SetPairingResults from "./SetPairingResults.tsx";
-import {useEffect, useState} from "react";
+import {type MouseEventHandler, useEffect, useState} from "react";
 import axios from "../axios/axiosConfig.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
 import NextPairingStep from "./NextPairingStep.tsx";
@@ -9,9 +9,10 @@ import NextPairingStep from "./NextPairingStep.tsx";
 interface Props {
     node: MissionNode
     pairing: Pairing
+    onPass?: () => void
 }
 
-export default function ({node, pairing}: Props) {
+export default function ({node, pairing, onPass}: Props) {
     const [nodeData, setNodeData] = useState<MissionNode>()
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<Error>()
@@ -26,6 +27,15 @@ export default function ({node, pairing}: Props) {
     }, []);
 
     const [nextNode, setNextNode] = useState<MissionNode>()
+    const [passed, setPassed] = useState(false)
+    const handleChoice = (node: MissionNode) => {
+        setNextNode(node)
+        if (onPass) onPass()
+    }
+    const handleUndo: MouseEventHandler<HTMLButtonElement> = (e) => {
+        e.preventDefault()
+        setNextNode(undefined)
+    }
 
     return isLoading
         ? <Flex justify='center'><Spinner size='3'/></Flex>
@@ -46,10 +56,21 @@ export default function ({node, pairing}: Props) {
             <Separator size='4'/>
             {nodeData.nextLinks && nodeData.nextLinks.length
                 ? !!nextNode
-                    ? <NextPairingStep node={nextNode} pairing={pairing}/>
+                    ? <>
+                        {!passed && nodeData.nextLinks.length > 1 &&
+                            <Button onClick={handleUndo}>
+                                {'<< Undo'}
+                            </Button>
+                        }
+                        <NextPairingStep
+                            node={nextNode}
+                            pairing={pairing}
+                            onPass={() => setPassed(true)}
+                        />
+                    </>
                     : <Flex justify='center' gap='3'>
                         {nodeData.nextLinks.map(link => (
-                            <Button key={link.id} onClick={() => setNextNode(link.to)}>
+                            <Button key={link.id} onClick={() => handleChoice(link.to)}>
                                 {link.to.buttonLabel}
                             </Button>
                         ))}

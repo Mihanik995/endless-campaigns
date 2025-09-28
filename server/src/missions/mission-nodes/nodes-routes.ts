@@ -1,13 +1,16 @@
 import type {Request, Response} from 'express'
-import type {Mission} from "../../../generated/prisma";
+import type {Mission, MissionNode} from "../../../generated/prisma";
 
 const {Router} = require('express')
 const {PrismaClient} = require('../../../generated/prisma')
 const {verifyToken} = require('../../auth/middleware')
 
-
 const nodesRouter = Router()
 const dbClient = new PrismaClient()
+
+interface MissionExp extends Mission {
+    startNode: MissionNode
+}
 
 async function collectReachableGraphFromPrisma(
     startId: string
@@ -71,7 +74,7 @@ nodesRouter.get('/mission/:id', verifyToken, async (req: Request, res: Response)
         const mission = await dbClient.mission.findUnique({
             where: {id},
             include: {startNode: true}
-        }) as Mission
+        }) as MissionExp
         if (!mission) return res.status(404).send('Mission not found')
         if (!mission.startNode) return res.status(400).send('Mission has no start node')
         const {nodeIds, linkIds} = await collectReachableGraphFromPrisma(mission.startNode.id)

@@ -108,7 +108,7 @@ export interface MissionNode {
     id: string
     mission?: Mission
     missionId?: string
-    nextLinks: NodeLink
+    nextLinks: NodeLink[]
     prevLinks: NodeLink[]
     label: string
     buttonLabel: string

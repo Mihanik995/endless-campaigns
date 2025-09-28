@@ -54,7 +54,10 @@ nodesRouter.post('/', verifyToken, async (req: Request, res: Response) => {
 nodesRouter.get('/:id', verifyToken, async (req: Request, res: Response) => {
     const id = req.params.id
     try {
-        const node = dbClient.missionNode.findUnique({where: {id}})
+        const node = await dbClient.missionNode.findUnique({
+            where: {id},
+            include: {nextLinks: {include: {to: true}}}
+        })
         if (!node) return res.status(404).send('Node not found')
         res.status(200).send(node)
     } catch (error) {
@@ -88,7 +91,7 @@ nodesRouter.put('/:id', verifyToken, async (req: Request, res: Response) => {
     const id = req.params.id
     const data = req.body
     try {
-        const node = dbClient.missionNode.findUnique({where: {id}})
+        const node = await dbClient.missionNode.findUnique({where: {id}})
         if (!node) return res.status(404).send('Node not found')
         const updatedNode = await dbClient.missionNode.update({where: {id}, data})
         res.status(200).send(updatedNode)

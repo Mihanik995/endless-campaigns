@@ -57,79 +57,80 @@ export default function ({campaignId, isOwner, requiresApproval}: Props) {
                     ? <Spinner size='3'/>
                     : !!error
                         ? <ErrorHandler error={error}/>
-                        : registers.filter(reg => isOwner ? true : reg.approved).length
-                            ? <>
-                                {!registers.map(reg => reg.playerId).includes(auth.id as string) &&
-                                    <CampaignRegisterForm campaignId={campaignId}/>
-                                }
-                                <ScrollArea type='hover' scrollbars='horizontal'>
-                                    <Table.Root>
-                                        <Table.Header>
-                                            <Table.Row>
-                                                <Table.ColumnHeaderCell>Player</Table.ColumnHeaderCell>
-                                                <Table.ColumnHeaderCell>Formation
-                                                    Name</Table.ColumnHeaderCell>
-                                                <Table.ColumnHeaderCell>Roster Link</Table.ColumnHeaderCell>
-                                                <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
-                                            </Table.Row>
-                                        </Table.Header>
-                                        <Table.Body>
-                                            {registers
-                                                .filter(register => isOwner
-                                                    ? true
-                                                    : register.approved)
-                                                .map((register) => (
-                                                    <Table.Row key={register.id}>
-                                                        <Table.Cell>{register.player?.username}</Table.Cell>
-                                                        <Table.Cell>{register.formationName}</Table.Cell>
-                                                        <Table.Cell>
-                                                            <Link href={register.rosterLink} target='_blank'>
-                                                                {register.rosterLink}
-                                                            </Link>
-                                                        </Table.Cell>
-                                                        <Table.Cell>
-                                                            {isOwner
-                                                                ? register.approved
-                                                                    ?
-                                                                    <Button
-                                                                        color='red'
-                                                                        onClick={() => handleDelete(register.id)}
-                                                                    >
-                                                                        Delete
-                                                                    </Button>
-                                                                    : <Flex gap='2'>
-                                                                        <Button
-                                                                            onClick={() => handleAccept(register.id)}
-                                                                        >
-                                                                            Accept
-                                                                        </Button>
-                                                                        <Button
-                                                                            color='red'
-                                                                            onClick={() => handleDelete(register.id)}
-                                                                        >
-                                                                            Decline
-                                                                        </Button>
-                                                                    </Flex>
-                                                                : (auth.id === register.playerId) &&
+                        : <>
+                            {!registers.some(reg => reg.playerId === auth.id) &&
+                                <CampaignRegisterForm campaignId={campaignId}/>
+                        }
+                        {registers.filter(reg => isOwner ? true : reg.approved).length
+                            ? <ScrollArea type='hover' scrollbars='horizontal'>
+                                <Table.Root>
+                                    <Table.Header>
+                                        <Table.Row>
+                                            <Table.ColumnHeaderCell>Player</Table.ColumnHeaderCell>
+                                            <Table.ColumnHeaderCell>Formation
+                                                Name</Table.ColumnHeaderCell>
+                                            <Table.ColumnHeaderCell>Roster Link</Table.ColumnHeaderCell>
+                                            <Table.ColumnHeaderCell>Actions</Table.ColumnHeaderCell>
+                                        </Table.Row>
+                                    </Table.Header>
+                                    <Table.Body>
+                                        {registers
+                                            .filter(register => isOwner
+                                                ? true
+                                                : register.approved)
+                                            .map((register) => (
+                                                <Table.Row key={register.id}>
+                                                    <Table.Cell>{register.player?.username}</Table.Cell>
+                                                    <Table.Cell>{register.formationName}</Table.Cell>
+                                                    <Table.Cell>
+                                                        <Link href={register.rosterLink} target='_blank'>
+                                                            {register.rosterLink}
+                                                        </Link>
+                                                    </Table.Cell>
+                                                    <Table.Cell>
+                                                        {isOwner
+                                                            ? register.approved
+                                                                ?
                                                                 <Button
                                                                     color='red'
                                                                     onClick={() => handleDelete(register.id)}
                                                                 >
-                                                                    Drop
+                                                                    Delete
                                                                 </Button>
-                                                            }
-                                                        </Table.Cell>
-                                                    </Table.Row>
-                                                ))}
-                                        </Table.Body>
-                                    </Table.Root>
-                                </ScrollArea>
-                            </>
+                                                                : <Flex gap='2'>
+                                                                    <Button
+                                                                        onClick={() => handleAccept(register.id)}
+                                                                    >
+                                                                        Accept
+                                                                    </Button>
+                                                                    <Button
+                                                                        color='red'
+                                                                        onClick={() => handleDelete(register.id)}
+                                                                    >
+                                                                        Decline
+                                                                    </Button>
+                                                                </Flex>
+                                                            : (auth.id === register.playerId) &&
+                                                            <Button
+                                                                color='red'
+                                                                onClick={() => handleDelete(register.id)}
+                                                            >
+                                                                Drop
+                                                            </Button>
+                                                        }
+                                                    </Table.Cell>
+                                                </Table.Row>
+                                            ))}
+                                    </Table.Body>
+                                </Table.Root>
+                            </ScrollArea>
                             : <Container width='100vw'>
                                 <Heading align='center'>No {
                                     requiresApproval ? 'approved ' : ''
                                 }registrations found.</Heading>
                             </Container>
+                        }
+                        </>
                 }
             </Flex>
         </Card>

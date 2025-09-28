@@ -37,7 +37,7 @@ pairingsRouter.get('/:id', verifyToken, async (req: Request, res: Response) => {
         const pairing = await dbClient.pairing.findUnique({
             where: {id},
             include: {
-                mission: true,
+                mission: {include: {startNode: {include: {nextLinks: true}}}},
                 campaign: {include: {campaignRegisters: true}},
                 players: {include: {player: {select: {id: true, username: true, email: true}}}},
                 winners: {include: {player: {select: {id: true, username: true, email: true}}}}

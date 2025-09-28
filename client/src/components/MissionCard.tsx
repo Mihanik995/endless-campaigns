@@ -146,16 +146,14 @@ export default function ({clickable, onDelete, mission, owner}: Props) {
                                                 <Pencil2Icon/>
                                             </IconButton>
                                         </Tooltip>
-                                        {!missionData.missionConditions &&
-                                            <Tooltip content='Edit Nodes'>
-                                                <IconButton color='blue' radius='full' onClick={() => {
-                                                    navigate(`/missions/${missionData.id}/edit-nodes`)
-                                                }}
-                                                >
-                                                    <Share1Icon/>
-                                                </IconButton>
-                                            </Tooltip>
-                                        }
+                                        <Tooltip content='Edit Mission Nodes'>
+                                            <IconButton radius='full' onClick={() => {
+                                                navigate(`/missions/${missionData.id}/edit-nodes`)
+                                            }}
+                                            >
+                                                <Share1Icon/>
+                                            </IconButton>
+                                        </Tooltip>
                                         <Popover.Root>
                                             <Tooltip content='Delete'>
                                                 <Popover.Trigger>

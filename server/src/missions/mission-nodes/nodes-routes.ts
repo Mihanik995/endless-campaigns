@@ -4,6 +4,9 @@ import type {Mission, MissionNode} from "../../../generated/prisma";
 const {Router} = require('express')
 const {PrismaClient} = require('../../../generated/prisma')
 const {verifyToken} = require('../../auth/middleware')
+const jwt = require('jsonwebtoken')
+
+require('dotenv').config()
 
 const nodesRouter = Router()
 const dbClient = new PrismaClient()
@@ -79,10 +82,10 @@ nodesRouter.get('/mission/:id', verifyToken, async (req: Request, res: Response)
         if (!mission.startNode) return res.status(400).send('Mission has no start node')
         const {nodeIds, linkIds} = await collectReachableGraphFromPrisma(mission.startNode.id)
         const nodes = await dbClient.missionNode.findMany({
-            where: { id: { in: Array.from(nodeIds) } },
+            where: {id: {in: Array.from(nodeIds)}},
         });
         const links = await dbClient.nodeLink.findMany({
-            where: { id: { in: Array.from(linkIds) } },
+            where: {id: {in: Array.from(linkIds)}},
         });
         res.status(200).json({nodes, links})
     } catch (error) {
@@ -108,6 +111,37 @@ nodesRouter.delete('/:id', (req: Request, res: Response) => {
     try {
         dbClient.missionNode.delete({where: {id}})
             .then(() => res.sendStatus(204))
+    } catch (error) {
+        res.status(500).json({error})
+    }
+})
+
+nodesRouter.post('/passed/:id', verifyToken, async (req: Request, res: Response) => {
+    const nodeId = req.params.id
+    const {pairingId} = req.body
+    const token = req.header('Authorization')
+    try {
+        const {userId: playerId} = jwt.verify(token, process.env.JWT_SECRET)
+        const nodePassed = await dbClient.nodesPassedOnPairing.create({
+            data: {playerId, pairingId, nodeId}
+        })
+        res.status(201).send(nodePassed)
+    } catch (error) {
+        res.status(500).json({error})
+    }
+})
+
+nodesRouter.post('/cancel-pass/:id', verifyToken, async (req: Request, res: Response) => {
+    const nodeId = req.params.id
+    const {pairingId} = req.body
+    const token = req.header('Authorization')
+    try {
+        const {userId: playerId} = jwt.verify(token, process.env.JWT_SECRET)
+        dbClient.nodesPassedOnPairing.delete({
+            where: {
+                pairingId_nodeId_playerId: {pairingId, nodeId, playerId}
+            }
+        }).then(() => res.sendStatus(204))
     } catch (error) {
         res.status(500).json({error})
     }

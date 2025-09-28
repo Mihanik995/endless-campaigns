@@ -19,9 +19,20 @@ export default function ({node, pairing, onPass}: Props) {
 
     useEffect(() => {
         setIsLoading(true)
-        axios.get(`/missions/nodes/${node.id}`)
+        axios.get<MissionNode>(`/missions/nodes/${node.id}`)
             .then(res => {
-                if (res.status === 200) setNodeData(res.data)
+                if (res.status === 200) {
+                    setNodeData(res.data)
+                    for (const nodeLink of res.data.nextLinks) {
+                        if (pairing.nodesPassedOnPairing
+                            .map(node => node.nodeId)
+                            .includes(nodeLink.toId)){
+                            setNextNode(nodeLink.to)
+                            if (onPass) onPass()
+                            break
+                        }
+                    }
+                }
             }).catch(error => setError(error as Error))
             .finally(() => setIsLoading(false))
     }, []);
@@ -29,12 +40,24 @@ export default function ({node, pairing, onPass}: Props) {
     const [nextNode, setNextNode] = useState<MissionNode>()
     const [passed, setPassed] = useState(false)
     const handleChoice = (node: MissionNode) => {
-        setNextNode(node)
-        if (onPass) onPass()
+        setIsLoading(true)
+        axios.post(`/missions/nodes/passed/${node.id}`, {pairingId: pairing.id})
+            .then(res => {
+                if (res.status === 201) {
+                    setNextNode(node)
+                    if (onPass) onPass()
+                }
+            }).catch(error => setError(error as Error))
+            .finally(() => setIsLoading(false))
     }
     const handleUndo: MouseEventHandler<HTMLButtonElement> = (e) => {
         e.preventDefault()
-        setNextNode(undefined)
+        setIsLoading(true)
+        axios.post(`/missions/nodes/cancel-pass/${nextNode?.id}`, {pairingId: pairing.id})
+        .then(res => {
+            if (res.status === 204) setNextNode(undefined)
+        }).catch(error => setError(error as Error))
+        .finally(() => setIsLoading(false))
     }
 
     return isLoading

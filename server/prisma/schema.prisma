@@ -27,6 +27,8 @@ model User {
   wonPairings       WinnersOnPairings[]
   question          Question[]
   mission           Mission[]
+
+  nodesPassedOnPairing NodesPassedOnPairing[]
 }
 
 model Campaign {
@@ -93,6 +95,8 @@ model MissionNode {
   missionConditions    String
   positionX            Int
   positionY            Int
+
+  nodesPassedOnPairing NodesPassedOnPairing[]
 }
 
 model NodeLink {
@@ -128,6 +132,8 @@ model Pairing {
   reportLink      String?
   resultsRejected Boolean             @default(false)
   rejectMessage   String?
+
+  nodesPassedOnPairing NodesPassedOnPairing[]
 }
 
 model PlayersOnPairings {
@@ -146,4 +152,15 @@ model WinnersOnPairings {
   pairingId String
 
   @@id([playerId, pairingId])
+}
+
+model NodesPassedOnPairing {
+  node      MissionNode @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+  nodeId    String
+  pairing   Pairing     @relation(fields: [pairingId], references: [id], onDelete: Cascade)
+  pairingId String
+  player    User        @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  playerId  String
+
+  @@id([pairingId, nodeId, playerId])
 }

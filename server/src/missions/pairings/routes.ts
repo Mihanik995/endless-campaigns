@@ -39,6 +39,7 @@ pairingsRouter.get('/:id', verifyToken, async (req: Request, res: Response) => {
             include: {
                 mission: {include: {startNode: {include: {nextLinks: true}}}},
                 campaign: {include: {campaignRegisters: true}},
+                nodesPassedOnPairing: true,
                 players: {include: {player: {select: {id: true, username: true, email: true}}}},
                 winners: {include: {player: {select: {id: true, username: true, email: true}}}}
             }

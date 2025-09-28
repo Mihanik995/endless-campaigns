@@ -1,5 +1,5 @@
 import Header from "../components/Header.tsx";
-import {useEffect, useState} from "react";
+import {type MouseEventHandler, useEffect, useState} from "react";
 import {useParams} from "react-router";
 import type {Mission, MissionNode, Pairing, PlayersOnPairings} from "../types.ts";
 import axios from "../axios/axiosConfig.ts";
@@ -18,13 +18,14 @@ export default function () {
     const [pairing, setPairing] = useState<Pairing>({
         id: '', campaignId: '', periodId: '', missionId: '',
         played: false, players: [], winners: [], resultsApproved: false,
-        resultsRejected: false,
+        resultsRejected: false, nodesPassedOnPairing: []
     })
+    const [nextNode, setNextNode] = useState<MissionNode>()
     const [isLoading, setIsLoading] = useState(false)
 
     useEffect(() => {
         setIsLoading(true)
-        axios.get(`/missions/pairings/${id}`)
+        axios.get<Pairing>(`/missions/pairings/${id}`)
             .then(res => {
                 if (res.status === 200) {
                     if (
@@ -35,12 +36,26 @@ export default function () {
                         throw new Error(`You don't participate in that pairing!`)
                     }
                     setPairing(res.data);
+                    const passedNodes = res.data.nodesPassedOnPairing
+                    const pairingMissionStartNode = res.data.mission?.startNode
+                    if (passedNodes
+                        .some(passedNode => passedNode.nodeId === pairingMissionStartNode?.id)) {
+                        setNextNode(pairingMissionStartNode);
+                    }
                 }
             }).catch(error => setError(error as Error))
             .finally(() => setIsLoading(false))
     }, []);
 
-    const [nextNode, setNextNode] = useState<MissionNode>()
+    const handleStart: MouseEventHandler<HTMLButtonElement> = (e) => {
+        e.preventDefault()
+        setIsLoading(true)
+        axios.post(`/missions/nodes/passed/${pairing.mission?.startNode?.id}`, {pairingId: pairing.id})
+            .then(res => {
+                if (res.status === 201) setNextNode(pairing.mission?.startNode)
+            }).catch(error => setError(error as Error))
+            .finally(() => setIsLoading(false))
+    }
 
     return <>
         <Header/>
@@ -68,7 +83,7 @@ export default function () {
                                             node={pairing.mission.startNode as MissionNode}
                                             pairing={pairing}
                                         />
-                                        : <Button onClick={() => setNextNode(pairing.mission?.startNode)}>
+                                        : <Button onClick={handleStart}>
                                             {pairing.mission.startNode.buttonLabel}
                                         </Button>
                                     : <SetPairingResults

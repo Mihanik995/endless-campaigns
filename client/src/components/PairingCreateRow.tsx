@@ -2,13 +2,13 @@ import {Box, Button, Flex, IconButton, Select, Table, Text} from "@radix-ui/them
 import {type MouseEventHandler, useState} from "react";
 import {CheckIcon, Cross2Icon, PlusIcon} from "@radix-ui/react-icons";
 import axios from "../axios/axiosConfig.ts";
-import type {CampaignPeriod, PairingCreate, PlayerRegister, SimpleMission} from "../types.ts";
+import type {CampaignPeriod, PairingCreate, PlayerRegister, Mission} from "../types.ts";
 import validateData from "../utils/validators/validateData.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
 
 interface Props {
     playerRegisters: PlayerRegister[],
-    missions: SimpleMission[],
+    missions: Mission[],
     period: CampaignPeriod
     onChange: () => void
 }
@@ -16,7 +16,7 @@ interface Props {
 export default function ({playerRegisters, period, onChange, missions}: Props) {
     const [playersList, setPlayersList] = useState<PlayerRegister[]>([])
     const [playersOptions, setPlayersOptions] = useState<PlayerRegister[]>(playerRegisters)
-    const [mission, setMission] = useState<SimpleMission>({
+    const [mission, setMission] = useState<Mission>({
         id: '', creatorId: '', title: '', narrativeDescription: '', missionConditions: ''
     })
 
@@ -47,7 +47,7 @@ export default function ({playerRegisters, period, onChange, missions}: Props) {
             const data: PairingCreate = {
                 campaignId: period.campaignId,
                 periodId: period.id,
-                simpleMissionId: mission.id,
+                missionId: mission.id,
                 playerIds: playersList.map(player => player.playerId)
             }
             validateData<PairingCreate>(data)

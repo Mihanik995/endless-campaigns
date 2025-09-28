@@ -15,23 +15,23 @@ import {type ChangeEvent, type MouseEventHandler, useState} from "react";
 import axios from "../axios/axiosConfig.ts"
 import TextInput from "./TextInput.tsx";
 import TextAreaInput from "./TextAreaInput.tsx";
-import {CheckIcon, Cross2Icon, Pencil2Icon, TrashIcon} from "@radix-ui/react-icons";
+import {CheckIcon, Cross2Icon, Pencil2Icon, Share1Icon, TrashIcon} from "@radix-ui/react-icons";
 import {useAppSelector} from "../app/hooks.ts";
 import {selectAuth} from "../app/features/auth/authSlice.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
 import {useNavigate} from "react-router";
-import type {SimpleMission} from "../types.ts";
+import type {Mission} from "../types.ts";
 import validateData from "../utils/validators/validateData.ts";
 
 interface Props {
     clickable: boolean
     onDelete: () => void
-    mission: SimpleMission
+    mission: Mission
     owner?: boolean
 }
 
 export default function ({clickable, onDelete, mission, owner}: Props) {
-    const [missionData, setMissionData] = useState<SimpleMission>({...mission})
+    const [missionData, setMissionData] = useState<Mission>(mission)
     const [edit, setEdit] = useState(false)
     const [error, setError] = useState<Error>()
 
@@ -50,7 +50,7 @@ export default function ({clickable, onDelete, mission, owner}: Props) {
     }
 
     const handleDelete: MouseEventHandler<HTMLButtonElement> = () => {
-        axios.delete(`/missions/simple/${missionData.id}`)
+        axios.delete(`/missions/${missionData.id}`)
             .then((response) => {
                 if (response.status === 204) onDelete()
             }).catch((error) => setError(error as Error))
@@ -58,8 +58,8 @@ export default function ({clickable, onDelete, mission, owner}: Props) {
 
     const handleSubmit: MouseEventHandler<HTMLButtonElement> = () => {
         try {
-            validateData<SimpleMission>(missionData)
-            axios.put(`/missions/simple/${missionData.id}`, missionData)
+            validateData<Mission>(missionData)
+            axios.put(`/missions/${missionData.id}`, missionData)
                 .then((response) => {
                     if (response.status === 200) setEdit(false)
                 })
@@ -71,7 +71,10 @@ export default function ({clickable, onDelete, mission, owner}: Props) {
     return (
         <Container width='100vw'>
             <Card size='3' m='2'>
-                <Flex gap='3'>
+                <Flex gap='3' direction={{
+                    initial: 'column',
+                    xs: 'row'
+                }}>
                     {edit
                         ? <>
                             <Flex width='100vw' direction='column' gap='3'>
@@ -87,14 +90,19 @@ export default function ({clickable, onDelete, mission, owner}: Props) {
                                     value={missionData.narrativeDescription}
                                     onChange={handleChange}
                                 />
-                                <TextAreaInput
-                                    label='Missionc conditions'
-                                    name='missionConditions'
-                                    value={missionData.missionConditions}
-                                    onChange={handleChange}
-                                />
+                                {!!mission.missionConditions &&
+                                    <TextAreaInput
+                                        label='Missionc conditions'
+                                        name='missionConditions'
+                                        value={missionData.missionConditions as string}
+                                        onChange={handleChange}
+                                    />
+                                }
                             </Flex>
-                            <Flex direction='column' align='end' justify='start' gap='3'>
+                            <Flex direction={{
+                                initial: 'row',
+                                xs: 'column'
+                            }} align='end' justify='start' gap='3'>
                                 <Tooltip content='Cancel'>
                                     <IconButton radius='full' onClick={() => setEdit(false)}>
                                         <Cross2Icon/>
@@ -120,15 +128,30 @@ export default function ({clickable, onDelete, mission, owner}: Props) {
                                 <Heading>{missionData.title}</Heading>
                                 <Separator size='4' my='2'/>
                                 <Text><Em>{missionData.narrativeDescription}</Em></Text>
-                                <Separator size='4' my='2'/>
-                                <Text>{missionData.missionConditions}</Text>
+                                {!!missionData.missionConditions &&
+                                    <>
+                                        <Separator size='4' my='2'/>
+                                        <Text>{missionData.missionConditions}</Text>
+                                    </>
+                                }
                             </Flex>
-                            <Flex direction='column' align='end' justify='start' gap='2'>
+                            <Flex direction={{
+                                initial: 'row',
+                                xs: 'column'
+                            }} align='end' justify='start' gap='2'>
                                 {isOwner &&
                                     <>
                                         <Tooltip content='Edit'>
                                             <IconButton radius='full' onClick={() => setEdit(true)}>
                                                 <Pencil2Icon/>
+                                            </IconButton>
+                                        </Tooltip>
+                                        <Tooltip content='Edit Mission Nodes'>
+                                            <IconButton radius='full' onClick={() => {
+                                                navigate(`/missions/${missionData.id}/edit-nodes`)
+                                            }}
+                                            >
+                                                <Share1Icon/>
                                             </IconButton>
                                         </Tooltip>
                                         <Popover.Root>

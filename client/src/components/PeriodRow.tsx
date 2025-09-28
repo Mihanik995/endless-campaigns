@@ -3,7 +3,7 @@ import {type ChangeEvent, type MouseEventHandler, useEffect, useState} from "rea
 import axios from "../axios/axiosConfig.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
 import PairingCreateRow from "./PairingCreateRow.tsx";
-import type {CampaignPeriod, Pairing, PlayerRegister, SimpleMission} from "../types.ts";
+import type {CampaignPeriod, Pairing, PlayerRegister, Mission} from "../types.ts";
 import PeriodPairings from "./PeriodPairings.tsx";
 import {TriangleDownIcon, TriangleUpIcon} from "@radix-ui/react-icons";
 
@@ -12,7 +12,7 @@ interface Props {
     index: number
     onChange: () => void
     period: CampaignPeriod
-    missions: SimpleMission[]
+    missions: Mission[]
     campaignPlayers: PlayerRegister[]
 }
 

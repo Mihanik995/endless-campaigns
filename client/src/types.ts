@@ -4,6 +4,7 @@ export interface User {
     id: string
     username: string
     email: string
+    nodesPassedOnPairing: NodesPassedOnPairing[]
 }
 
 export interface UserRegister {
@@ -90,22 +91,69 @@ export interface CampaignPeriodCreate {
     dateEnd: string
 }
 
-export interface SimpleMission {
-    [key: string]: string
+export interface Mission {
+    [key: string]: any
 
     id: string
     creatorId: string
     title: string
     narrativeDescription: string
+    missionConditions?: string
+    startNodeId?: string
+    startNode?: MissionNode
+}
+
+export interface MissionNode {
+    [key: string]: any
+
+    id: string
+    mission?: Mission
+    missionId?: string
+    nextLinks: NodeLink[]
+    prevLinks: NodeLink[]
+    label: string
+    buttonLabel: string
+    narrativeDescription: string
+    missionConditions: string
+    positionX: number
+    positionY: number
+    nodesPassedOnPairing: NodesPassedOnPairing[]
+}
+
+export interface MissionNodeCreate {
+    [key: string]: any
+
+    label: string
+    buttonLabel: string
+    narrativeDescription: string
+    missionConditions: string
+    positionX: number
+    positionY: number
+}
+
+export interface MissionNodeData {
+    [key: string]: any
+
+    label: string
+    buttonLabel: string
+    narrativeDescription: string
     missionConditions: string
 }
 
-export interface SimpleMissionCreate {
-    [key: string]: string
+export interface NodeLink {
+    id: string
+    from: MissionNode
+    fromId: string
+    to: MissionNode
+    toId: string
+}
+
+export interface MissionCreate {
+    [key: string]: any
 
     title: string
     narrativeDescription: string
-    missionConditions: string
+    missionConditions?: string
 }
 
 export interface Question {
@@ -115,7 +163,7 @@ export interface Question {
     creatorId: string
     creator?: User
     missionId: string
-    mission?: SimpleMission
+    mission?: Mission
     text: string
     answer?: string
 }
@@ -128,8 +176,8 @@ export interface Pairing {
     campaign?: Campaign
     periodId: string
     period?: CampaignPeriod
-    simpleMissionId: string
-    simpleMission?: SimpleMission
+    missionId: string
+    mission?: Mission
     players: PlayersOnPairings[]
     played: boolean
     winners: WinnersOnPairings[]
@@ -138,6 +186,7 @@ export interface Pairing {
     reportLink?: string
     resultsRejected: boolean
     rejectMessage?: string
+    nodesPassedOnPairing: NodesPassedOnPairing[]
 }
 
 export interface PairingCreate {
@@ -145,7 +194,7 @@ export interface PairingCreate {
 
     campaignId: string
     periodId: string
-    simpleMissionId: string
+    missionId: string
     playerIds: string[]
 }
 
@@ -173,4 +222,13 @@ interface WinnersOnPairings {
     playerId: String
     pairing?: Pairing
     pairingId: String
+}
+
+export interface NodesPassedOnPairing {
+    node?: MissionNode
+    nodeId: string
+    pairing?: Pairing
+    pairingId: string
+    player?: User
+    playerId: string
 }

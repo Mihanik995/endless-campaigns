@@ -7,7 +7,7 @@ export default function <T extends Data>(data: T) {
         if (typeof data[key] === 'boolean') {
             continue;
         }
-        if (data[key].length <= 0) {
+        if (typeof data[key] === 'string' && data[key].length <= 0) {
             throw new Error(`Field '${key}' should be filled!`)
         }
     }

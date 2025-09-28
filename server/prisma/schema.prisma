@@ -23,33 +23,33 @@ model User {
   isActive          Boolean             @default(false)
   campaigns         Campaign[]
   campaignRegisters CampaignRegister[]
-  simpleMission     SimpleMission[]
   pairings          PlayersOnPairings[]
   wonPairings       WinnersOnPairings[]
+  question          Question[]
+  mission           Mission[]
 
-  question Question[]
+  nodesPassedOnPairing NodesPassedOnPairing[]
 }
 
 model Campaign {
-  id                       String             @id @unique
-  owner                    User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  ownerId                  String
-  title                    String
-  description              String
-  regulations              String
-  dateStart                DateTime
-  dateEnd                  DateTime
-  requiresRegisterApproval Boolean            @default(true)
-  campaignRegisters        CampaignRegister[]
-  campaignPeriod           CampaignPeriod[]
-  pairing                  Pairing[]
-
-  requiresPairingResultsApproval Boolean @default(true)
-  requiresPairingReport          Boolean @default(true)
+  id                             String             @id @default(uuid(4))
+  owner                          User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId                        String
+  title                          String
+  description                    String
+  regulations                    String
+  dateStart                      DateTime
+  dateEnd                        DateTime
+  requiresRegisterApproval       Boolean            @default(true)
+  campaignRegisters              CampaignRegister[]
+  campaignPeriod                 CampaignPeriod[]
+  pairing                        Pairing[]
+  requiresPairingResultsApproval Boolean            @default(true)
+  requiresPairingReport          Boolean            @default(true)
 }
 
 model CampaignRegister {
-  id            String   @id @unique
+  id            String   @id @default(uuid(4))
   player        User     @relation(fields: [playerId], references: [id], onDelete: Cascade)
   playerId      String
   campaign      Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
@@ -60,7 +60,7 @@ model CampaignRegister {
 }
 
 model CampaignPeriod {
-  id         String    @id @unique
+  id         String    @id @default(uuid(4))
   campaign   Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
   campaignId String
   dateStart  DateTime
@@ -68,44 +68,72 @@ model CampaignPeriod {
   pairing    Pairing[]
 }
 
-model SimpleMission {
-  id                   String    @id @unique
-  creator              User      @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+model Mission {
+  id                   String     @id @default(uuid(4))
+  creator              User       @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   creatorId            String
   title                String
   narrativeDescription String
-  missionConditions    String
   pairing              Pairing[]
+  question             Question[]
 
-  question Question[]
+  missionConditions String?
+
+  startNode MissionNode?
+}
+
+model MissionNode {
+  id        String     @id @default(uuid(4))
+  mission   Mission?   @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  missionId String?    @unique
+  nextLinks NodeLink[] @relation("FromNode")
+  prevLinks NodeLink[] @relation("ToNode")
+
+  label                String
+  buttonLabel          String
+  narrativeDescription String
+  missionConditions    String
+  positionX            Int
+  positionY            Int
+
+  nodesPassedOnPairing NodesPassedOnPairing[]
+}
+
+model NodeLink {
+  id     String      @id @default(uuid(4))
+  from   MissionNode @relation("FromNode", fields: [fromId], references: [id], onDelete: Cascade)
+  fromId String
+  to     MissionNode @relation("ToNode", fields: [toId], references: [id], onDelete: Cascade)
+  toId   String
 }
 
 model Question {
-  id        String        @id @unique
-  creator   User          @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  id        String  @id @default(uuid(4))
+  creator   User    @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   creatorId String
-  mission   SimpleMission @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  mission   Mission @relation(fields: [missionId], references: [id], onDelete: Cascade)
   missionId String
   text      String
   answer    String?
 }
 
 model Pairing {
-  id              String              @id @unique
+  id              String              @id @default(uuid(4))
   campaign        Campaign            @relation(fields: [campaignId], references: [id], onDelete: Cascade)
   campaignId      String
   period          CampaignPeriod      @relation(fields: [periodId], references: [id], onDelete: Cascade)
   periodId        String
-  simpleMission   SimpleMission       @relation(fields: [simpleMissionId], references: [id], onDelete: Cascade)
-  simpleMissionId String
+  mission         Mission             @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  missionId       String
   players         PlayersOnPairings[]
   played          Boolean             @default(false)
   winners         WinnersOnPairings[]
-
-  resultsApproved Boolean @default(false)
+  resultsApproved Boolean             @default(false)
   reportLink      String?
-  resultsRejected Boolean @default(false)
+  resultsRejected Boolean             @default(false)
   rejectMessage   String?
+
+  nodesPassedOnPairing NodesPassedOnPairing[]
 }
 
 model PlayersOnPairings {
@@ -124,4 +152,15 @@ model WinnersOnPairings {
   pairingId String
 
   @@id([playerId, pairingId])
+}
+
+model NodesPassedOnPairing {
+  node      MissionNode @relation(fields: [nodeId], references: [id], onDelete: Cascade)
+  nodeId    String
+  pairing   Pairing     @relation(fields: [pairingId], references: [id], onDelete: Cascade)
+  pairingId String
+  player    User        @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  playerId  String
+
+  @@id([pairingId, nodeId, playerId])
 }

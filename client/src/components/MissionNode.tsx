@@ -6,7 +6,12 @@ import axios from "../axios/axiosConfig.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
 import EditNodeDialog from "./EditNodeDialog.tsx";
 
-type MissionNode = Node<{ label: string, buttonLabel: string, description: string }, 'custom'>
+type MissionNode = Node<{
+    label: string,
+    buttonLabel: string,
+    narrativeDescription: string,
+    missionConditions: string
+}, 'custom'>
 
 export default function ({id, data, selected}: NodeProps<MissionNode>) {
     const {deleteElements, getNode} = useReactFlow()

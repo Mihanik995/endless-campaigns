@@ -87,11 +87,12 @@ model MissionNode {
   nextLinks NodeLink[] @relation("FromNode")
   prevLinks NodeLink[] @relation("ToNode")
 
-  label       String
-  buttonLabel String
-  description String
-  positionX   Int
-  positionY   Int
+  label                String
+  buttonLabel          String
+  narrativeDescription String
+  missionConditions    String
+  positionX            Int
+  positionY            Int
 }
 
 model NodeLink {

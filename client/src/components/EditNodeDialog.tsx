@@ -20,7 +20,8 @@ export default function ({source, open, setOpen}: Props) {
     const [nodeData, setNodeData] = useState<MissionNodeData>({
         label: source.data.label as string,
         buttonLabel: source.data.label as string,
-        description: source.data.description as string
+        narrativeDescription: source.data.narrativeDescription as string,
+        missionConditions: source.data.missionConditions as string
     });
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<Error>()
@@ -83,9 +84,15 @@ export default function ({source, open, setOpen}: Props) {
                             onChange={handleChange}
                         />
                         <TextAreaInput
-                            label='Description'
-                            name='description'
-                            value={nodeData.description}
+                            label='Narrative Description'
+                            name='narrativeDescription'
+                            value={nodeData.narrativeDescription}
+                            onChange={handleChange}
+                        />
+                        <TextAreaInput
+                            label='Mission Conditions'
+                            name='missionConditions'
+                            value={nodeData.missionConditions}
                             onChange={handleChange}
                         />
                         <Separator size='4'/>

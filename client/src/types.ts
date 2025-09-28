@@ -112,7 +112,8 @@ export interface MissionNode {
     prevLinks: NodeLink[]
     label: string
     buttonLabel: string
-    description: string
+    narrativeDescription: string
+    missionConditions: string
     positionX: number
     positionY: number
 }
@@ -122,7 +123,8 @@ export interface MissionNodeCreate {
 
     label: string
     buttonLabel: string
-    description: string
+    narrativeDescription: string
+    missionConditions: string
     positionX: number
     positionY: number
 }
@@ -132,7 +134,8 @@ export interface MissionNodeData {
 
     label: string
     buttonLabel: string
-    description: string
+    narrativeDescription: string
+    missionConditions: string
 }
 
 export interface NodeLink {

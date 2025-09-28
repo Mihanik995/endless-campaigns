@@ -1,4 +1,4 @@
-import {type ChangeEventHandler, type MouseEventHandler, useState} from "react";
+import {type ChangeEventHandler, type MouseEventHandler, useEffect, useState} from "react";
 import {Button, Dialog, Flex, Separator, Spinner} from "@radix-ui/themes";
 import TextInput from "./TextInput.tsx";
 import type {MissionNodeCreate} from "../types.ts";
@@ -18,16 +18,21 @@ interface Props {
 export default function ({source, startNode = false, open, setOpen}: Props) {
     const {addNodes, addEdges} = useReactFlow()
 
-    const initialState: MissionNodeCreate = {
-        label: '', buttonLabel: '', description: '',
-        positionX: source.position.x,
-        positionY: source.position.y + 75,
-        missionId: startNode ? source.id : undefined,
-    }
-
-    const [nodeData, setNodeData] = useState<MissionNodeCreate>(initialState);
+    const [nodeData, setNodeData] = useState<MissionNodeCreate>({
+        label: '', buttonLabel: '', narrativeDescription: '', missionConditions: '',
+        positionX: 0, positionY: 0,
+    });
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<Error>()
+
+    useEffect(() => {
+        setNodeData({
+            label: '', buttonLabel: '', narrativeDescription: '', missionConditions: '',
+            positionX: source.position.x,
+            positionY: source.position.y + 75,
+            missionId: startNode ? source.id : undefined,
+        })
+    }, [source]);
 
     const handleChange: ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> = (e) => {
         setNodeData({
@@ -49,11 +54,11 @@ export default function ({source, startNode = false, open, setOpen}: Props) {
                             data: {
                                 label: res.data.label,
                                 buttonLabel: res.data.buttonLabel,
-                                description: res.data.description,
+                                narrativeDescription: res.data.narrativeDescription,
+                                missionConditions: res.data.missionConditions,
                             },
                             type: 'missionNode'
                         })
-                        setNodeData(initialState)
                         if (!startNode) return axios.post('/missions/node-links', {
                             fromId: source.id,
                             toId: res.data.id,
@@ -108,9 +113,15 @@ export default function ({source, startNode = false, open, setOpen}: Props) {
                             onChange={handleChange}
                         />
                         <TextAreaInput
-                            label='Description'
-                            name='description'
-                            value={nodeData.description}
+                            label='Narrative Description'
+                            name='narrativeDescription'
+                            value={nodeData.narrativeDescription}
+                            onChange={handleChange}
+                        />
+                        <TextAreaInput
+                            label='Mission Conditions'
+                            name='missionConditions'
+                            value={nodeData.missionConditions}
                             onChange={handleChange}
                         />
                         <Separator size='4'/>

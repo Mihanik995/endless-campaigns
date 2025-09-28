@@ -2,7 +2,7 @@ import {
     addEdge,
     applyEdgeChanges,
     applyNodeChanges,
-    Background,
+    Background, Controls,
     type Edge,
     type Node,
     type NodeTypes,
@@ -23,9 +23,12 @@ import {useParams} from "react-router";
 import {useEffect, useState} from "react";
 import axios from "../axios/axiosConfig.ts";
 import EntryPointNode from "../components/EntryPointNode.tsx";
+import {useAppSelector} from "../app/hooks.ts";
+import {selectTheme} from "../app/features/theme/themeSlice.ts";
 
 export default function () {
-    const {id} = useParams();
+    const {theme} = useAppSelector(selectTheme) as string
+    const {id} = useParams() as string
 
     const [nodes, setNodes] = useState<Node[]>([])
     const [edges, setEdges] = useState<Edge[]>([])
@@ -60,7 +63,8 @@ export default function () {
                         data: {
                             label: node.label,
                             buttonLabel: node.buttonLabel,
-                            description: node.description,
+                            narrativeDescription: node.narrativeDescription,
+                            missionConditions: node.missionConditions,
                         },
                         type: 'missionNode'
                     }
@@ -141,9 +145,11 @@ export default function () {
                                         onNodesChange={onNodesChange}
                                         onEdgesChange={onEdgesChange}
                                         onConnect={onConnect}
+                                        colorMode={theme}
                                         fitView
                                     >
                                         <Background/>
+                                        <Controls/>
                                         {updateError && <ErrorHandler error={updateError}/>}
                                     </ReactFlow>
                                 </Box>

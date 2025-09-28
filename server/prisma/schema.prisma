@@ -30,7 +30,7 @@ model User {
 }
 
 model Campaign {
-  id                             String             @id @unique
+  id                             String             @id @default(uuid(4))
   owner                          User               @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   ownerId                        String
   title                          String
@@ -47,7 +47,7 @@ model Campaign {
 }
 
 model CampaignRegister {
-  id            String   @id @unique
+  id            String   @id @default(uuid(4))
   player        User     @relation(fields: [playerId], references: [id], onDelete: Cascade)
   playerId      String
   campaign      Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
@@ -58,7 +58,7 @@ model CampaignRegister {
 }
 
 model CampaignPeriod {
-  id         String    @id @unique
+  id         String    @id @default(uuid(4))
   campaign   Campaign  @relation(fields: [campaignId], references: [id], onDelete: Cascade)
   campaignId String
   dateStart  DateTime
@@ -67,7 +67,7 @@ model CampaignPeriod {
 }
 
 model Mission {
-  id                   String     @id @unique
+  id                   String     @id @default(uuid(4))
   creator              User       @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   creatorId            String
   title                String
@@ -77,17 +77,33 @@ model Mission {
 
   missionConditions String?
 
-  startNode   MissionNode? @relation(fields: [startNodeId], references: [id], onDelete: Cascade)
-  startNodeId String?
+  startNode MissionNode?
 }
 
 model MissionNode {
-  id      String    @id @unique
-  mission Mission[]
+  id        String     @id @default(uuid(4))
+  mission   Mission?   @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  missionId String?    @unique
+  nextLinks NodeLink[] @relation("FromNode")
+  prevLinks NodeLink[] @relation("ToNode")
+
+  label       String
+  buttonLabel String
+  description String
+  positionX   Int
+  positionY   Int
+}
+
+model NodeLink {
+  id     String      @id @default(uuid(4))
+  from   MissionNode @relation("FromNode", fields: [fromId], references: [id], onDelete: Cascade)
+  fromId String
+  to     MissionNode @relation("ToNode", fields: [toId], references: [id], onDelete: Cascade)
+  toId   String
 }
 
 model Question {
-  id        String  @id @unique
+  id        String  @id @default(uuid(4))
   creator   User    @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   creatorId String
   mission   Mission @relation(fields: [missionId], references: [id], onDelete: Cascade)
@@ -97,7 +113,7 @@ model Question {
 }
 
 model Pairing {
-  id              String              @id @unique
+  id              String              @id @default(uuid(4))
   campaign        Campaign            @relation(fields: [campaignId], references: [id], onDelete: Cascade)
   campaignId      String
   period          CampaignPeriod      @relation(fields: [periodId], references: [id], onDelete: Cascade)

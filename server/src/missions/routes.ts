@@ -10,12 +10,16 @@ require('dotenv').config()
 
 const pairingsRouter = require('./pairings/routes')
 const questionsRouter = require('./questions/routes')
+const linksRouter = require('./mission-nodes/links-router')
+const nodesRouter = require('./mission-nodes/nodes-routes')
 
 const missionsRouter = new Router();
 const dbClient = new PrismaClient();
 
 missionsRouter.use('/pairings', pairingsRouter)
 missionsRouter.use('/questions', questionsRouter)
+missionsRouter.use('/node-links', linksRouter)
+missionsRouter.use('/nodes', nodesRouter)
 
 missionsRouter.post('/', verifyToken, async (req: Request, res: Response) => {
     const data = req.body
@@ -34,7 +38,10 @@ missionsRouter.post('/', verifyToken, async (req: Request, res: Response) => {
 missionsRouter.get('/:id', verifyToken, async (req: Request, res: Response) => {
     const id = req.params.id
     try {
-        const missions = await dbClient.mission.findUnique({where: {id}})
+        const missions = await dbClient.mission.findUnique({
+            where: {id},
+            include: {startNode: true}
+        })
         res.status(200).json(missions)
     } catch (error) {
         res.status(500).json({error})

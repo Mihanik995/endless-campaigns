@@ -15,7 +15,7 @@ import {type ChangeEvent, type MouseEventHandler, useState} from "react";
 import axios from "../axios/axiosConfig.ts"
 import TextInput from "./TextInput.tsx";
 import TextAreaInput from "./TextAreaInput.tsx";
-import {CheckIcon, Cross2Icon, Pencil2Icon, TrashIcon} from "@radix-ui/react-icons";
+import {CheckIcon, Cross2Icon, Pencil2Icon, Share1Icon, TrashIcon} from "@radix-ui/react-icons";
 import {useAppSelector} from "../app/hooks.ts";
 import {selectAuth} from "../app/features/auth/authSlice.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
@@ -146,6 +146,16 @@ export default function ({clickable, onDelete, mission, owner}: Props) {
                                                 <Pencil2Icon/>
                                             </IconButton>
                                         </Tooltip>
+                                        {!missionData.missionConditions &&
+                                            <Tooltip content='Edit Nodes'>
+                                                <IconButton color='blue' radius='full' onClick={() => {
+                                                    navigate(`/missions/${missionData.id}/edit-nodes`)
+                                                }}
+                                                >
+                                                    <Share1Icon/>
+                                                </IconButton>
+                                            </Tooltip>
+                                        }
                                         <Popover.Root>
                                             <Tooltip content='Delete'>
                                                 <Popover.Trigger>

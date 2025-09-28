@@ -103,8 +103,44 @@ export interface Mission {
 }
 
 export interface MissionNode {
+    [key: string]: any
+
     id: string
     mission?: Mission
+    missionId?: string
+    nextLinks: NodeLink
+    prevLinks: NodeLink[]
+    label: string
+    buttonLabel: string
+    description: string
+    positionX: number
+    positionY: number
+}
+
+export interface MissionNodeCreate {
+    [key: string]: any
+
+    label: string
+    buttonLabel: string
+    description: string
+    positionX: number
+    positionY: number
+}
+
+export interface MissionNodeData {
+    [key: string]: any
+
+    label: string
+    buttonLabel: string
+    description: string
+}
+
+export interface NodeLink {
+    id: string
+    from: MissionNode
+    fromId: string
+    to: MissionNode
+    toId: string
 }
 
 export interface MissionCreate {

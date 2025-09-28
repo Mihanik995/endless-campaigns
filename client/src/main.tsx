@@ -22,6 +22,7 @@ import MissionPage from "./pages/MissionPage.tsx";
 import PlayPairing from "./pages/PlayPairing.tsx";
 import ForgotPassword from "./pages/ForgotPassword.tsx";
 import RestoreAccess from "./pages/RestoreAccess.tsx";
+import NodeEditor from "./pages/NodeEditor.tsx";
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
@@ -48,7 +49,10 @@ createRoot(document.getElementById('root')!).render(
                             </Route>
                             <Route path='missions'>
                                 <Route path='new' element={<CreateMission/>}/>
-                                <Route path=':id' element={<MissionPage/>}/>
+                                <Route path=':id'>
+                                    <Route index element={<MissionPage/>}/>
+                                    <Route path='edit-nodes' element={<NodeEditor/>}/>
+                                </Route>
                             </Route>
                             <Route path='pairings'>
                                 <Route path={':id'} element={<PlayPairing/>}/>

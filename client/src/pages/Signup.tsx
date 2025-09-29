@@ -31,7 +31,7 @@ export default function (): ReactElement {
             validateData<UserRegister>(registerData)
             validatePassword<UserRegister>(registerData)
             axios.post(
-                `${import.meta.env.VITE_BACKEND_URL}/auth/register`,
+                `/api/auth/register`,
                 registerData,
                 {headers: {'Content-Type': 'application/json'}}
             ).then(res => {

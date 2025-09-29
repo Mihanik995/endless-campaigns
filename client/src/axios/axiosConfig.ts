@@ -2,11 +2,8 @@ import axios from "axios";
 import {store} from "../app/store";
 import {type AuthState, logout, refresh} from "../app/features/auth/authSlice.ts";
 
-
-const backendUrl = import.meta.env.VITE_BACKEND_URL
-
 const axiosInstance = axios.create({
-    baseURL: backendUrl,
+    baseURL: '/api',
     headers: {
         "Content-Type": "application/json"
     },
@@ -32,7 +29,7 @@ axiosInstance.interceptors.response.use(
         if (error.response.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
             try {
-                const response = await axios.post(`${backendUrl}/auth/refresh`, {}, {withCredentials: true});
+                const response = await axios.post(`/api/auth/refresh`, {}, {withCredentials: true});
                 const {accessToken} = response.data;
                 store.dispatch(refresh(response.data))
                 axiosInstance.defaults.headers.common['Authorization'] = accessToken;

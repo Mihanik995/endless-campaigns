@@ -53,7 +53,9 @@ authRouter.get('/verify/:token', (req: Request, res: Response) => {
     const {userId} = jwt.verify(token, process.env.JWT_SECRET);
     if (!userId) return res.status(400).send({error: 'Invalid link'});
     dbClient.user.update({where: {id: userId}, data: {isActive: true}})
-        .then(() => res.status(200).send({userId}))
+        .then((user: User) => {
+            if (user) res.status(200).send({userId})
+        })
         .catch((err: Error) => res.status(500).send({error: err.message}))
 })
 

@@ -1,7 +1,7 @@
 import {type ChangeEventHandler, type MouseEventHandler, useEffect, useState} from "react";
 import {Button, Dialog, Flex, Separator, Spinner} from "@radix-ui/themes";
 import TextInput from "./TextInput.tsx";
-import type {MissionNodeCreate} from "../types.ts";
+import type {MissionNode, MissionNodeCreate} from "../types.ts";
 import TextAreaInput from "./TextAreaInput.tsx";
 import axios from "../axios/axiosConfig.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
@@ -45,7 +45,7 @@ export default function ({source, startNode = false, open, setOpen}: Props) {
         setIsLoading(true)
         try {
             validateData(nodeData)
-            axios.post('/missions/nodes', nodeData)
+            axios.post<MissionNode>('/missions/nodes', nodeData)
                 .then(res => {
                     if (res.status === 201) {
                         addNodes({
@@ -64,10 +64,9 @@ export default function ({source, startNode = false, open, setOpen}: Props) {
                             toId: res.data.id,
                         })
                         else addEdges({
-                            id: startNode ? '0' : `${source.id}-${res.data.id}`,
+                            id: '0',
                             source: source.id,
                             target: res.data.id,
-                            type: startNode ? undefined : 'customEdge',
                             animated: true
 
                         })
@@ -75,11 +74,11 @@ export default function ({source, startNode = false, open, setOpen}: Props) {
                 })
                 .then(res => {
                     if (res && res.status === 201) {
-                        console.log(res.data)
                         addEdges({
                             id: `${res.data.fromId}-${res.data.toId}`,
                             source: res.data.fromId,
                             target: res.data.toId,
+                            type: 'customEdge',
                             animated: true
                         })
                     }

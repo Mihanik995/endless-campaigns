@@ -4,7 +4,7 @@ export interface User {
     id: string
     username: string
     email: string
-    nodesPassedOnPairing: NodesPassedOnPairing[]
+    nodesPassedOnPairing?: NodesPassedOnPairing[]
 }
 
 export interface UserRegister {

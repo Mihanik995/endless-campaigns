@@ -16,7 +16,7 @@ export default function () {
     const [error, setError] = useState<Error>()
     useEffect(() => {
         setIsLoading(true)
-        axios.get(`${import.meta.env.VITE_BACKEND_URL}/auth/restore-access/${token}`)
+        axios.get(`/api/auth/restore-access/${token}`)
             .then(res => {
                 if (res.status === 200) {
                     dispatch(refresh(res.data))

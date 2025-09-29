@@ -1,5 +1,5 @@
 import {Button, Flex, Grid, Heading, Popover, Spinner, Text} from "@radix-ui/themes";
-import type {Question, SimpleMission} from "../types.ts";
+import type {Question, Mission} from "../types.ts";
 import {type MouseEventHandler, useEffect, useState} from "react";
 import axios from "../axios/axiosConfig.ts";
 import MissionQuestionCard from "./MissionQuestionCard.tsx";
@@ -10,7 +10,7 @@ import TextInput from "./TextInput.tsx";
 import validateString from "../utils/validators/validateString.ts";
 
 interface Props {
-    mission: SimpleMission
+    mission: Mission
 }
 
 export default function ({mission}: Props) {

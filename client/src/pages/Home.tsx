@@ -142,12 +142,16 @@ export default function CreateCampaignForm() {
                                 </Flex>
                             </Card>
                         </Grid>
-                        <Flex gap='3' justify='center'>
-                            <Flex width='40vw' direction='column' gap='1' align='end'>
+                        <Flex gap='3' justify='center' direction={{
+                            initial: 'column',
+                            xs: 'row'
+                        }}>
+                            <Flex width={{
+                                xs: '40vw'
+                            }} direction='column' gap='1' align='end'>
                                 <Text size={{initial: '3', md: '4'}} align='right' weight='bold'>
                                     Ready to get started?
                                 </Text>
-                                <Separator size='4'/>
                                 <Text size={{initial: '3', md: '4'}} align='right'>
                                     <Link weight='bold' href='' onClick={() => navigate('/auth/signup')}>
                                         Sign up now
@@ -155,12 +159,19 @@ export default function CreateCampaignForm() {
                                     {' '}and run your first campaign with new tools!
                                 </Text>
                             </Flex>
-                            <Separator orientation='vertical' size='3'/>
-                            <Flex width='40vw' direction='column' gap='1'>
+                            <Separator orientation={{
+                                initial: 'horizontal',
+                                xs: 'vertical'
+                            }} size={{
+                                initial: '4',
+                                xs: '3'
+                            }}/>
+                            <Flex width={{
+                                xs: '40vw'
+                            }} direction='column' gap='1'>
                                 <Text size={{initial: '3', md: '4'}} weight='bold'>
                                     Already have an account?{' '}
                                 </Text>
-                                <Separator size='4'/>
                                 <Text size={{initial: '3', md: '4'}}>
                                     What are you waiting for then?{' '}
                                     <Link weight='bold' href='' onClick={() => navigate('/auth/login')}>

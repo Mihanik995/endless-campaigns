@@ -8,7 +8,7 @@ export const login = createAsyncThunk(
     async (data: UserLogin, {rejectWithValue}) => {
         try {
             const res: AxiosResponse = await axios.post(
-                `${import.meta.env.VITE_BACKEND_URL}/auth/login`,
+                `/api/auth/login`,
                 data,
                 {
                     headers: {'Content-Type': 'application/json'},

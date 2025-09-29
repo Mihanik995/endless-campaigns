@@ -28,9 +28,9 @@ export default function ({pairing}: Props) {
                                 Mission:
                                 <Link
                                     href=''
-                                    onClick={() => navigate(`/missions/${pairing.simpleMission?.id}`)}
+                                    onClick={() => navigate(`/missions/${pairing.mission?.id}`)}
                                 >
-                                    {pairing.simpleMission?.title}
+                                    {pairing.mission?.title}
                                 </Link>
                             </Flex>
                         </Text>

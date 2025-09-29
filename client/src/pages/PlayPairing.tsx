@@ -1,46 +1,33 @@
 import Header from "../components/Header.tsx";
 import {type MouseEventHandler, useEffect, useState} from "react";
-import {useNavigate, useParams} from "react-router";
-import type {CampaignRegister, Pairing, PlayersOnPairings, SimpleMission} from "../types.ts";
+import {useParams} from "react-router";
+import type {Mission, MissionNode, Pairing, PlayersOnPairings} from "../types.ts";
 import axios from "../axios/axiosConfig.ts";
 import {useAppSelector} from "../app/hooks.ts";
 import {selectAuth} from "../app/features/auth/authSlice.ts";
-import {
-    Button,
-    Callout,
-    Card,
-    CheckboxCards,
-    Container,
-    Flex,
-    Heading,
-    IconButton,
-    Popover,
-    Separator,
-    Spinner,
-    Text
-} from "@radix-ui/themes";
+import {Button, Card, Container, Flex, Separator, Spinner} from "@radix-ui/themes";
 import ErrorHandler from "../components/ErrorHandler.tsx";
 import MissionCard from "../components/MissionCard.tsx";
-import {InfoCircledIcon, QuestionMarkIcon} from "@radix-ui/react-icons";
-import TextInput from "../components/TextInput.tsx";
-import validateString from "../utils/validators/validateString.ts";
+import SetPairingResults from "../components/SetPairingResults.tsx";
+import NextPairingStep from "../components/NextPairingStep.tsx";
 
 export default function () {
     const [error, setError] = useState<Error>()
     const id = useParams().id as string
     const auth = useAppSelector(selectAuth)
     const [pairing, setPairing] = useState<Pairing>({
-        id: '', campaignId: '', periodId: '', simpleMissionId: '',
+        id: '', campaignId: '', periodId: '', missionId: '',
         played: false, players: [], winners: [], resultsApproved: false,
-        resultsRejected: false,
+        resultsRejected: false, nodesPassedOnPairing: []
     })
+    const [nextNode, setNextNode] = useState<MissionNode>()
     const [isLoading, setIsLoading] = useState(false)
+
     useEffect(() => {
         setIsLoading(true)
-        axios.get(`/missions/pairings/${id}`)
+        axios.get<Pairing>(`/missions/pairings/${id}`)
             .then(res => {
                 if (res.status === 200) {
-                    setPairing(res.data);
                     if (
                         !res.data.players
                             .map((player: PlayersOnPairings) => player.playerId)
@@ -48,30 +35,26 @@ export default function () {
                     ) {
                         throw new Error(`You don't participate in that pairing!`)
                     }
+                    setPairing(res.data);
+                    const passedNodes = res.data.nodesPassedOnPairing
+                    const pairingMissionStartNode = res.data.mission?.startNode
+                    if (passedNodes
+                        .some(passedNode => passedNode.nodeId === pairingMissionStartNode?.id)) {
+                        setNextNode(pairingMissionStartNode);
+                    }
                 }
             }).catch(error => setError(error as Error))
             .finally(() => setIsLoading(false))
     }, []);
 
-    const [winners, setWinners] = useState<string[]>([])
-    const [reportLink, setReportLink] = useState<string>("")
-    const handleClick = (value: string) => {
-        winners.includes(value)
-            ? setWinners(winners.filter(id => id !== value))
-            : setWinners([...winners, value]);
-    }
-
-    const navigate = useNavigate()
-    const handleSubmit: MouseEventHandler<HTMLButtonElement> = () => {
-        try {
-            if (pairing.campaign?.requiresPairingReport) validateString('Report link', reportLink)
-            axios.post(`/missions/pairings/${id}/set-winners`, {winners, reportLink})
-                .then(res => {
-                    if (res.status === 200) navigate('/dashboard')
-                })
-        } catch (error) {
-            setError(error as Error)
-        }
+    const handleStart: MouseEventHandler<HTMLButtonElement> = (e) => {
+        e.preventDefault()
+        setIsLoading(true)
+        axios.post(`/missions/nodes/passed/${pairing.mission?.startNode?.id}`, {pairingId: pairing.id})
+            .then(res => {
+                if (res.status === 201) setNextNode(pairing.mission?.startNode)
+            }).catch(error => setError(error as Error))
+            .finally(() => setIsLoading(false))
     }
 
     return <>
@@ -84,103 +67,29 @@ export default function () {
                         : !!error
                             ? <ErrorHandler error={error}/>
                             : <Flex direction='column' align='center' gap='2'>
-                                <MissionCard
-                                    clickable={false}
-                                    onDelete={() => {
-                                    }}
-                                    mission={pairing?.simpleMission as SimpleMission}
-                                    owner={false}
-                                />
-                                <Separator size='4' my='2'/>
-                                {pairing.played
-                                    ? <>
-                                        <Text weight='bold'>This game was already played</Text>
-                                        {pairing.winners.length
-                                            ? pairing.resultsApproved
-                                                ? <>
-                                                    <Text>The winner{
-                                                        (pairing as Pairing).winners.length > 1 ? 's' : ''
-                                                    } is:</Text>
-                                                    <Text weight='bold'>
-                                                        {(pairing as Pairing).winners
-                                                            .map(winner => winner.player?.username)
-                                                            .join(', ')}
-                                                    </Text>
-                                                </>
-                                                : <Text>Pairing results was not approved yet.</Text>
-                                            : <Text>There was no winner...</Text>}
-                                    </>
-                                    : <Flex justify='center' gap='5'>
-                                        {pairing.resultsRejected &&
-                                            <Callout.Root color='red'>
-                                                <Flex height='100%' align='center' gap='3'>
-                                                    <Callout.Icon>
-                                                        <InfoCircledIcon/>
-                                                    </Callout.Icon>
-                                                    <Callout.Text>
-                                                        <Heading size='3'>
-                                                            Your previous report was rejected with the message:
-                                                        </Heading>
-                                                        <Text size='3'>{pairing.rejectMessage}</Text>
-                                                    </Callout.Text>
-                                                </Flex>
-                                            </Callout.Root>
-                                        }
-                                        <Flex direction='column' gap='2'>
-                                            <Text weight='medium' size='4'>Choose the winner(s):</Text>
-                                            <CheckboxCards.Root
-                                                defaultValue={winners}
-                                                columns={{
-                                                    initial: "1",
-                                                    sm: `${(pairing?.players.length as number) < 10
-                                                        ? pairing?.players.length
-                                                        : 10}`
-                                                }}>
-                                                {pairing?.players.map(player => (
-                                                    <CheckboxCards.Item
-                                                        key={player.playerId}
-                                                        value={player.playerId}
-                                                        onClick={() => handleClick(player.playerId)}
-                                                    >
-                                                        <Flex direction="column" width="100%">
-                                                            <Text weight="bold">
-                                                                {player.player.username}
-                                                            </Text>
-                                                            <Text>
-                                                                {(pairing?.campaign?.campaignRegisters?.find(
-                                                                    reg => reg.playerId === player.playerId
-                                                                ) as CampaignRegister)
-                                                                    .formationName}
-
-                                                            </Text>
-                                                        </Flex>
-                                                    </CheckboxCards.Item>
-                                                ))}
-                                            </CheckboxCards.Root>
-                                            {pairing.campaign?.requiresPairingReport && <TextInput
-                                                label='Report link'
-                                                name='rosterLink'
-                                                value={reportLink}
-                                                onChange={
-                                                    (e) => setReportLink(e.target.value)
-                                                }
-                                            />}
-                                            <Flex gap='3' align='center'>
-                                                <Button size='3' onClick={handleSubmit}>Submit</Button>
-                                                <Popover.Root>
-                                                    <Popover.Trigger>
-                                                        <IconButton radius='full' variant='outline'>
-                                                            <QuestionMarkIcon/>
-                                                        </IconButton>
-                                                    </Popover.Trigger>
-                                                    <Popover.Content>
-                                                        <Text>If you have no winner, don't select any options, just
-                                                            Submit.</Text>
-                                                    </Popover.Content>
-                                                </Popover.Root>
-                                            </Flex>
-                                        </Flex>
-                                    </Flex>}
+                                {pairing.mission &&
+                                    <MissionCard
+                                        clickable={false}
+                                        onDelete={() => {
+                                        }}
+                                        mission={pairing.mission as Mission}
+                                        owner={false}
+                                    />
+                                }
+                                <Separator size='4'/>
+                                {pairing.mission?.startNode
+                                    ? !!nextNode
+                                        ? <NextPairingStep
+                                            node={pairing.mission.startNode as MissionNode}
+                                            pairing={pairing}
+                                        />
+                                        : <Button onClick={handleStart}>
+                                            {pairing.mission.startNode.buttonLabel}
+                                        </Button>
+                                    : <SetPairingResults
+                                        pairing={pairing}
+                                    />
+                                }
                             </Flex>
                     }
                 </Card>

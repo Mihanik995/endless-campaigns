@@ -13,12 +13,12 @@ const pairingsRouter = new Router();
 const dbClient = new PrismaClient();
 
 pairingsRouter.post('/', verifyToken, async (req: Request, res: Response) => {
-    const {campaignId, periodId, playerIds, simpleMissionId} = req.body;
+    const {campaignId, periodId, playerIds, missionId} = req.body;
     try {
         const id = uuid()
         const pairing = await dbClient.pairing.create({
             data: {
-                id, campaignId, periodId, simpleMissionId, players: {
+                id, campaignId, periodId, missionId, players: {
                     create: playerIds.map((id: string) => {
                         return {player: {connect: {id}}}
                     })
@@ -37,8 +37,9 @@ pairingsRouter.get('/:id', verifyToken, async (req: Request, res: Response) => {
         const pairing = await dbClient.pairing.findUnique({
             where: {id},
             include: {
-                simpleMission: true,
+                mission: {include: {startNode: {include: {nextLinks: true}}}},
                 campaign: {include: {campaignRegisters: true}},
+                nodesPassedOnPairing: true,
                 players: {include: {player: {select: {id: true, username: true, email: true}}}},
                 winners: {include: {player: {select: {id: true, username: true, email: true}}}}
             }
@@ -46,7 +47,6 @@ pairingsRouter.get('/:id', verifyToken, async (req: Request, res: Response) => {
         if (!pairing) return res.status(404).json({error: 'No pairing'})
         res.status(200).json(pairing);
     } catch (error) {
-        console.log(error);
         res.status(500).json({error})
     }
 })
@@ -57,7 +57,7 @@ pairingsRouter.get('/campaign/:campaignId', verifyToken, async (req: Request, re
         const pairing = await dbClient.pairing.findMany({
             where: {campaignId},
             include: {
-                simpleMission: true,
+                mission: true,
                 players: {include: {player: {
                             select: {id: true, username: true, email: true}
                         }}}
@@ -76,7 +76,7 @@ pairingsRouter.get('/period/:periodId', verifyToken, async (req: Request, res: R
         const pairing = await dbClient.pairing.findMany({
             where: {periodId},
             include: {
-                simpleMission: true,
+                mission: {include: {startNode: true}},
                 players: {include: {player: {select: {id: true, username: true, email: true}}}},
                 winners: {include: {player: {select: {id: true, username: true, email: true}}}}
             }
@@ -84,7 +84,6 @@ pairingsRouter.get('/period/:periodId', verifyToken, async (req: Request, res: R
         if (!pairing) return res.status(404).json({error: 'No pairing'})
         res.status(200).json(pairing);
     } catch (error) {
-        console.log(error)
         res.status(500).json({error})
     }
 })
@@ -101,7 +100,7 @@ pairingsRouter.get('/', verifyToken, async (req: Request, res: Response) => {
                         campaign: {
                             include: {campaignRegisters: {include: {player: true}}}
                         },
-                        simpleMission: true,
+                        mission: true,
                         players: {include: {player: {select: {id: true, username: true, email: true}}}}
                     }
                 }
@@ -140,7 +139,6 @@ pairingsRouter.put('/:id', verifyToken, async (req: Request, res: Response) => {
         })
         res.status(200).json(updatedPairing);
     } catch (error) {
-        console.log(error)
         res.status(500).json({error})
     }
 })
@@ -188,7 +186,6 @@ pairingsRouter.post('/:id/set-winners/', verifyToken, async (req: Request, res: 
         })
         res.status(200).json(updatedPairing);
     } catch (error) {
-        console.log(error)
         res.status(500).json({error})
     }
 })

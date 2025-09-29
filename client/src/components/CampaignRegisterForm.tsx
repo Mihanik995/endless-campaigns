@@ -44,8 +44,8 @@ export default function ({campaignId}: Props): ReactElement {
             <Popover.Trigger>
                 <Button>Register Form</Button>
             </Popover.Trigger>
-            <Popover.Content>
-                <Container minWidth='300px' width='40vw'>
+            <Popover.Content minWidth='300px' width='40vw'>
+                <Container>
                     <Flex direction="column" gap='3'>
                         <TextInput
                             label='Formation Name'

@@ -1,7 +1,8 @@
-import {Avatar, Flex, IconButton, Popover, Separator, Switch, Text} from "@radix-ui/themes";
+import {Avatar, Flex, IconButton, Popover, Separator, Spinner, Switch, Text} from "@radix-ui/themes";
 import {ShadowInnerIcon} from "@radix-ui/react-icons";
 import {selectTheme, setBackground, toggleTheme} from "../app/features/theme/themeSlice.ts";
 import {useAppDispatch, useAppSelector} from "../app/hooks.ts";
+import {useEffect, useState} from "react";
 
 interface StringMap {
     [key: string]: string;
@@ -18,6 +19,19 @@ export default function () {
         wood: `/assets/wood-${theme.theme}-bg.jpg`,
         leather: `/assets/leather-${theme.theme}-bg.jpg`,
     }
+
+    const [loaded, setLoaded] = useState<Record<string, boolean>>({});
+    useEffect(() => {
+        Object.entries(backgrounds).forEach(([key, url]) => {
+            if (!url || loaded[key]) return;
+
+            const img = new Image();
+            img.src = url;
+            img.onload = () => {
+                setLoaded(prev => ({...prev, [key]: true}));
+            };
+        });
+    }, [theme.theme]);
 
     return (
         <Popover.Root>
@@ -47,8 +61,8 @@ export default function () {
                                 onClick={() => dispatch(setBackground(bg))}
                             >
                                 <Avatar
-                                    src={backgrounds[bg]}
-                                    fallback={bg[0]}
+                                    src={loaded[bg] ? backgrounds[bg] : undefined}
+                                    fallback={bg === 'default' ? bg[0] : <Spinner/>}
                                     className='cursor-pointer'
                                 />
                             </button>

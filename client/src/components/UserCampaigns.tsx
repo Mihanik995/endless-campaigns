@@ -2,6 +2,8 @@ import {Button, Card, Container, Flex, Heading, Popover, Spinner, Table, Text} f
 import {useEffect, useState} from "react";
 import axios from "../axios/axiosConfig.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
+import {useAppSelector} from "../app/hooks.ts";
+import {selectAuth} from "../app/features/auth/authSlice.ts";
 
 interface CampaignData {
     id: string;
@@ -26,6 +28,9 @@ export default function ({id}: Props) {
             }).catch(err => setError(err as Error))
             .finally(() => setIsLoading(false))
     }, []);
+
+    const auth = useAppSelector(selectAuth)
+    const isOwner = auth.id === id
 
     const handleDelete = (id: string) => {
         axios.delete(`/campaigns/register/${id}`)
@@ -59,9 +64,9 @@ export default function ({id}: Props) {
                                         <Table.ColumnHeaderCell>
                                             Your Roster
                                         </Table.ColumnHeaderCell>
-                                        <Table.ColumnHeaderCell>
+                                        {isOwner && <Table.ColumnHeaderCell>
                                             Actions
-                                        </Table.ColumnHeaderCell>
+                                        </Table.ColumnHeaderCell>}
                                     </Table.Row>
                                 </Table.Header>
                                 <Table.Body>
@@ -76,7 +81,7 @@ export default function ({id}: Props) {
                                             <Table.RowHeaderCell>
                                                 {reg.rosterLink}
                                             </Table.RowHeaderCell>
-                                            <Table.RowHeaderCell>
+                                            {isOwner && <Table.RowHeaderCell>
                                                 <Popover.Root>
                                                     <Popover.Trigger>
                                                         <Button color='red'>
@@ -108,7 +113,7 @@ export default function ({id}: Props) {
                                                         </Flex>
                                                     </Popover.Content>
                                                 </Popover.Root>
-                                            </Table.RowHeaderCell>
+                                            </Table.RowHeaderCell>}
                                         </Table.Row>
                                     ))}
                                 </Table.Body>

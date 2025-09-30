@@ -1,4 +1,6 @@
-import {Flex, Switch, Text} from "@radix-ui/themes";
+import {Flex, IconButton, Popover, Switch, Text} from "@radix-ui/themes";
+import {QuestionMarkIcon} from "@radix-ui/react-icons";
+import type {ReactElement} from "react";
 
 interface Props {
     name: string;
@@ -6,9 +8,10 @@ interface Props {
     onClick: () => void;
     label: string;
     disabled?: boolean;
+    hint?: ReactElement;
 }
 
-export default function ({name, value, onClick, label, disabled}: Props) {
+export default function ({name, value, onClick, label, disabled, hint}: Props) {
     return (
         <div className='isolate'>
             <Text as='label' size='3'>
@@ -23,6 +26,18 @@ export default function ({name, value, onClick, label, disabled}: Props) {
                         color='grass'
                     />
                     {label}
+                    {hint &&
+                        <Popover.Root>
+                            <Popover.Trigger>
+                                <IconButton radius='full' variant='outline' size='1'>
+                                    <QuestionMarkIcon/>
+                                </IconButton>
+                            </Popover.Trigger>
+                            <Popover.Content>
+                                {hint}
+                            </Popover.Content>
+                        </Popover.Root>
+                    }
                 </Flex>
             </Text>
         </div>

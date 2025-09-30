@@ -1,10 +1,11 @@
-import {Box, Button, Flex, IconButton, Select, Table, Text} from "@radix-ui/themes";
+import {Box, Button, Flex, IconButton, Table, Text} from "@radix-ui/themes";
 import {type MouseEventHandler, useState} from "react";
 import {CheckIcon, Cross2Icon, PlusIcon} from "@radix-ui/react-icons";
 import axios from "../axios/axiosConfig.ts";
-import type {CampaignPeriod, PairingCreate, PlayerRegister, Mission} from "../types.ts";
+import type {CampaignPeriod, Mission, PairingCreate, PlayerRegister} from "../types.ts";
 import validateData from "../utils/validators/validateData.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
+import SelectInput from "./SelectInput.tsx";
 
 interface Props {
     playerRegisters: PlayerRegister[],
@@ -63,19 +64,15 @@ export default function ({playerRegisters, period, onChange, missions}: Props) {
         <Table.Row>
             <Table.Cell colSpan={2}>
                 <Flex direction='column' gap='2'>
-                    <Select.Root
-                        defaultValue={mission.id}
+                    <SelectInput
+                        label={'Mission'}
+                        value={mission.id}
                         onValueChange={(value) => setMission(JSON.parse(value))}
-                    >
-                        <Select.Trigger placeholder='Choose mission'/>
-                        <Select.Content>
-                            {missions.map((mission) => (
-                                <Select.Item key={mission.id} value={JSON.stringify(mission)}>
-                                    {mission.title}
-                                </Select.Item>
-                            ))}
-                        </Select.Content>
-                    </Select.Root>
+                        options={missions.reduce((acc, mission) => {
+                            acc[mission.id] = JSON.stringify(mission)
+                            return acc
+                        }, {} as Record<string, string>)}
+                    />
                     <Flex gap='2' align='center'>
                         Players:
                         {!playersList.length && !playersOptions.length
@@ -105,16 +102,15 @@ export default function ({playerRegisters, period, onChange, missions}: Props) {
                                     : <PlusIcon/>
                                 }
                             </IconButton>
-                            {addPlayer && <Select.Root defaultValue='' onValueChange={setPlayerToAdd}>
-                                <Select.Trigger placeholder='Choose a player'/>
-                                <Select.Content>
-                                    {playersOptions.map((player: PlayerRegister) => (
-                                        <Select.Item key={player.id} value={JSON.stringify(player)}>
-                                            {player.playerUsername}
-                                        </Select.Item>
-                                    ))}
-                                </Select.Content>
-                            </Select.Root>}
+                            {addPlayer && <SelectInput
+                                placeholder={'Choose a player'}
+                                value={playerToAdd}
+                                options={playersOptions.reduce((acc, player) => {
+                                    acc[player.id] = JSON.stringify(player)
+                                    return acc
+                                }, {} as Record<string, string>)}
+                                onValueChange={setPlayerToAdd}
+                            />}
                         </Box>}
                     </Flex>
                 </Flex>

@@ -1,5 +1,5 @@
 import Header from "../components/Header.tsx";
-import {Box, Button, Card, Flex, Select, Separator, Spinner} from "@radix-ui/themes";
+import {Box, Button, Card, Flex, Separator, Spinner} from "@radix-ui/themes";
 import TextInput from "../components/TextInput.tsx";
 import TextAreaInput from "../components/TextAreaInput.tsx";
 import {type ChangeEventHandler, type MouseEventHandler, useState} from "react";
@@ -9,6 +9,7 @@ import ErrorHandler from "../components/ErrorHandler.tsx";
 import type {MissionCreate} from "../types.ts";
 import validateData from "../utils/validators/validateData.ts";
 import validateString from "../utils/validators/validateString.ts";
+import SelectInput from "../components/SelectInput.tsx";
 
 type InputElement = HTMLInputElement | HTMLTextAreaElement
 type Type = 'simple' | 'multi-step'
@@ -62,13 +63,15 @@ export default function () {
                                     value={missionData.title}
                                     onChange={handleChange}
                                 />
-                                <Select.Root onValueChange={(value) => setType(value as Type)}>
-                                    <Select.Trigger placeholder={'Select mission type'}/>
-                                    <Select.Content>
-                                        <Select.Item value='simple'>Simple mission</Select.Item>
-                                        <Select.Item value='multi-step'>Multi-step mission</Select.Item>
-                                    </Select.Content>
-                                </Select.Root>
+                                <SelectInput
+                                    label='Mission type'
+                                    value={type as string}
+                                    onValueChange={(value) => setType(value as Type)}
+                                    options={{
+                                        'simple': 'Simple Mission',
+                                        'multi-step': 'Multi-step mission'
+                                    }}
+                                />
                                 <TextAreaInput
                                     label='Narrative description'
                                     name='narrativeDescription'

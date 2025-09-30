@@ -5,6 +5,9 @@ export interface User {
     username: string
     email: string
     nodesPassedOnPairing?: NodesPassedOnPairing[]
+    telegramId?: string
+    notifications: 'none' | 'email' | 'telegram'
+    allowPlatformNotification: boolean
 }
 
 export interface UserRegister {
@@ -14,6 +17,8 @@ export interface UserRegister {
     email: string
     password: string
     confirmPassword: string
+    notifications: 'none' | 'email' | 'telegram'
+    allowPlatformNotification: boolean
 }
 
 export interface UserLogin {

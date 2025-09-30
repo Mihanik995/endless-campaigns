@@ -1,4 +1,4 @@
-import {type ReactNode} from "react";
+import {type ReactNode, useEffect, useState} from "react";
 import {Theme} from "@radix-ui/themes";
 
 import {useAppSelector} from "../app/hooks.ts";
@@ -14,9 +14,17 @@ export default function ({children}: Props) {
         ? `bg-default-${theme.theme}`
         : `bg ${theme.background}-${theme.theme}`
 
+    const [isBgLoaded, setIsBgLoaded] = useState(false)
+    useEffect(() => {
+        setIsBgLoaded(false)
+        const img = new Image()
+        img.src = `/assets/${theme.background}-${theme.theme}-bg.jpg`
+        img.onload = () => setIsBgLoaded(true)
+    }, [backgroundClass])
+
     return (
         <div
-            className={backgroundClass}
+            className={isBgLoaded ? backgroundClass : `bg-default-${theme.theme}`}
         >
             <Theme
                 appearance={theme.theme}

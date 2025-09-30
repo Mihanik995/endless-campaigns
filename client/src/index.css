@@ -19,6 +19,7 @@ body {
     background-position: center;
     background-size: cover;
     background-attachment: fixed;
+    transition: background-image 0.3s ease-in-out;
 }
 
 .stone-dark {

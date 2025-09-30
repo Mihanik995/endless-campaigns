@@ -160,7 +160,7 @@ export default function () {
                                                         </DataList.Label>
                                                         {edit
                                                             ?<SelectInput
-                                                                label='Notifications'
+                                                                size='2'
                                                                 value={userData.notifications}
                                                                 onValueChange={handleSelect}
                                                                 options={{

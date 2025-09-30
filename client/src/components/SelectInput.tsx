@@ -9,16 +9,17 @@ interface Props {
     options: { [key: string]: string }
     placeholder?: string
     hint?: ReactElement
+    size?: '1' | '2' | '3'
 }
 
-export default function ({label, value, onValueChange, options, placeholder, hint}: Props) {
+export default function ({label, value, onValueChange, options, placeholder, hint, size}: Props) {
     return <Flex gap='1' direction='column'>
         {!!label && `${label}:`}
         <Flex gap='2' align='center'>
             <Select.Root
                 value={value}
                 onValueChange={onValueChange}
-                size='3'
+                size={size || '3'}
             >
                 <Select.Trigger placeholder={placeholder}/>
                 <Select.Content>

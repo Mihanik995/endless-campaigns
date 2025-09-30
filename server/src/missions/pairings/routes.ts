@@ -6,6 +6,7 @@ const {PrismaClient} = require("../../../generated/prisma");
 const {v4: uuid} = require("uuid");
 const jwt = require("jsonwebtoken");
 const {verifyToken} = require("../../auth/middleware")
+const {resultsRejectedNotify, newPairingNotify, pairingPlayedNotify} = require('../../utils/notifications')
 
 require("dotenv").config();
 
@@ -23,8 +24,17 @@ pairingsRouter.post('/', verifyToken, async (req: Request, res: Response) => {
                         return {player: {connect: {id}}}
                     })
                 }
+            },
+            include: {
+                players: {include: {player: {select: {
+                                notifications: true,
+                                telegramId: true,
+                                email: true,
+                            }}}},
+                campaign: true
             }
         })
+        await newPairingNotify(pairing)
         res.status(201).json(pairing);
     } catch (error) {
         res.status(500).json({error})
@@ -58,9 +68,13 @@ pairingsRouter.get('/campaign/:campaignId', verifyToken, async (req: Request, re
             where: {campaignId},
             include: {
                 mission: true,
-                players: {include: {player: {
+                players: {
+                    include: {
+                        player: {
                             select: {id: true, username: true, email: true}
-                        }}}
+                        }
+                    }
+                }
             }
         })
         if (!pairing) return res.status(404).json({error: 'No pairing'})
@@ -161,8 +175,8 @@ pairingsRouter.post('/:id/set-winners/', verifyToken, async (req: Request, res: 
         const pairing = await dbClient.pairing.findUnique({
             where: {id},
             include: {
-                players: {select: {playerId: true}},
-                campaign: {select: {requiresPairingResultsApproval: true}}
+                players: {include: {player: {select: {username: true}}}},
+                campaign: {include: {owner: true}}
             }
         })
         if (!pairing) return res.status(404).json({error: 'No pairing'})
@@ -179,11 +193,16 @@ pairingsRouter.post('/:id/set-winners/', verifyToken, async (req: Request, res: 
                 resultsApproved: !pairing.campaign.requiresPairingResultsApproval,
                 resultsRejected: false,
                 rejectMessage: undefined,
-                winners: {create: winnersIds.map((id: string) => {
-                    return {player: {connect: {id}}}
-                })}
+                winners: {
+                    create: winnersIds.map((id: string) => {
+                        return {player: {connect: {id}}}
+                    })
+                }
             }
         })
+        if (pairing.campaign.requiresPairingResultsApproval) {
+            await pairingPlayedNotify(pairing)
+        }
         res.status(200).json(updatedPairing);
     } catch (error) {
         res.status(500).json({error})
@@ -211,9 +230,18 @@ pairingsRouter.put('/:id/reject', verifyToken, async (req: Request, res: Respons
     const {id} = req.params
     const {rejectMessage} = req.body
     try {
-        const pairing = await dbClient.pairing.findUnique({where: {id}})
+        const pairing = await dbClient.pairing.findUnique({
+            where: {id},
+            include: {
+                players: {include: {player: {select: {
+                                notifications: true,
+                                email: true,
+                                telegramId: true,
+                            }}}},
+                campaign: true
+            }})
         if (!pairing) return res.status(404).json({error: 'No pairing'})
-        const approvedPairing = await dbClient.pairing.update({
+        const rejectedPairing = await dbClient.pairing.update({
             where: {id},
             data: {
                 winners: {deleteMany: {}},
@@ -223,7 +251,8 @@ pairingsRouter.put('/:id/reject', verifyToken, async (req: Request, res: Respons
                 rejectMessage
             }
         })
-        res.status(200).json(approvedPairing);
+        await resultsRejectedNotify(pairing)
+        res.status(200).json(rejectedPairing);
     } catch (error) {
         res.status(500).json({error})
     }

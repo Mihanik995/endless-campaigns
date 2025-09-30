@@ -5,6 +5,7 @@ const {PrismaClient} = require("../../../generated/prisma");
 const jwt = require("jsonwebtoken");
 const {v4: uuid} = require("uuid");
 const {verifyToken} = require("../../auth/middleware")
+const {newQuestionNotify} = require('../../utils/notifications')
 
 require("dotenv").config();
 
@@ -18,8 +19,10 @@ questionsRouter.post("/", verifyToken, async (req: Request, res: Response) => {
         const {userId: creatorId} = jwt.verify(token, process.env.JWT_SECRET);
         const id = uuid()
         const question = await dbClient.question.create({
-            data: {id, missionId, creatorId, text}
+            data: {id, missionId, creatorId, text},
+            include: {mission: {include: {creator: true}}}
         })
+        await newQuestionNotify(question.mission)
         res.status(201).json(question)
     } catch (error) {
         console.error(error)
@@ -43,7 +46,10 @@ questionsRouter.put('/:id', verifyToken, async (req: Request, res: Response) => 
     try {
         const question = await dbClient.question.findUnique({where: {id}});
         if (!question) return res.status(404).json({error: "Question not found"})
-        const updatedQuestion = await dbClient.question.update({where: {id}, data})
+        const updatedQuestion = await dbClient.question.update({
+            where: {id},
+            data
+        })
         res.status(200).json(updatedQuestion)
     } catch (error) {
         res.status(500).json({error})

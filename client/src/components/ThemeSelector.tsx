@@ -59,12 +59,17 @@ export default function () {
                             <button
                                 key={bg}
                                 onClick={() => dispatch(setBackground(bg))}
+                                style={{ width: 40, height: 40 }}
                             >
-                                <Avatar
-                                    src={loaded[bg] ? backgrounds[bg] : undefined}
-                                    fallback={bg === 'default' ? bg[0] : <Spinner/>}
-                                    className='cursor-pointer'
-                                />
+                                {loaded[bg] ? (
+                                    <Avatar
+                                        src={backgrounds[bg]}
+                                        fallback={bg[0]}
+                                        className='cursor-pointer'
+                                    />
+                                ) : (
+                                    <Spinner size='2' />
+                                )}
                             </button>
                         ))}
                     </Flex>

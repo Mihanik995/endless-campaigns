@@ -58,7 +58,9 @@ export default function () {
                         {Object.keys(backgrounds).map((bg) => (
                             <button
                                 key={bg}
-                                onClick={() => dispatch(setBackground(bg))}
+                                onClick={() => {
+                                    if (loaded[bg]) dispatch(setBackground(bg))
+                                }}
                                 style={{ width: 40, height: 40 }}
                             >
                                 {loaded[bg] ? (

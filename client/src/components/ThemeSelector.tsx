@@ -22,7 +22,6 @@ export default function () {
 
     const [loaded, setLoaded] = useState<Record<string, boolean>>({});
     useEffect(() => {
-        setLoaded({})
         Object.entries(backgrounds).forEach(([key, url]) => {
             if (!url || loaded[key]) return;
 

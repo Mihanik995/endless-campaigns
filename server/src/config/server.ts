@@ -5,7 +5,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const path = require("path");
 const {webhookCallback} = require("grammy");
-const bot = require('./src/config/telegramBot')
+const bot = require('./telegramBot')
 
 const authRouter = require('../auth/routes')
 const campaignsRouter = require('../campaigns/routes')

@@ -22,6 +22,7 @@ export default function () {
 
     const [loaded, setLoaded] = useState<Record<string, boolean>>({});
     useEffect(() => {
+        setLoaded({})
         Object.entries(backgrounds).forEach(([key, url]) => {
             if (!url || loaded[key]) return;
 
@@ -61,7 +62,7 @@ export default function () {
                                 onClick={() => {
                                     if (loaded[bg]) dispatch(setBackground(bg))
                                 }}
-                                style={{ width: 40, height: 40 }}
+                                style={{ width: 40, height: 40, alignContent: 'center'}}
                             >
                                 {loaded[bg] || bg === 'default' ? (
                                     <Avatar

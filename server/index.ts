@@ -1,7 +1,13 @@
 const app = require('./src/config/server')
 const bot = require('./src/config/telegramBot')
 
-bot.start()
-app.listen(5000, () => {
-    console.log("Server started on port 5000");
+require('dotenv').config();
+
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, async () => {
+    console.log(`Server started on port ${PORT}`);
+    process.env.LOCAL
+        ? bot.start()
+        : await bot.api.setWebhook(`https://your-domain.com/telegram-webhook`);
 });

@@ -1,19 +1,19 @@
 import {type Context, type SessionFlavor} from 'grammy'
-import type {User} from "../../generated/prisma";
 
-const {Bot, InlineKeyboard, session} = require('grammy')
-const {PrismaClient} = require('../../generated/prisma')
+const {Bot, InlineKeyboard, webhookCallback, session} = require('grammy')
+const app = require('./server')
 
 require('dotenv').config()
 
 const bot = new Bot(process.env.TELEGRAM_API_KEY)
-const dbClient = new PrismaClient()
 
 interface SessionData {
     step: null;
 }
 
 type BotContext = Context & SessionFlavor<SessionData>
+
+if (!process.env.LOCAL) app.use('/telegram-webhook', webhookCallback(bot));
 
 bot.use(session({initial: () => ({step: null})}));
 

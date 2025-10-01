@@ -9,5 +9,5 @@ app.listen(PORT, async () => {
     console.log(`Server started on port ${PORT}`);
     process.env.LOCAL
         ? bot.start()
-        : await bot.api.setWebhook(`https://your-domain.com/telegram-webhook`);
+        : await bot.api.setWebhook(`${process.env.FRONTED_URL}/telegram-webhook`);
 });

@@ -15,20 +15,29 @@ datasource db {
 }
 
 model User {
-  id                String              @id @unique
-  username          String              @unique
-  password          Bytes
-  salt              Bytes
-  email             String              @unique
-  isActive          Boolean             @default(false)
-  campaigns         Campaign[]
-  campaignRegisters CampaignRegister[]
-  pairings          PlayersOnPairings[]
-  wonPairings       WinnersOnPairings[]
-  question          Question[]
-  mission           Mission[]
-
+  id                   String                 @id @unique
+  username             String                 @unique
+  password             Bytes
+  salt                 Bytes
+  email                String                 @unique
+  isActive             Boolean                @default(false)
+  campaigns            Campaign[]
+  campaignRegisters    CampaignRegister[]
+  pairings             PlayersOnPairings[]
+  wonPairings          WinnersOnPairings[]
+  question             Question[]
+  mission              Mission[]
   nodesPassedOnPairing NodesPassedOnPairing[]
+
+  notifications             NotificationType @default(none)
+  allowPlatformNotification Boolean          @default(false)
+  telegramId                String?
+}
+
+enum NotificationType {
+  none
+  email
+  telegram
 }
 
 model Campaign {
@@ -69,33 +78,29 @@ model CampaignPeriod {
 }
 
 model Mission {
-  id                   String     @id @default(uuid(4))
-  creator              User       @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  id                   String       @id @default(uuid(4))
+  creator              User         @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   creatorId            String
   title                String
   narrativeDescription String
   pairing              Pairing[]
   question             Question[]
-
-  missionConditions String?
-
-  startNode MissionNode?
+  missionConditions    String?
+  startNode            MissionNode?
 }
 
 model MissionNode {
-  id        String     @id @default(uuid(4))
-  mission   Mission?   @relation(fields: [missionId], references: [id], onDelete: Cascade)
-  missionId String?    @unique
-  nextLinks NodeLink[] @relation("FromNode")
-  prevLinks NodeLink[] @relation("ToNode")
-
+  id                   String                 @id @default(uuid(4))
+  mission              Mission?               @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  missionId            String?                @unique
+  nextLinks            NodeLink[]             @relation("FromNode")
+  prevLinks            NodeLink[]             @relation("ToNode")
   label                String
   buttonLabel          String
   narrativeDescription String
   missionConditions    String
   positionX            Int
   positionY            Int
-
   nodesPassedOnPairing NodesPassedOnPairing[]
 }
 
@@ -118,21 +123,20 @@ model Question {
 }
 
 model Pairing {
-  id              String              @id @default(uuid(4))
-  campaign        Campaign            @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  campaignId      String
-  period          CampaignPeriod      @relation(fields: [periodId], references: [id], onDelete: Cascade)
-  periodId        String
-  mission         Mission             @relation(fields: [missionId], references: [id], onDelete: Cascade)
-  missionId       String
-  players         PlayersOnPairings[]
-  played          Boolean             @default(false)
-  winners         WinnersOnPairings[]
-  resultsApproved Boolean             @default(false)
-  reportLink      String?
-  resultsRejected Boolean             @default(false)
-  rejectMessage   String?
-
+  id                   String                 @id @default(uuid(4))
+  campaign             Campaign               @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  campaignId           String
+  period               CampaignPeriod         @relation(fields: [periodId], references: [id], onDelete: Cascade)
+  periodId             String
+  mission              Mission                @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  missionId            String
+  players              PlayersOnPairings[]
+  played               Boolean                @default(false)
+  winners              WinnersOnPairings[]
+  resultsApproved      Boolean                @default(false)
+  reportLink           String?
+  resultsRejected      Boolean                @default(false)
+  rejectMessage        String?
   nodesPassedOnPairing NodesPassedOnPairing[]
 }
 

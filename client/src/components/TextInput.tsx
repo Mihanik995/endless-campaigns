@@ -11,7 +11,7 @@ interface Props {
     icon?: ReactElement,
     placeholder?: string
     required?: boolean
-    hint?: string
+    hint?: ReactElement
 }
 
 export default function (props: Props): ReactElement {
@@ -40,12 +40,12 @@ export default function (props: Props): ReactElement {
                     {hint &&
                         <Popover.Root>
                             <Popover.Trigger>
-                                <IconButton radius='full' variant='outline'>
+                                <IconButton radius='full' variant='outline' size='1'>
                                     <QuestionMarkIcon/>
                                 </IconButton>
                             </Popover.Trigger>
                             <Popover.Content>
-                                <Text>{hint}</Text>
+                                {hint}
                             </Popover.Content>
                         </Popover.Root>}
                 </Flex>

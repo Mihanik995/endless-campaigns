@@ -7,6 +7,8 @@ const jwt = require('jsonwebtoken')
 const {v4: uuid} = require('uuid')
 
 const {verifyToken} = require('../../auth/middleware')
+const {newRegisterNotify} = require('../../utils/notifications')
+
 require('dotenv').config()
 
 const campaignRegisterRouter = new Router()
@@ -19,14 +21,21 @@ campaignRegisterRouter.post('/', verifyToken, async (req: Request, res: Response
         const {userId: playerId} = jwt.verify(token, process.env.JWT_SECRET)
         const alreadyExists = await dbClient.campaignRegister.findMany({where: {playerId, campaignId}})
         if (alreadyExists.length) return res.status(400).json({error: 'This player already registered'})
-        const campaign = await dbClient.campaign.findUnique({where: {id: campaignId}}) as Campaign
+        const campaign = await dbClient.campaign.findUnique({
+            where: {id: campaignId},
+            include: {owner: true}
+        }) as Campaign
         if (!campaign) return res.status(404).json({error: 'Campaign not found'})
         const approved = !campaign.requiresRegisterApproval
         const id = uuid()
-        const reg = await dbClient.campaignRegister
-            .create({data: {id, campaignId, playerId, formationName, rosterLink, approved}})
-        res.status(201).json(reg)
+        const register = await dbClient.campaignRegister.create({
+            data: {id, campaignId, playerId, formationName, rosterLink, approved},
+            include: {player: {select: {username: true}}}
+        })
+        await newRegisterNotify(campaign, register)
+        res.status(201).json(register)
     } catch (error) {
+        console.log(error)
         res.status(500).json({error})
     }
 })

@@ -1,4 +1,4 @@
-import {Box, Button, CheckboxGroup, ContextMenu, Flex, IconButton, Link, Select, Table, Text} from "@radix-ui/themes";
+import {Box, Button, CheckboxGroup, ContextMenu, Flex, IconButton, Link, Table, Text} from "@radix-ui/themes";
 import type {CampaignPeriod, Mission, Pairing, PlayerRegister} from "../types.ts";
 import {type MouseEventHandler, useState} from "react";
 import {CheckIcon, Cross2Icon, PlusIcon} from "@radix-ui/react-icons";
@@ -7,6 +7,7 @@ import ErrorHandler from "./ErrorHandler.tsx";
 import {useNavigate} from "react-router";
 import RejectPairingResultsDialog from "./RejectPairingResultsDialog.tsx";
 import CheckPassedNodesDialog from "./CheckPassedNodesDialog.tsx";
+import SelectInput from "./SelectInput.tsx";
 
 interface Props {
     pairing: Pairing
@@ -86,169 +87,166 @@ export default function ({pairing, missions, playerRegisters, period, onChange}:
     const [nodesOpen, setNodesOpen] = useState(false)
 
     return <>
-            <Table.Row>
-                {edit
-                    ? <>
-                        <Table.Cell colSpan={3}>
-                            <Flex direction='column' gap='2'>
-                                <Select.Root
-                                    defaultValue={JSON.stringify(mission)}
-                                    onValueChange={(value) => setMission(JSON.parse(value))}
-                                >
-                                    <Select.Trigger placeholder='Choose mission'/>
-                                    <Select.Content>
-                                        {missions.map((mission) => (
-                                            <Select.Item key={mission.id} value={JSON.stringify(mission)}>
-                                                {mission.title}
-                                            </Select.Item>
-                                        ))}
-                                    </Select.Content>
-                                </Select.Root>
-                                <Flex gap='2' align='center'>
-                                    Players:
-                                    {playersList.map((player: PlayerRegister) => (
-                                        <Flex gap='1' align='center' key={player.id}>
-                                            {player.playerUsername}
-                                            <IconButton
-                                                color='red'
-                                                size='1'
-                                                radius='full'
-                                                onClick={() => handleDelete(player.id)}
-                                            >
-                                                <Cross2Icon/>
-                                            </IconButton>
-                                        </Flex>
-                                    ))}
-                                    {!!playersOptions.length && <Box>
-                                        <IconButton
-                                            onClick={handleAdd}
-                                            color={addPlayer && playerToAdd.length ? 'grass' : undefined}
-                                        >
-                                            {addPlayer
-                                                ? playerToAdd.length
-                                                    ? <CheckIcon/>
-                                                    : <Cross2Icon/>
-                                                : <PlusIcon/>
-                                            }
-                                        </IconButton>
-                                        {addPlayer && <Select.Root defaultValue='' onValueChange={setPlayerToAdd}>
-                                            <Select.Trigger placeholder='Choose a player'/>
-                                            <Select.Content>
-                                                {playersOptions.map((player: PlayerRegister) => (
-                                                    <Select.Item key={player.id} value={JSON.stringify(player)}>
-                                                        {player.playerUsername}
-                                                    </Select.Item>
-                                                ))}
-                                            </Select.Content>
-                                        </Select.Root>}
-                                    </Box>}
-                                </Flex>
-                                <Flex gap='2' align='center'>
-                                    Winners:
-                                    <CheckboxGroup.Root>
-                                        {playersList.map(player => (
-                                            <CheckboxGroup.Item
-                                                key={player.playerId}
-                                                value={player.playerId}
-                                                onClick={() => handleWinnerClick(player.playerId)}
-                                            >
-                                                {player.playerUsername}
-                                            </CheckboxGroup.Item>
-                                        ))}
-                                    </CheckboxGroup.Root>
-                                </Flex>
-                            </Flex>
-                        </Table.Cell>
-                        <Table.Cell>
-                            <Flex gap='3'>
-                                <Button onClick={() => setEdit(false)}>Cancel</Button>
-                                <Button color='grass' onClick={handleSubmit}>Submit</Button>
-                            </Flex>
-                        </Table.Cell>
-                    </>
-                    : <>
-                        <Table.Cell>
-                            <Link
-                                href=''
-                                onClick={() => navigate(`/missions/${pairing.simpleMission?.id}`)}
-                            >
-                                {pairing.simpleMission?.title}
-                            </Link>
-                        </Table.Cell>
-                        <Table.Cell minWidth='150px'>
-                            <Text align='center'>
-                                {pairing.players
-                                    .map(player => player.player.username)
-                                    .join(' / ')
-                                }
-                            </Text>
-                        </Table.Cell>
-                        <Table.Cell>
-                            {pairing.played
-                                ? pairing.winners.length
-                                    ? pairing.winners.map(winner => winner.player?.username).join(', ')
-                                    : 'No winners'
-                                : 'Not played yet'}
-                        </Table.Cell>
-                        <Table.Cell>
-                            {pairing.reportLink
-                                ? <Link href={pairing.reportLink} target='_blank'>
-                                    {pairing.reportLink.length > 20
-                                        ? `${pairing.reportLink.slice(0, 20)}...`
-                                        : pairing.reportLink}
-                                </Link>
-                                : '-'}
-                        </Table.Cell>
-                        <ContextMenu.Root>
-                            <ContextMenu.Trigger>
-                                <Table.Cell>
-                                    <Button>Right-click / Hold</Button>
-                                </Table.Cell>
-                            </ContextMenu.Trigger>
-                            <ContextMenu.Content>
-                                {!pairing.resultsApproved && <>
-                                    <ContextMenu.Item onSelect={approveResults}>
-                                        Approve results
-                                    </ContextMenu.Item>
-                                    <ContextMenu.Item onSelect={() => setRejectOpen(true)}>
-                                        Reject results
-                                    </ContextMenu.Item>
-                                    {pairing.mission?.startNode &&
-                                        <ContextMenu.Item onSelect={() => setNodesOpen(true)}>
-                                            Check nodes passed
-                                        </ContextMenu.Item>
-                                    }
-                                    <ContextMenu.Separator/>
-                                </>}
-                                <ContextMenu.Item onSelect={() => setEdit(true)}>
-                                    Edit
-                                </ContextMenu.Item>
-                                <ContextMenu.Item color='red' onSelect={handleDeletePairing}>
-                                    Delete
-                                </ContextMenu.Item>
-                            </ContextMenu.Content>
-                        </ContextMenu.Root>
-                    </>
-                }
-            </Table.Row>
-            {
-                !!error && <Table.Row>
+        <Table.Row>
+            {edit
+                ? <>
                     <Table.Cell colSpan={3}>
-                        <ErrorHandler error={error}/>
+                        <Flex direction='column' gap='2'>
+                            <SelectInput
+                                value={JSON.stringify(mission)}
+                                onValueChange={(value) => setMission(JSON.parse(value))}
+                                placeholder='Choose mission'
+                                options={missions.reduce((acc, mission) => {
+                                    acc[mission.id] = JSON.stringify(mission)
+                                    return acc
+                                }, {} as Record<string, string>)}
+                            />
+                            <Flex gap='2' align='center'>
+                                Players:
+                                {playersList.map((player: PlayerRegister) => (
+                                    <Flex gap='1' align='center' key={player.id}>
+                                        {player.playerUsername}
+                                        <IconButton
+                                            color='red'
+                                            size='1'
+                                            radius='full'
+                                            onClick={() => handleDelete(player.id)}
+                                        >
+                                            <Cross2Icon/>
+                                        </IconButton>
+                                    </Flex>
+                                ))}
+                                {!!playersOptions.length && <Box>
+                                    <IconButton
+                                        onClick={handleAdd}
+                                        color={addPlayer && playerToAdd.length ? 'grass' : undefined}
+                                    >
+                                        {addPlayer
+                                            ? playerToAdd.length
+                                                ? <CheckIcon/>
+                                                : <Cross2Icon/>
+                                            : <PlusIcon/>
+                                        }
+                                    </IconButton>
+                                    {addPlayer &&
+                                        <SelectInput
+                                            value={JSON.stringify(playerToAdd)}
+                                            onValueChange={setPlayerToAdd}
+                                            options={playersOptions.reduce((acc, player) => {
+                                                acc[player.id] = JSON.stringify(player)
+                                                return acc
+                                            }, {} as Record<string, string>)}
+                                            placeholder='Choose a player'
+                                        />
+                                    }
+                                </Box>}
+                            </Flex>
+                            <Flex gap='2' align='center'>
+                                Winners:
+                                <CheckboxGroup.Root>
+                                    {playersList.map(player => (
+                                        <CheckboxGroup.Item
+                                            key={player.playerId}
+                                            value={player.playerId}
+                                            onClick={() => handleWinnerClick(player.playerId)}
+                                        >
+                                            {player.playerUsername}
+                                        </CheckboxGroup.Item>
+                                    ))}
+                                </CheckboxGroup.Root>
+                            </Flex>
+                        </Flex>
                     </Table.Cell>
-                </Table.Row>
+                    <Table.Cell>
+                        <Flex gap='3'>
+                            <Button onClick={() => setEdit(false)}>Cancel</Button>
+                            <Button color='grass' onClick={handleSubmit}>Submit</Button>
+                        </Flex>
+                    </Table.Cell>
+                </>
+                : <>
+                    <Table.Cell>
+                        <Link
+                            href=''
+                            onClick={() => navigate(`/missions/${pairing.simpleMission?.id}`)}
+                        >
+                            {pairing.simpleMission?.title}
+                        </Link>
+                    </Table.Cell>
+                    <Table.Cell minWidth='150px'>
+                        <Text align='center'>
+                            {pairing.players
+                                .map(player => player.player.username)
+                                .join(' / ')
+                            }
+                        </Text>
+                    </Table.Cell>
+                    <Table.Cell>
+                        {pairing.played
+                            ? pairing.winners.length
+                                ? pairing.winners.map(winner => winner.player?.username).join(', ')
+                                : 'No winners'
+                            : 'Not played yet'}
+                    </Table.Cell>
+                    <Table.Cell>
+                        {pairing.reportLink
+                            ? <Link href={pairing.reportLink} target='_blank'>
+                                {pairing.reportLink.length > 20
+                                    ? `${pairing.reportLink.slice(0, 20)}...`
+                                    : pairing.reportLink}
+                            </Link>
+                            : '-'}
+                    </Table.Cell>
+                    <ContextMenu.Root>
+                        <ContextMenu.Trigger>
+                            <Table.Cell>
+                                <Button>Right-click / Hold</Button>
+                            </Table.Cell>
+                        </ContextMenu.Trigger>
+                        <ContextMenu.Content>
+                            {!pairing.resultsApproved && <>
+                                <ContextMenu.Item onSelect={approveResults}>
+                                    Approve results
+                                </ContextMenu.Item>
+                                <ContextMenu.Item onSelect={() => setRejectOpen(true)}>
+                                    Reject results
+                                </ContextMenu.Item>
+                                {pairing.mission?.startNode &&
+                                    <ContextMenu.Item onSelect={() => setNodesOpen(true)}>
+                                        Check nodes passed
+                                    </ContextMenu.Item>
+                                }
+                                <ContextMenu.Separator/>
+                            </>}
+                            <ContextMenu.Item onSelect={() => setEdit(true)}>
+                                Edit
+                            </ContextMenu.Item>
+                            <ContextMenu.Item color='red' onSelect={handleDeletePairing}>
+                                Delete
+                            </ContextMenu.Item>
+                        </ContextMenu.Content>
+                    </ContextMenu.Root>
+                </>
             }
-            <RejectPairingResultsDialog
-                open={rejectOpen}
-                setOpen={setRejectOpen}
-                pairing={pairing}
-                onChange={onChange}
-            />
-            <CheckPassedNodesDialog
-                open={nodesOpen}
-                setOpen={setNodesOpen}
-                pairing={pairing}
-                onChange={onChange}
-            />
-        </>
+        </Table.Row>
+        {
+            !!error && <Table.Row>
+                <Table.Cell colSpan={3}>
+                    <ErrorHandler error={error}/>
+                </Table.Cell>
+            </Table.Row>
+        }
+        <RejectPairingResultsDialog
+            open={rejectOpen}
+            setOpen={setRejectOpen}
+            pairing={pairing}
+            onChange={onChange}
+        />
+        <CheckPassedNodesDialog
+            open={nodesOpen}
+            setOpen={setNodesOpen}
+            pairing={pairing}
+            onChange={onChange}
+        />
+    </>
 }

@@ -1,13 +1,15 @@
 import {type ChangeEvent, type MouseEventHandler, type ReactElement, useState} from "react";
 import Header from "../components/Header.tsx";
 import axios from "axios";
-import {Button, Card, Flex, Heading, Separator, Text} from "@radix-ui/themes";
+import {Button, Card, Flex, Heading, Link, Separator, Text} from "@radix-ui/themes";
 import {EnvelopeClosedIcon, LockClosedIcon, PersonIcon} from "@radix-ui/react-icons";
 import TextInput from "../components/TextInput.tsx";
 import type {UserRegister} from "../types.ts";
 import validateData from "../utils/validators/validateData.ts";
 import validatePassword from "../utils/validators/validatePassword.ts";
 import ErrorHandler from "../components/ErrorHandler.tsx";
+import CheckInput from "../components/CheckInput.tsx";
+import SelectInput from "../components/SelectInput.tsx";
 
 export default function (): ReactElement {
     const [error, setError] = useState<Error>()
@@ -15,7 +17,9 @@ export default function (): ReactElement {
         username: '',
         password: '',
         confirmPassword: '',
-        email: ''
+        email: '',
+        notifications: 'none',
+        allowPlatformNotification: false
     })
 
     const handleChange = function (e: ChangeEvent<HTMLInputElement>) {
@@ -25,13 +29,29 @@ export default function (): ReactElement {
         })
     }
 
+    const handleSelect = (name: string, value: string) => {
+        setRegisterData({
+            ...registerData,
+            [name]: value
+        })
+    }
+
+    const handleSwitch = (name: string) => {
+        setRegisterData({
+            ...registerData,
+            [name]: !registerData[name]
+        })
+    }
+
     const handleSubmit: MouseEventHandler<HTMLButtonElement> = function (e) {
         e.preventDefault();
         try {
             validateData<UserRegister>(registerData)
             validatePassword<UserRegister>(registerData)
             axios.post(
-                `/api/auth/register`,
+                import.meta.env.VITE_BACKEND_URL
+                    ? `${import.meta.env.VITE_BACKEND_URL}/auth/register`
+                    : `/api/auth/register`,
                 registerData,
                 {headers: {'Content-Type': 'application/json'}}
             ).then(res => {
@@ -47,7 +67,7 @@ export default function (): ReactElement {
     return (
         <>
             <Header/>
-            <Flex height='100vh' align='center' justify='center'>
+            <Flex height='100vh' align='center' justify='center' className='pt-15'>
                 <Card size='4' mx='5'>
                     {success
                         ? <>
@@ -55,11 +75,11 @@ export default function (): ReactElement {
                             <Text>Check your e-mail to verify your account.</Text>
                         </>
                         : <form>
-                            <Flex direction='column' gap='3'>
+                            <Flex direction='column' gap='3' width='50vh'>
                                 <Flex
                                     direction={{
                                         initial: 'column',
-                                        sm: 'row'
+                                        xs: 'row'
                                     }}
                                     gap='3'>
                                     <Flex direction='column' gap='3'>
@@ -98,6 +118,34 @@ export default function (): ReactElement {
                                         />
                                     </Flex>
                                 </Flex>
+                                <SelectInput
+                                    label='Notifications'
+                                    value={registerData.notifications}
+                                    onValueChange={
+                                        (value) => handleSelect('notifications', value)
+                                    }
+                                    options={{
+                                        none: 'None',
+                                        email: 'E-mail',
+                                        telegram: 'Telegram'
+                                    }}
+                                    hint={<Text>If you want to get notifications via Telegram,
+                                        you'll have to register in our {' '}
+                                        <Link href='https://t.me/endless_campaigns_bot' target='_blank'>
+                                            Telegram bot
+                                        </Link>.
+                                    </Text>}
+                                />
+                                <CheckInput
+                                    label='Platform Noitifications'
+                                    value={Number(registerData.allowPlatformNotification)}
+                                    name='allowPlatformNotification'
+                                    onClick={() => handleSwitch('allowPlatformNotification')}
+                                    hint={<Text>
+                                        Allow Endless Campaigns to send you
+                                        notifications about platform changes and updates.
+                                </Text>}
+                                />
                                 <Separator size='4'/>
                                 {!!error && <ErrorHandler error={error}/>}
                                 <Button

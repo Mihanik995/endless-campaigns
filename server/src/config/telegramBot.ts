@@ -1,7 +1,6 @@
 import {type Context, type SessionFlavor} from 'grammy'
 
-const {Bot, InlineKeyboard, webhookCallback, session} = require('grammy')
-const app = require('./server')
+const {Bot, InlineKeyboard, session} = require('grammy')
 
 require('dotenv').config()
 
@@ -12,8 +11,6 @@ interface SessionData {
 }
 
 type BotContext = Context & SessionFlavor<SessionData>
-
-if (!process.env.LOCAL) app.use('/telegram-webhook', webhookCallback(bot));
 
 bot.use(session({initial: () => ({step: null})}));
 

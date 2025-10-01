@@ -55,25 +55,24 @@ export default function () {
                 <Flex direction='column' gap='2' align='end'>
                     <Text>Backgrounds</Text>
                     <Flex gap='2' justify='end'>
-                        {Object.keys(backgrounds).map((bg) => (
-                            <button
+                        {Object.keys(backgrounds).map((bg) => loaded[bg] || bg === 'default'
+                            ? <button
                                 key={bg}
                                 onClick={() => {
                                     if (loaded[bg]) dispatch(setBackground(bg))
                                 }}
-                                style={{ width: 40, height: 40, alignContent: 'center'}}
+                                style={{width: 40, height: 40, alignContent: 'center'}}
                             >
-                                {loaded[bg] || bg === 'default' ? (
-                                    <Avatar
-                                        src={backgrounds[bg]}
-                                        fallback={bg[0]}
-                                        className='cursor-pointer'
-                                    />
-                                ) : (
-                                    <Spinner size='2' />
-                                )}
+                                <Avatar
+                                    src={backgrounds[bg]}
+                                    fallback={bg[0]}
+                                    className='cursor-pointer'
+                                />
                             </button>
-                        ))}
+                            : <Flex height='40px' width='40px' justify='center' align='center'>
+                                <Spinner size='2'/>
+                            </Flex>
+                        )}
                     </Flex>
                 </Flex>
             </Popover.Content>

@@ -30,7 +30,8 @@ COPY --from=backend-builder /app/backend/package*.json ./backend/
 
 WORKDIR /app/backend
 RUN npm install --omit=dev
-
 RUN npx prisma generate
+
+RUN curl -v https://api.telegram.org
 EXPOSE 5000
 CMD ["sh", "-c", "npx prisma db push && node dist/index.js"]

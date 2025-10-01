@@ -63,7 +63,7 @@ export default function () {
                                 }}
                                 style={{ width: 40, height: 40 }}
                             >
-                                {loaded[bg] ? (
+                                {loaded[bg] || bg === 'default' ? (
                                     <Avatar
                                         src={backgrounds[bg]}
                                         fallback={bg[0]}

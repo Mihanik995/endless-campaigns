@@ -201,6 +201,13 @@ export default function ({clickable, onDelete, campaignData}: Props) {
                                 } - {
                                     new Date(campaign.dateEnd).toLocaleDateString()
                                 }</Text>
+                                <Separator size='4' my='2'/>
+                                <Text>
+                                    Campaign Link:{' '}
+                                    <Link href={`https://www.endless-campaigns.com/campaigns/${campaign.id}`} target='_blank'>
+                                        https://www.endless-campaigns.com/campaigns/{campaign.id}
+                                    </Link>
+                                </Text>
                             </Flex>
                             <Flex direction={{
                                 initial: 'row',

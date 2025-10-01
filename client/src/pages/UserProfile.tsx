@@ -1,5 +1,5 @@
 import Header from "../components/Header.tsx";
-import {Card, Container, Flex, IconButton, Spinner, Table, TextField, Tooltip} from "@radix-ui/themes";
+import {Card, Container, DataList, Flex, IconButton, Spinner, Text, TextField, Tooltip} from "@radix-ui/themes";
 import {type ChangeEvent, type MouseEventHandler, useEffect, useState} from "react";
 import axios from "../axios/axiosConfig.ts";
 import {useParams} from "react-router";
@@ -12,11 +12,14 @@ import UserCampaigns from "../components/UserCampaigns.tsx";
 import ErrorHandler from "../components/ErrorHandler.tsx";
 import type {User} from "../types.ts";
 import validateData from "../utils/validators/validateData.ts";
+import CheckInput from "../components/CheckInput.tsx";
+import SelectInput from "../components/SelectInput.tsx";
 
 export default function () {
     const auth = useAppSelector(selectAuth);
     const {idParam} = useParams()
     const id = idParam ? idParam : auth.id as string;
+    const isOwner = id === auth.id
 
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<Error>()
@@ -24,6 +27,8 @@ export default function () {
         id,
         username: '',
         email: '',
+        allowPlatformNotification: false,
+        notifications: 'none'
     });
     useEffect(() => {
         setIsLoading(true)
@@ -40,10 +45,27 @@ export default function () {
             ...userData,
             [event.target.name]: event.target.value
         })
+        console.log(userData)
+    }
+
+    const handleSelect = (value: string) => {
+        setUserData({
+            ...userData,
+            notifications: value as 'none' | 'email' | 'telegram'
+        })
+    }
+
+    const handleSwitch = (name: string) => {
+        setUserData({
+            ...userData,
+            [name]: !userData[name]
+        })
     }
 
     const [updateError, setUpdateError] = useState<Error>()
+    const [isUpdating, setIsUpdating] = useState(false)
     const handleSubmitProfileChange: MouseEventHandler<HTMLButtonElement> = () => {
+        setIsUpdating(true)
         try {
             validateData<User>(userData)
             axios.put(`/auth/${id}`, userData)
@@ -55,6 +77,8 @@ export default function () {
                 })
         } catch (error) {
             setUpdateError(error as Error)
+        } finally {
+            setIsUpdating(false)
         }
     }
 
@@ -68,40 +92,106 @@ export default function () {
                         : !!error
                             ? <ErrorHandler error={error}/>
                             : <Container width='100vw'>
-                                <Table.Root mx='5'>
-                                    <Table.Header>
-                                        <Table.Row>
-                                            <Table.ColumnHeaderCell>
-                                                Username
-                                            </Table.ColumnHeaderCell>
-                                            <Table.ColumnHeaderCell>
-                                                E-mail
-                                            </Table.ColumnHeaderCell>
-                                            <Table.ColumnHeaderCell>
-                                                Actions
-                                            </Table.ColumnHeaderCell>
-                                        </Table.Row>
-                                    </Table.Header>
-                                    <Table.Body>
-                                        <Table.Row>
-                                            <Table.RowHeaderCell>
-                                                <Flex width='20vw'>
-                                                    {edit
-                                                        ? <TextField.Root
-                                                            name='username'
-                                                            value={userData.username}
-                                                            onChange={handleProfileChange}
-                                                        />
-                                                        : userData.username}
-                                                </Flex>
-                                            </Table.RowHeaderCell>
-                                            <Table.Cell>
-                                                <Flex width='20vw'>
-                                                    {userData.email}
-                                                </Flex>
-                                            </Table.Cell>
-                                            <Table.Cell>
-                                                <Flex gap='2' width='20vw'>
+                                {isUpdating
+                                    ? <Flex justify='center'><Spinner size='3'/></Flex>
+                                    : <Card size='3'>
+                                        <Flex direction={{
+                                            initial: 'column',
+                                            xs: 'row'
+                                        }} justify='between' gap='3'>
+                                            <Flex direction={'column'} gap='3'>
+                                                <DataList.Root orientation={{
+                                                    initial: 'vertical',
+                                                    xs: 'horizontal'
+                                                }}>
+                                                    <DataList.Item>
+                                                        <DataList.Label>
+                                                            <Text size='3' weight='bold'>
+                                                                Username
+                                                            </Text>
+                                                        </DataList.Label>
+                                                        <DataList.Value>
+                                                            {edit
+                                                                ? <TextField.Root
+                                                                    name='username'
+                                                                    value={userData.username}
+                                                                    onChange={handleProfileChange}
+                                                                />
+                                                                : <Text size='3'>
+                                                                    {userData.username}
+                                                                </Text>}
+                                                        </DataList.Value>
+                                                    </DataList.Item>
+                                                    <DataList.Item>
+                                                        <DataList.Label>
+                                                            <Text size='3' weight='bold'>
+                                                                E-mail
+                                                            </Text>
+                                                        </DataList.Label>
+                                                        <DataList.Value>
+                                                            <Text size='3'>
+                                                                {userData.email}
+                                                            </Text>
+                                                        </DataList.Value>
+                                                    </DataList.Item>
+                                                    <DataList.Item>
+                                                        <DataList.Label>
+                                                            <Text size='3' weight='bold'>
+                                                                Telegram ID
+                                                            </Text>
+                                                        </DataList.Label>
+                                                        <DataList.Value>
+                                                            {edit
+                                                                ? <TextField.Root
+                                                                    name='telegramId'
+                                                                    value={userData.telegramId}
+                                                                    onChange={handleProfileChange}
+                                                                />
+                                                                : <Text size='3'>
+                                                                    {userData.telegramId || '-'}
+                                                                </Text>}
+                                                        </DataList.Value>
+                                                    </DataList.Item>
+                                                    <DataList.Item>
+                                                        <DataList.Label>
+                                                            <Text size='3' weight='bold'>
+                                                                Notifications
+                                                            </Text>
+                                                        </DataList.Label>
+                                                        {edit
+                                                            ?<SelectInput
+                                                                size='2'
+                                                                value={userData.notifications}
+                                                                onValueChange={handleSelect}
+                                                                options={{
+                                                                    none: 'None',
+                                                                    email: 'E-mail',
+                                                                    telegram: 'Telegram'
+                                                                }}
+                                                            />
+                                                            : <Text size='3'>
+                                                                {userData.notifications[0].toUpperCase() +
+                                                                    userData.notifications.slice(1)}
+                                                            </Text>
+                                                        }
+                                                    </DataList.Item>
+                                                </DataList.Root>
+                                                {edit &&
+                                                    <CheckInput
+                                                        label={'Allow Endless Campaigns to ' +
+                                                            'send you notifications about platform ' +
+                                                            'changes and updates.'}
+                                                        value={Number(userData.allowPlatformNotification)}
+                                                        name='allowPlatformNotification'
+                                                        onClick={() => handleSwitch('allowPlatformNotification')}
+                                                    />
+                                                }
+                                            </Flex>
+                                            {isOwner &&
+                                                <Flex gap='2' direction={{
+                                                    initial: 'row',
+                                                    xs: 'column'
+                                                }}>
                                                     {edit
                                                         ? <>
                                                             <Tooltip content='Cancel'>
@@ -135,19 +225,13 @@ export default function () {
                                                             <PasswordChangeButton/>
                                                         </>}
                                                 </Flex>
-                                            </Table.Cell>
-                                        </Table.Row>
-                                        {!!updateError &&
-                                            <Table.Row>
-                                                <Table.Cell colSpan={3}>
-                                                    <ErrorHandler error={updateError}/>
-                                                </Table.Cell>
-                                            </Table.Row>
-                                        }
-                                    </Table.Body>
-                                </Table.Root>
+                                            }
+                                        </Flex>
+                                        {!!updateError && <ErrorHandler error={updateError}/>}
+                                    </Card>
+                                }
                                 <br/>
-                                <UserCampaigns id={id as string}/>
+                                <UserCampaigns id={id}/>
                             </Container>
                     }
                 </Card>

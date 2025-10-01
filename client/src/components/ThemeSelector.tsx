@@ -1,7 +1,8 @@
-import {Avatar, Flex, IconButton, Popover, Separator, Switch, Text} from "@radix-ui/themes";
+import {Avatar, Flex, IconButton, Popover, Separator, Spinner, Switch, Text} from "@radix-ui/themes";
 import {ShadowInnerIcon} from "@radix-ui/react-icons";
 import {selectTheme, setBackground, toggleTheme} from "../app/features/theme/themeSlice.ts";
 import {useAppDispatch, useAppSelector} from "../app/hooks.ts";
+import {useEffect, useState} from "react";
 
 interface StringMap {
     [key: string]: string;
@@ -18,6 +19,19 @@ export default function () {
         wood: `/assets/wood-${theme.theme}-bg.jpg`,
         leather: `/assets/leather-${theme.theme}-bg.jpg`,
     }
+
+    const [loaded, setLoaded] = useState<Record<string, boolean>>({});
+    useEffect(() => {
+        Object.entries(backgrounds).forEach(([key, url]) => {
+            if (!url || loaded[key]) return;
+
+            const img = new Image();
+            img.src = url;
+            img.onload = () => {
+                setLoaded(prev => ({...prev, [key]: true}));
+            };
+        });
+    }, [theme.theme]);
 
     return (
         <Popover.Root>
@@ -41,10 +55,13 @@ export default function () {
                 <Flex direction='column' gap='2' align='end'>
                     <Text>Backgrounds</Text>
                     <Flex gap='2' justify='end'>
-                        {Object.keys(backgrounds).map((bg) => (
-                            <button
+                        {Object.keys(backgrounds).map((bg) => loaded[bg] || bg === 'default'
+                            ? <button
                                 key={bg}
-                                onClick={() => dispatch(setBackground(bg))}
+                                onClick={() => {
+                                    if (loaded[bg]) dispatch(setBackground(bg))
+                                }}
+                                style={{width: 40, height: 40, alignContent: 'center'}}
                             >
                                 <Avatar
                                     src={backgrounds[bg]}
@@ -52,7 +69,10 @@ export default function () {
                                     className='cursor-pointer'
                                 />
                             </button>
-                        ))}
+                            : <Flex height='40px' width='40px' justify='center' align='center'>
+                                <Spinner size='2'/>
+                            </Flex>
+                        )}
                     </Flex>
                 </Flex>
             </Popover.Content>

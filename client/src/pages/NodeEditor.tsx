@@ -19,17 +19,20 @@ import {Box, Card, Container, Inset, Spinner} from "@radix-ui/themes";
 import '@xyflow/react/dist/style.css'
 import ErrorHandler from "../components/ErrorHandler.tsx";
 import MissionNode from "../components/MissionNode.tsx";
-import {useParams} from "react-router";
+import {useNavigate, useParams} from "react-router";
 import {useEffect, useState} from "react";
 import axios from "../axios/axiosConfig.ts";
 import EntryPointNode from "../components/EntryPointNode.tsx";
 import {useAppSelector} from "../app/hooks.ts";
 import {selectTheme} from "../app/features/theme/themeSlice.ts";
 import CustomEdge from "../components/CustomEdge.tsx";
+import {selectAuth} from "../app/features/auth/authSlice.ts";
 
 export default function () {
     const theme = useAppSelector(selectTheme).theme as 'light' | 'dark'
     const id = useParams().id as string
+    const auth = useAppSelector(selectAuth)
+    const navigate = useNavigate()
 
     const [nodes, setNodes] = useState<Node[]>([])
     const [edges, setEdges] = useState<Edge[]>([])
@@ -41,10 +44,13 @@ export default function () {
         let uploadedMission: Mission
         const uploadedNodes: Node[] = []
         const uploadedLinks: Edge[] = []
-        axios.get(`/missions/${id}`)
+        axios.get<Mission>(`/missions/${id}`)
             .then(res => {
                 if (res.status === 200) {
                     uploadedMission = res.data
+                    if (uploadedMission.creatorId !== auth.id) {
+                        navigate(`/missions/${id}`)
+                    }
                     uploadedNodes.push({
                         id: res.data.id,
                         position: {x: 0, y: 0},

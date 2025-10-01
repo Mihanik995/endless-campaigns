@@ -4,6 +4,8 @@ const express = require('express');
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const path = require("path");
+const {webhookCallback} = require("grammy");
+const bot = require('./telegramBot')
 
 const authRouter = require('../auth/routes')
 const campaignsRouter = require('../campaigns/routes')
@@ -37,6 +39,8 @@ app.use(express.static(reactBuildPath));
 app.use('/api/auth', authRouter)
 app.use('/api/campaigns', campaignsRouter)
 app.use('/api/missions', missionsRouter)
+
+if (!process.env.LOCAL) app.use('/telegram-webhook', webhookCallback(bot));
 
 app.use((req: Request, res: Response) => {
     console.warn(`404: ${req.url}`);

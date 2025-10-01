@@ -1,5 +1,9 @@
 const app = require('./src/config/server')
+const bot = require('./src/config/telegramBot')
 
-app.listen(5000, () => {
-    console.log("Server started on port 5000");
+require('dotenv').config();
+
+app.listen(5000, async () => {
+    process.env.LOCAL && await bot.start();
+    console.log(`Server started on port 5000`);
 });

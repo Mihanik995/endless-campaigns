@@ -1,6 +1,6 @@
 import {Card, Dialog, Flex, Heading, IconButton, Link, Separator, Strong, Text} from "@radix-ui/themes";
 import SelectInput from "./SelectInput.tsx";
-import {useEffect, useRef, useState} from "react";
+import {useState} from "react";
 import {ArrowUpIcon, CheckIcon, Cross2Icon, ExitIcon, PlusIcon} from "@radix-ui/react-icons";
 
 interface Props {
@@ -9,29 +9,17 @@ interface Props {
 }
 
 export default function ({open, setOpen}: Props) {
-    const scrollRef = useRef<HTMLDivElement>(null);
     const [showButton, setShowButton] = useState(false);
-
-    useEffect(() => {
-        const el = scrollRef.current;
-        if (!el) return;
-
-        const handleScroll = () => {
-            const scrolled = el.scrollTop > 100
-            setShowButton(scrolled);
-        };
-
-        el.addEventListener('scroll', handleScroll);
-        return () => el.removeEventListener('scroll', handleScroll);
-    })
 
     const scrollTo = (id: string) => {
         const el = document.getElementById(id);
         if (el) el.scrollIntoView({behavior: 'smooth'});
     };
 
+    const handleScroll = (e) => setShowButton(e.target.scrollTop > 100)
+
     return <Dialog.Root open={open} onOpenChange={setOpen}>
-        <Dialog.Content ref={scrollRef} maxHeight='90vh'>
+        <Dialog.Content onScroll={handleScroll} maxHeight='90vh'>
             <Dialog.Title id='top'>
                 Endless Campaigns manual
             </Dialog.Title>
@@ -46,9 +34,9 @@ export default function ({open, setOpen}: Props) {
                     options={{
                         intro: 'Introduction',
                         nav: 'Navigation',
-                        campaigns: 'How to create a campaign',
-                        missions: 'How to create a mission',
-                        pairings: 'How to create pairings',
+                        campaigns: 'Campaigns',
+                        missions: 'Missions',
+                        pairings: 'Pairings',
                         notifications: 'Notifications',
                     }}
                 />
@@ -80,7 +68,8 @@ export default function ({open, setOpen}: Props) {
                                         Theme button. Allows to switch theme and choose the background.
                                     </li>
                                     <li className='my-1'>
-                                        Main menu. Provides paths to all general pages: Log In, Sign Up, Profile,
+                                        Main menu. Provides paths to all general pages: Log In, Sign Up,
+                                        Profile,
                                         Dashboard, this Manual etc.
                                     </li>
                                 </ul>
@@ -114,7 +103,8 @@ export default function ({open, setOpen}: Props) {
                                         To invite a player to it, share a campaign link from its card. A player
                                         should sign in, follow the link and open the Players tab under the
                                         campaign card. Click the <Strong>Register Form</Strong> button
-                                        in the upper left corner. Once filled out the form, the player participates
+                                        in the upper left corner. Once filled out the form, the player
+                                        participates
                                         in the campaign (unless your approval of the register is required).
                                     </li>
                                 </ul>
@@ -149,8 +139,10 @@ export default function ({open, setOpen}: Props) {
                                             <Strong>NOTICE!</Strong> All the nodes with no straight connection
                                             with <Strong>ENTRYPOINT</Strong> (backward connections doesn't
                                             count) would be lost once you'll update or leave the page! So we
-                                            strongly recommend you to update the existing nodes instead of deleting
-                                            them and creating the new ones, and avoid connection deletes as well.
+                                            strongly recommend you to update the existing nodes instead of
+                                            deleting
+                                            them and creating the new ones, and avoid connection deletes as
+                                            well.
                                         </Text>
                                     </li>
                                     <li className='my-1'>
@@ -162,7 +154,8 @@ export default function ({open, setOpen}: Props) {
                                             </li>
                                             <li className='my-1'>
                                                 Player follows th path you've created, from one node to another,
-                                                via straight connections between them (backward connections still
+                                                via straight connections between them (backward connections
+                                                still
                                                 doesn't count). It looks like a buttons with options to choose
                                                 (or a single button, if there's only one path).
                                             </li>
@@ -170,7 +163,8 @@ export default function ({open, setOpen}: Props) {
                                     </li>
                                     <li className='my-1'>
                                         Once players finish the mission (either completing mission conditions
-                                        or passing the node with no proceeding), they may report you the results.
+                                        or passing the node with no proceeding), they may report you the
+                                        results.
                                     </li>
                                 </ul>
                             </Text>
@@ -238,7 +232,7 @@ export default function ({open, setOpen}: Props) {
                             <Text>
                                 <ul className='pl-6 list-decimal'>
                                     <li className='my-1'>
-                                        There are 2 Endaless Campaigns may notify you about any events:
+                                        There are 2 Endless Campaigns may notify you about any events:
                                         <ul className='pl-6 list-disc'>
                                             <li className='my-1'>
                                                 E-mail letters
@@ -252,8 +246,8 @@ export default function ({open, setOpen}: Props) {
                                         <Link href='https://t.me/endless_campaigns_bot' target='_blank'>
                                             the link
                                         </Link>, start the conversation and select <Strong>
-                                            Register
-                                        </Strong>. The bot will provide you the chat ID.
+                                        Register
+                                    </Strong>. The bot will provide you the chat ID.
                                     </li>
                                     <li className='my-1'>
                                         The bot notifies you about following events:

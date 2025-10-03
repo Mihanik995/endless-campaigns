@@ -38,18 +38,23 @@ export default function ({pairing}: Props) {
                         <Text>
                             <Flex gap='2' direction='column'>
                                 Players:
-                                <DataList.Root>
+                                <DataList.Root orientation={{
+                                    initial: 'vertical',
+                                    xs: 'horizontal'
+                                }}>
                                     {pairingPlayersRegs.map(player => (
                                         <DataList.Item key={player.id}>
                                             <DataList.Label>
                                                 {player.player?.username}
                                             </DataList.Label>
                                             <DataList.Value>
-                                                {player.formationName} (
-                                                <Link href={player.rosterLink}>
-                                                    {player.rosterLink}
-                                                </Link>
-                                                )
+                                                <Text>
+                                                    {player.formationName} (
+                                                    <Link href={player.rosterLink}>
+                                                        {player.rosterLink}
+                                                    </Link>
+                                                    )
+                                                </Text>
                                             </DataList.Value>
                                         </DataList.Item>
                                     ))}

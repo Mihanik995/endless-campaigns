@@ -1,6 +1,6 @@
 import {Card, Dialog, Flex, Heading, IconButton, Link, Separator, Strong, Text} from "@radix-ui/themes";
 import SelectInput from "./SelectInput.tsx";
-import {useState} from "react";
+import {useState, type UIEvent} from "react";
 import {ArrowUpIcon, CheckIcon, Cross2Icon, ExitIcon, PlusIcon} from "@radix-ui/react-icons";
 
 interface Props {
@@ -16,7 +16,11 @@ export default function ({open, setOpen}: Props) {
         if (el) el.scrollIntoView({behavior: 'smooth'});
     };
 
-    const handleScroll = (e) => setShowButton(e.target.scrollTop > 100)
+    const handleScroll = (e: UIEvent<HTMLElement>) => {
+        const target = e.target as HTMLElement;
+        const scrollTop = target.scrollTop;
+        setShowButton(scrollTop > 100)
+    }
 
     return <Dialog.Root open={open} onOpenChange={setOpen}>
         <Dialog.Content onScroll={handleScroll} maxHeight='90vh'>

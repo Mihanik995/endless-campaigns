@@ -1,16 +1,11 @@
-import {Button, Card, Container, Flex, Heading, Popover, Spinner, Table, Text} from "@radix-ui/themes";
+import {Button, Card, Container, Flex, Heading, Link, Popover, Spinner, Table, Text} from "@radix-ui/themes";
 import {useEffect, useState} from "react";
 import axios from "../axios/axiosConfig.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
 import {useAppSelector} from "../app/hooks.ts";
 import {selectAuth} from "../app/features/auth/authSlice.ts";
-
-interface CampaignData {
-    id: string;
-    title: string;
-    regulations: string;
-    rosterLink: string;
-}
+import {useNavigate} from "react-router";
+import type {CampaignRegister} from "../types.ts";
 
 interface Props {
     id: string
@@ -19,10 +14,10 @@ interface Props {
 export default function ({id}: Props) {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<Error>()
-    const [campaignsData, setCampaignsData] = useState<CampaignData[]>([])
+    const [campaignsData, setCampaignsData] = useState<CampaignRegister[]>([])
     useEffect(() => {
         setIsLoading(true)
-        axios.get(`/campaigns/register/user/${id}`)
+        axios.get<CampaignRegister[]>(`/campaigns/register/user/${id}`)
             .then(res => {
                 if (res.status === 200) setCampaignsData(res.data)
             }).catch(err => setError(err as Error))
@@ -31,6 +26,7 @@ export default function ({id}: Props) {
 
     const auth = useAppSelector(selectAuth)
     const isOwner = auth.id === id
+    const navigate = useNavigate()
 
     const handleDelete = (id: string) => {
         axios.delete(`/campaigns/register/${id}`)
@@ -73,13 +69,21 @@ export default function ({id}: Props) {
                                     {campaignsData.map(reg => (
                                         <Table.Row key={reg.id}>
                                             <Table.RowHeaderCell>
-                                                {reg.title}
+                                                <Link href=''
+                                                      onClick={() => navigate(`/campaigns/${reg.campaign.id}`)}
+                                                >
+                                                    {reg.campaign.title}
+                                                </Link>
                                             </Table.RowHeaderCell>
                                             <Table.RowHeaderCell>
-                                                {reg.regulations}
+                                                <Link href={reg.campaign.regulations} target='_blank'>
+                                                    {reg.campaign.regulations}
+                                                </Link>
                                             </Table.RowHeaderCell>
                                             <Table.RowHeaderCell>
-                                                {reg.rosterLink}
+                                                <Link href={reg.rosterLink} target='_blank'>
+                                                    {reg.rosterLink}
+                                                </Link>
                                             </Table.RowHeaderCell>
                                             {isOwner && <Table.RowHeaderCell>
                                                 <Popover.Root>

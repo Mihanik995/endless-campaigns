@@ -44,7 +44,7 @@ export default function (props: Props): ReactElement {
                                     <QuestionMarkIcon/>
                                 </IconButton>
                             </Popover.Trigger>
-                            <Popover.Content>
+                            <Popover.Content maxWidth='60vw'>
                                 {hint}
                             </Popover.Content>
                         </Popover.Root>}

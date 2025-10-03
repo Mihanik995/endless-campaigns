@@ -33,7 +33,7 @@ export default function ({name, value, onClick, label, disabled, hint}: Props) {
                                     <QuestionMarkIcon/>
                                 </IconButton>
                             </Popover.Trigger>
-                            <Popover.Content>
+                            <Popover.Content maxWidth='60vw'>
                                 {hint}
                             </Popover.Content>
                         </Popover.Root>

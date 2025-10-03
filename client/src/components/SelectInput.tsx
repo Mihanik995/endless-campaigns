@@ -35,7 +35,7 @@ export default function ({label, value, onValueChange, options, placeholder, hin
                             <QuestionMarkIcon/>
                         </IconButton>
                     </Popover.Trigger>
-                    <Popover.Content>
+                    <Popover.Content maxWidth='60vw'>
                         {hint}
                     </Popover.Content>
                 </Popover.Root>

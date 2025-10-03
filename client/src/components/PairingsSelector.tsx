@@ -38,7 +38,7 @@ export default function () {
                                 ))}
                                 </>
                                 : <Flex align='center' justify='center' height='50vh'>
-                                    <Heading>You have no pairings for now.</Heading>
+                                    <Heading align='center'>You have no pairings for now.</Heading>
                                 </Flex>
                             }
                         </Container>

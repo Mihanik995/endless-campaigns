@@ -56,12 +56,10 @@ campaignRegisterRouter.get('/campaign/:id', verifyToken, async (req: Request, re
 campaignRegisterRouter.get('/user/:id', verifyToken, async (req: Request, res: Response) => {
     const {id} = req.params
     try {
-        const regs = await dbClient.campaignRegister.findMany({where: {playerId: id}})
-        for (const reg of regs) {
-            const campaign = await dbClient.campaign.findUnique({where: {id: reg.campaignId}}) as Campaign
-            reg.title = campaign.title
-            reg.regulations = campaign.regulations
-        }
+        const regs = await dbClient.campaignRegister.findMany({
+            where: {playerId: id},
+            include: {campaign: true}
+        })
         return res.status(200).json(regs)
     } catch (error) {
         res.status(500).json({error})

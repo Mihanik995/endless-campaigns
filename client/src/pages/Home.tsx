@@ -11,10 +11,14 @@ import {
     RocketIcon,
     Share1Icon
 } from "@radix-ui/react-icons";
+import {useState} from "react";
+import ManualDialog from "../components/ManualDialog.tsx";
 
 export default function CreateCampaignForm() {
     const auth = useAppSelector(selectAuth)
     const navigate = useNavigate();
+
+    const [manualOpen, setManualOpen] = useState(false);
 
     return auth.token
         ? <Navigate to={'/dashboard'} replace/>
@@ -123,7 +127,13 @@ export default function CreateCampaignForm() {
                                     </Text>
                                     <Text>
                                         Got yourself lost in the interface?
-                                        This guide will help you deal with any issues.
+                                        <Link href='' onClick={(e) => {
+                                            e.preventDefault()
+                                            setManualOpen(true)
+                                        }}>
+                                            This guide
+                                        </Link>
+                                        {' '}will help you deal with any issues.
                                     </Text>
                                 </Flex>
                             </Card>
@@ -183,5 +193,9 @@ export default function CreateCampaignForm() {
                     </Flex>
                 </Card>
             </Container>
+            <ManualDialog
+                open={manualOpen}
+                setOpen={setManualOpen}
+            />
         </>
 }

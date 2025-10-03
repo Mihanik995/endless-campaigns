@@ -8,18 +8,14 @@ import {useNavigate} from "react-router";
 import ErrorHandler from "../components/ErrorHandler.tsx";
 import type {MissionCreate} from "../types.ts";
 import validateData from "../utils/validators/validateData.ts";
-import validateString from "../utils/validators/validateString.ts";
-import SelectInput from "../components/SelectInput.tsx";
 
 type InputElement = HTMLInputElement | HTMLTextAreaElement
-type Type = 'simple' | 'multi-step'
 
 export default function () {
     const [missionData, setMissionData] = useState<MissionCreate>({
         title: '',
         narrativeDescription: '',
     })
-    const [type, setType] = useState<Type>()
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<Error>()
     const navigate = useNavigate()
@@ -35,7 +31,6 @@ export default function () {
         setIsLoading(true);
 
         try {
-            validateString('Type', type as string)
             validateData<MissionCreate>(missionData)
             axios.post(`/missions`, missionData)
                 .then(res => {
@@ -63,29 +58,18 @@ export default function () {
                                     value={missionData.title}
                                     onChange={handleChange}
                                 />
-                                <SelectInput
-                                    label='Mission type'
-                                    value={type as string}
-                                    onValueChange={(value) => setType(value as Type)}
-                                    options={{
-                                        'simple': 'Simple Mission',
-                                        'multi-step': 'Multi-step mission'
-                                    }}
-                                />
                                 <TextAreaInput
                                     label='Narrative description'
                                     name='narrativeDescription'
                                     value={missionData.narrativeDescription}
                                     onChange={handleChange}
                                 />
-                                {type === 'simple' &&
-                                    <TextAreaInput
-                                        label='Mission conditions'
-                                        name='missionConditions'
-                                        value={missionData.missionConditions as string}
-                                        onChange={handleChange}
-                                    />
-                                }
+                                <TextAreaInput
+                                    label='Mission conditions'
+                                    name='missionConditions'
+                                    value={missionData.missionConditions as string}
+                                    onChange={handleChange}
+                                />
                                 <Separator size='4'/>
                                 <Button onClick={handleSubmit}>
                                     Create

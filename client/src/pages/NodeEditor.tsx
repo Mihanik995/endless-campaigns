@@ -2,8 +2,10 @@ import {
     addEdge,
     applyEdgeChanges,
     applyNodeChanges,
-    Background, Controls,
-    type Edge, type EdgeTypes,
+    Background,
+    Controls,
+    type Edge,
+    type EdgeTypes,
     type Node,
     type NodeTypes,
     type OnConnect,
@@ -12,7 +14,7 @@ import {
     ReactFlow,
     ReactFlowProvider
 } from '@xyflow/react'
-import type {Mission, MissionNode as MNode, NodeLink} from "../types.ts";
+import type {Mission} from "../types.ts";
 
 import Header from "../components/Header.tsx";
 import {Box, Card, Container, Inset, Spinner} from "@radix-ui/themes";
@@ -47,52 +49,49 @@ export default function () {
         axios.get<Mission>(`/missions/${id}`)
             .then(res => {
                 if (res.status === 200) {
+                    if (res.data.creatorId !== auth.id) navigate(`/missions/${id}`)
                     uploadedMission = res.data
-                    if (uploadedMission.creatorId !== auth.id) {
-                        navigate(`/missions/${id}`)
-                    }
+
                     uploadedNodes.push({
-                        id: res.data.id,
+                        id: uploadedMission.id,
                         position: {x: 0, y: 0},
-                        data: {},
+                        data: {missionId: res.data.id},
                         type: 'entryPoint'
                     })
-                    if (res.data.startNode) {
-                        return axios.get(`/missions/nodes/mission/${id}`)
+                    for (const missionNode of res.data.nodes) {
+                        uploadedNodes.push({
+                            id: missionNode.id,
+                            position: {
+                                x: missionNode.positionX,
+                                y: missionNode.positionY},
+                            data: {
+                                label: missionNode.label,
+                                buttonLabel: missionNode.buttonLabel,
+                                narrativeDescription: missionNode.narrativeDescription,
+                                missionConditions: missionNode.missionConditions,
+                                missionId: res.data.id},
+                            type: 'missionNode'
+                        })
+                        if (missionNode.isMissionStart) uploadedLinks.push({
+                            id: '0',
+                            source: uploadedMission.id,
+                            target: missionNode.id,
+                            animated: true,
+                        })
+                        for (const conn of missionNode.nextLinks) {
+                            if (!uploadedLinks.some(link => link.id === conn.id)){
+                                uploadedLinks.push({
+                                    id: conn.id,
+                                    source: conn.fromId,
+                                    target: conn.toId,
+                                    animated: true,
+                                    type: 'customEdge'
+                                })
+                            }
+                        }
                     }
                 }
-            }).then(res => {
-            if (res && res.status === 200) {
-                uploadedNodes.push(...res.data.nodes.map((node: MNode) => {
-                    return {
-                        id: node.id,
-                        position: {x: node.positionX, y: node.positionY},
-                        data: {
-                            label: node.label,
-                            buttonLabel: node.buttonLabel,
-                            narrativeDescription: node.narrativeDescription,
-                            missionConditions: node.missionConditions,
-                        },
-                        type: 'missionNode'
-                    }
-                }))
-                uploadedLinks.push({
-                    id: '0',
-                    source: (uploadedNodes.find(node => node.id === id) as Node).id,
-                    target: (uploadedNodes.find(node => node.id === uploadedMission.startNode?.id) as Node).id,
-                    animated: true
-                })
-                uploadedLinks.push(...res.data.links.map((link: NodeLink) => {
-                    return {
-                        id: link.id,
-                        source: link.fromId,
-                        target: link.toId,
-                        type: 'customEdge',
-                        animated: true
-                    }
-                }))
-            }
-        })
+            })
             .catch(error => setError(error as Error))
             .finally(() => {
                 setIsLoading(false)

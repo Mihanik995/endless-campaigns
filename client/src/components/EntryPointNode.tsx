@@ -3,7 +3,11 @@ import {Handle, type Node, type NodeProps, Position, useReactFlow} from "@xyflow
 import AddNodeDialog from "./AddNodeDialog.tsx";
 import {useState} from "react";
 
-export default function ({id}: NodeProps) {
+type EntryPointNode = Node<{
+    missionId: string,
+}, 'custom'>
+
+export default function ({id}: NodeProps<EntryPointNode>) {
     const {getNode, getEdge} = useReactFlow();
     const startNodeConn = getEdge('0')
     const [createOpen, setCreateOpen] = useState(false)

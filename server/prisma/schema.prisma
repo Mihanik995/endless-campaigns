@@ -78,21 +78,22 @@ model CampaignPeriod {
 }
 
 model Mission {
-  id                   String       @id @default(uuid(4))
-  creator              User         @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  id                   String        @id @default(uuid(4))
+  creator              User          @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   creatorId            String
   title                String
   narrativeDescription String
   pairing              Pairing[]
   question             Question[]
   missionConditions    String?
-  startNode            MissionNode?
+  nodes                MissionNode[]
 }
 
 model MissionNode {
   id                   String                 @id @default(uuid(4))
-  mission              Mission?               @relation(fields: [missionId], references: [id], onDelete: Cascade)
-  missionId            String?                @unique
+  mission              Mission                @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  missionId            String
+  isMissionStart       Boolean
   nextLinks            NodeLink[]             @relation("FromNode")
   prevLinks            NodeLink[]             @relation("ToNode")
   label                String

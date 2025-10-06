@@ -10,7 +10,8 @@ type MissionNode = Node<{
     label: string,
     buttonLabel: string,
     narrativeDescription: string,
-    missionConditions: string
+    missionConditions: string,
+    missionId: string,
 }, 'custom'>
 
 export default function ({id, data, selected}: NodeProps<MissionNode>) {

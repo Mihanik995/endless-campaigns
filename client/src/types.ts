@@ -104,16 +104,16 @@ export interface Mission {
     title: string
     narrativeDescription: string
     missionConditions?: string
-    startNodeId?: string
-    startNode?: MissionNode
+    nodes: MissionNode[]
 }
 
 export interface MissionNode {
     [key: string]: any
 
     id: string
-    mission?: Mission
-    missionId?: string
+    mission: Mission
+    missionId: string
+    isMissionStart: boolean
     nextLinks: NodeLink[]
     prevLinks: NodeLink[]
     label: string
@@ -132,6 +132,8 @@ export interface MissionNodeCreate {
     buttonLabel: string
     narrativeDescription: string
     missionConditions: string
+    missionId: string
+    isMissionStart: boolean
     positionX: number
     positionY: number
 }

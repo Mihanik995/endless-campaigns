@@ -1,5 +1,5 @@
 import type {Request, Response} from 'express'
-import type {Mission, MissionNode} from "../../../generated/prisma";
+import type {MissionNode} from "../../../generated/prisma";
 
 const {Router} = require('express')
 const {PrismaClient} = require('../../../generated/prisma')
@@ -10,41 +10,6 @@ require('dotenv').config()
 
 const nodesRouter = Router()
 const dbClient = new PrismaClient()
-
-interface MissionExp extends Mission {
-    startNode: MissionNode
-}
-
-async function collectReachableGraphFromPrisma(
-    startId: string
-): Promise<{ nodeIds: Set<string>; linkIds: Set<string> }> {
-    const visitedNodeIds = new Set<string>();
-    const visitedLinkIds = new Set<string>();
-    const queue = [startId];
-
-    while (queue.length > 0) {
-        const currentId = queue.pop();
-        if (!currentId || visitedNodeIds.has(currentId)) continue;
-
-        visitedNodeIds.add(currentId);
-
-        const currentNode = await dbClient.missionNode.findUnique({
-            where: {id: currentId},
-            include: {nextLinks: true},
-        });
-
-        if (!currentNode) continue;
-
-        for (const link of currentNode.nextLinks) {
-            if (!visitedLinkIds.has(link.id)) {
-                visitedLinkIds.add(link.id);
-                queue.push(link.toId);
-            }
-        }
-    }
-
-    return {nodeIds: visitedNodeIds, linkIds: visitedLinkIds};
-}
 
 nodesRouter.post('/', verifyToken, async (req: Request, res: Response) => {
     const data = req.body
@@ -74,18 +39,9 @@ nodesRouter.get('/:id', verifyToken, async (req: Request, res: Response) => {
 nodesRouter.get('/mission/:id', verifyToken, async (req: Request, res: Response) => {
     const id = req.params.id
     try {
-        const mission = await dbClient.mission.findUnique({
-            where: {id},
-            include: {startNode: true}
-        }) as MissionExp
-        if (!mission) return res.status(404).send('Mission not found')
-        if (!mission.startNode) return res.status(400).send('Mission has no start node')
-        const {nodeIds, linkIds} = await collectReachableGraphFromPrisma(mission.startNode.id)
-        const nodes = await dbClient.missionNode.findMany({
-            where: {id: {in: Array.from(nodeIds)}},
-        });
+        const nodes: MissionNode[] = await dbClient.missionNode.findMany({where: {missionId: id}});
         const links = await dbClient.nodeLink.findMany({
-            where: {id: {in: Array.from(linkIds)}},
+            where: {fromId: {in: nodes.map(node => node.id)}},
         });
         res.status(200).json({nodes, links})
     } catch (error) {
@@ -127,6 +83,7 @@ nodesRouter.post('/passed/:id', verifyToken, async (req: Request, res: Response)
         })
         res.status(201).send(nodePassed)
     } catch (error) {
+        console.log(error)
         res.status(500).json({error})
     }
 })

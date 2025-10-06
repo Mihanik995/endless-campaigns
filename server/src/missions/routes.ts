@@ -40,7 +40,7 @@ missionsRouter.get('/:id', verifyToken, async (req: Request, res: Response) => {
     try {
         const missions = await dbClient.mission.findUnique({
             where: {id},
-            include: {startNode: true}
+            include: {nodes: {include: {nextLinks: true}}}
         })
         res.status(200).json(missions)
     } catch (error) {

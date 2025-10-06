@@ -15,7 +15,7 @@ export default function () {
         creatorId: '',
         title: '',
         narrativeDescription: '',
-        type: 'multi-step'
+        nodes: []
     })
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<Error>()

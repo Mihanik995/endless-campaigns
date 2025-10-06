@@ -1,6 +1,6 @@
 import {Card, Dialog, Flex, Heading, IconButton, Link, Separator, Strong, Text} from "@radix-ui/themes";
 import SelectInput from "./SelectInput.tsx";
-import {useState} from "react";
+import {type UIEventHandler, useState} from "react";
 import {ArrowUpIcon, CheckIcon, Cross2Icon, ExitIcon, PlusIcon} from "@radix-ui/react-icons";
 
 interface Props {
@@ -16,7 +16,10 @@ export default function ({open, setOpen}: Props) {
         if (el) el.scrollIntoView({behavior: 'smooth'});
     };
 
-    const handleScroll = (e) => setShowButton(e.target.scrollTop > 100)
+    const handleScroll: UIEventHandler<HTMLDivElement> = (e) => {
+        const target = e.target as HTMLElement;
+        setShowButton(target.scrollTop > 100)
+    }
 
     return <Dialog.Root open={open} onOpenChange={setOpen}>
         <Dialog.Content onScroll={handleScroll} maxHeight='90vh'>
@@ -133,17 +136,6 @@ export default function ({open, setOpen}: Props) {
                                         <Strong>right-click</Strong> (PCs) or <Strong>hold</Strong>{' '}
                                         (phones or tablets) it. You can also drag and drop nodes you've created,
                                         the layout will be saved for later use.
-                                    </li>
-                                    <li className='my-1'>
-                                        <Text color='red'>
-                                            <Strong>NOTICE!</Strong> All the nodes with no straight connection
-                                            with <Strong>ENTRYPOINT</Strong> (backward connections doesn't
-                                            count) would be lost once you'll update or leave the page! So we
-                                            strongly recommend you to update the existing nodes instead of
-                                            deleting
-                                            them and creating the new ones, and avoid connection deletes as
-                                            well.
-                                        </Text>
                                     </li>
                                     <li className='my-1'>
                                         How it works for a player:

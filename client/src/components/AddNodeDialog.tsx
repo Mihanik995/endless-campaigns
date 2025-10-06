@@ -20,7 +20,8 @@ export default function ({source, startNode = false, open, setOpen}: Props) {
 
     const [nodeData, setNodeData] = useState<MissionNodeCreate>({
         label: '', buttonLabel: '', narrativeDescription: '', missionConditions: '',
-        positionX: 0, positionY: 0, isMissionStart: startNode, missionId: source.data.missionId
+        positionX: 0, positionY: 0, isMissionStart: startNode,
+        missionId: source.data.missionId as string
     });
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<Error>()
@@ -30,7 +31,7 @@ export default function ({source, startNode = false, open, setOpen}: Props) {
             label: '', buttonLabel: '', narrativeDescription: '', missionConditions: '',
             positionX: source.position.x,
             positionY: source.position.y + 75,
-            missionId: source.data.missionId,
+            missionId: source.data.missionId as string,
             isMissionStart: startNode,
         })
     }, [source]);

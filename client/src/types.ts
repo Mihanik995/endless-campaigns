@@ -42,8 +42,8 @@ export interface Campaign {
     requiresRegisterApproval: boolean
     requiresPairingResultsApproval: boolean
     requiresPairingReport: boolean
-
     campaignRegisters?: CampaignRegister[]
+    customNotifications?: CustomNotification[]
 }
 
 export interface CampaignCreate {
@@ -238,4 +238,23 @@ export interface NodesPassedOnPairing {
     pairingId: string
     player?: User
     playerId: string
+}
+
+export interface CustomNotification {
+    [key: string]: any
+
+    id: string
+    campaign?: Campaign
+    campaignId: string
+    heading: string
+    text: string
+    createdAt: string
+}
+
+export interface CustomNotificationCreate {
+    [key: string]: any
+
+    campaignId: string
+    heading: string
+    text: string
 }

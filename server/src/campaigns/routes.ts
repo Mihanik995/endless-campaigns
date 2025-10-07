@@ -9,6 +9,7 @@ const {v4: uuid} = require('uuid');
 
 const campaignRegisterRouter = require('./register/routes')
 const periodsRouter = require('./periods/routes')
+const notificationsRouter = require('./notifications/routes')
 
 require('dotenv').config();
 
@@ -17,6 +18,7 @@ const campaignsRouter = new Router();
 
 campaignsRouter.use('/register', campaignRegisterRouter);
 campaignsRouter.use('/periods', periodsRouter);
+campaignsRouter.use('/notifications', notificationsRouter);
 
 campaignsRouter.get("/", verifyToken, async (req: Request, res: Response) => {
     const token = req.header('Authorization');
@@ -44,7 +46,10 @@ campaignsRouter.get("/", verifyToken, async (req: Request, res: Response) => {
 campaignsRouter.get("/:id", verifyToken, async (req: Request, res: Response) => {
     const campaignId = req.params.id;
     try {
-        const campaign = await dbClient.campaign.findUnique({where: {id: campaignId}})
+        const campaign = await dbClient.campaign.findUnique({
+            where: {id: campaignId},
+            include: {customNotifications: true}
+        })
         if (!campaign) return res.status(404).json({error: 'Campaign not found'})
         return res.status(200).json(campaign)
     } catch (error) {

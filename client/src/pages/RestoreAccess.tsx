@@ -1,7 +1,7 @@
 import Header from "../components/Header.tsx";
 import {useParams} from "react-router";
 import {useEffect, useState} from "react";
-import axios from "axios";
+import axios from "../axios/axiosConfig.ts";
 import {Card, Flex, Heading, Spinner, Text} from "@radix-ui/themes";
 import ErrorHandler from "../components/ErrorHandler.tsx";
 import {refresh} from "../app/features/auth/authSlice.ts";
@@ -16,8 +16,9 @@ export default function () {
     const [error, setError] = useState<Error>()
     useEffect(() => {
         setIsLoading(true)
-        axios.get(`/api/auth/restore-access/${token}`)
+        axios.get(`/auth/restore-access/${token}`)
             .then(res => {
+                console.log(res)
                 if (res.status === 200) {
                     dispatch(refresh(res.data))
                     setSuccess(true)

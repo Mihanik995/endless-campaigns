@@ -1,4 +1,4 @@
-import type {Campaign, CampaignRegister, Mission, Pairing, User} from "../generated/prisma";
+import type {Campaign, CampaignRegister, CustomNotification, Mission, Pairing, User} from "../generated/prisma";
 
 require('dotenv').config();
 
@@ -61,4 +61,10 @@ exports.resultsRejectedEmail = (campaign: Campaign, pairing: Pairing) => {
     <p>For: details: <a href="${process.env.FRONTED_URL}/pairings/${pairing.id}">
         ${process.env.FRONTED_URL}/pairings/${pairing.id}
     </a></p>`
+}
+
+exports.customNotificationEmail = (campaign: Campaign, notification: CustomNotification) => {
+    return `<h3>${campaign.title}</h3>
+    <p><b>${notification.heading}</b></p>
+    <p>${notification.text}</p>`
 }

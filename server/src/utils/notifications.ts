@@ -1,6 +1,15 @@
-import type {Campaign, CampaignRegister, Mission, Pairing, PlayersOnPairings, User} from "../../generated/prisma";
+import type {
+    Campaign,
+    CampaignRegister,
+    Mission,
+    Pairing,
+    PlayersOnPairings,
+    User,
+    CustomNotification
+} from "../../generated/prisma";
 
 const {
+    customNotificationEmail,
     resultsRejectedEmail,
     pairingPlayedEmail,
     newPlayerRegisteredEmail,
@@ -8,6 +17,7 @@ const {
     newPairingEmail
 } = require("../../templates/emailTemplates")
 const {
+    customNotificationMessage,
     resultsRejectedMessage,
     pairingPlayedMessage,
     newPlayerRegisteredMessage,
@@ -21,8 +31,13 @@ interface PlayersOnPairingsExt extends PlayersOnPairings {
     player: User
 }
 
+interface CampaignRegisterExt extends CampaignRegister {
+    player: User
+}
+
 interface CampaignExt extends Campaign {
     owner: User
+    campaignRegisters: CampaignRegisterExt[]
 }
 
 interface MissionExt extends Mission {
@@ -48,7 +63,8 @@ exports.newRegisterNotify = (campaign: CampaignExt, register: CampaignRegister) 
             if (owner.telegramId) {
                 return tgBot.api.sendMessage(
                     owner.telegramId,
-                    newPlayerRegisteredMessage(campaign, register)
+                    newPlayerRegisteredMessage(campaign, register),
+                    {parse_mode: 'HTML'}
                 )
             }
     }
@@ -68,7 +84,8 @@ exports.newQuestionNotify = (mission: MissionExt) => {
             if (creator.telegramId) {
                 return tgBot.api.sendMessage(
                     creator.telegramId,
-                    newQuestionMessage(mission)
+                    newQuestionMessage(mission),
+                    {parse_mode: 'HTML'}
                 )
             }
     }
@@ -89,7 +106,8 @@ exports.newPairingNotify = (pairing: PairingExt) => {
             case 'telegram':
                 if (player.telegramId) return tgBot.api.sendMessage(
                     player.telegramId,
-                    newPairingMessage(campaign, pairing)
+                    newPairingMessage(campaign, pairing),
+                    {parse_mode: 'HTML'}
                 )
         }
     }))
@@ -115,7 +133,8 @@ exports.pairingPlayedNotify = (pairing: PairingExt) => {
         case 'telegram':
             if (owner.telegramId) return tgBot.api.sendMessage(
                 owner.telegramId,
-                pairingPlayedMessage(campaign, playersString)
+                pairingPlayedMessage(campaign, playersString),
+                {parse_mode: 'HTML'}
             )
     }
 }
@@ -135,7 +154,30 @@ exports.resultsRejectedNotify = (pairing: PairingExt) => {
             case 'telegram':
                 if (player.telegramId) return tgBot.api.sendMessage(
                     player.telegramId,
-                    resultsRejectedMessage(campaign, pairing)
+                    resultsRejectedMessage(campaign, pairing),
+                    {parse_mode: 'HTML'}
+                )
+        }
+    }))
+}
+
+exports.customNotification = (campaign: CampaignExt, notification: CustomNotification) => {
+    const campaignPlayers = campaign.campaignRegisters
+        .map(reg => reg.player)
+    return Promise.all(campaignPlayers.map(player => {
+        switch (player.notifications) {
+            case 'email':
+                return mailer.sendMail({
+                    from: process.env.SENDER_EMAIL,
+                    to: player.email,
+                    subject: `${campaign.title} - ${notification.heading}`,
+                    html: customNotificationEmail(campaign, notification)
+                })
+            case 'telegram':
+                if (player.telegramId) return tgBot.api.sendMessage(
+                    player.telegramId,
+                    customNotificationMessage(campaign, notification),
+                    {parse_mode: 'HTML'}
                 )
         }
     }))

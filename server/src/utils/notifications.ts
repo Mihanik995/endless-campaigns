@@ -163,6 +163,7 @@ exports.resultsRejectedNotify = (pairing: PairingExt) => {
 
 exports.customNotification = (campaign: CampaignExt, notification: CustomNotification) => {
     const campaignPlayers = campaign.campaignRegisters
+        .filter(reg => reg.approved)
         .map(reg => reg.player)
     return Promise.all(campaignPlayers.map(player => {
         switch (player.notifications) {

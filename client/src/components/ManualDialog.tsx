@@ -242,7 +242,7 @@ export default function ({open, setOpen}: Props) {
                                     </Strong>. The bot will provide you the chat ID.
                                     </li>
                                     <li className='my-1'>
-                                        The bot notifies you about following events:
+                                        The platform notifies you about following events:
                                         <ul className='pl-6 list-disc'>
                                             <li className='my-1'>
                                                 New player registered to your campaign.
@@ -260,6 +260,19 @@ export default function ({open, setOpen}: Props) {
                                             </li>
                                             <li className='my-1'>
                                                 One of your pairings' results was rejected.
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li className='my-1'>
+                                        You can also create your custom notifications
+                                        in the context of your campaign. To do so, open{' '}
+                                        <Strong>Notifications</Strong> tab on the campaign page
+                                        and click the <Strong>Create notification</Strong> button.
+                                        <ul className='pl-6 list-disc'>
+                                            <li className='my-1'>
+                                                <Strong>NOTICE!</Strong> Only players registered at the moment
+                                                of notification creation will get it. Their register should also
+                                                be approved, if your campaign settings require.
                                             </li>
                                         </ul>
                                     </li>

@@ -55,6 +55,8 @@ model Campaign {
   pairing                        Pairing[]
   requiresPairingResultsApproval Boolean            @default(true)
   requiresPairingReport          Boolean            @default(true)
+
+  customNotifications CustomNotification[]
 }
 
 model CampaignRegister {
@@ -78,21 +80,22 @@ model CampaignPeriod {
 }
 
 model Mission {
-  id                   String       @id @default(uuid(4))
-  creator              User         @relation(fields: [creatorId], references: [id], onDelete: Cascade)
+  id                   String        @id @default(uuid(4))
+  creator              User          @relation(fields: [creatorId], references: [id], onDelete: Cascade)
   creatorId            String
   title                String
   narrativeDescription String
   pairing              Pairing[]
   question             Question[]
   missionConditions    String?
-  startNode            MissionNode?
+  nodes                MissionNode[]
 }
 
 model MissionNode {
   id                   String                 @id @default(uuid(4))
-  mission              Mission?               @relation(fields: [missionId], references: [id], onDelete: Cascade)
-  missionId            String?                @unique
+  mission              Mission                @relation(fields: [missionId], references: [id], onDelete: Cascade)
+  missionId            String
+  isMissionStart       Boolean
   nextLinks            NodeLink[]             @relation("FromNode")
   prevLinks            NodeLink[]             @relation("ToNode")
   label                String
@@ -167,4 +170,13 @@ model NodesPassedOnPairing {
   playerId  String
 
   @@id([pairingId, nodeId, playerId])
+}
+
+model CustomNotification {
+  id         String   @id @default(uuid(4))
+  campaign   Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  campaignId String
+  heading    String
+  text       String
+  createdAt  DateTime @default(now())
 }

@@ -42,8 +42,8 @@ export interface Campaign {
     requiresRegisterApproval: boolean
     requiresPairingResultsApproval: boolean
     requiresPairingReport: boolean
-
     campaignRegisters?: CampaignRegister[]
+    customNotifications?: CustomNotification[]
 }
 
 export interface CampaignCreate {
@@ -104,16 +104,16 @@ export interface Mission {
     title: string
     narrativeDescription: string
     missionConditions?: string
-    startNodeId?: string
-    startNode?: MissionNode
+    nodes: MissionNode[]
 }
 
 export interface MissionNode {
     [key: string]: any
 
     id: string
-    mission?: Mission
-    missionId?: string
+    mission: Mission
+    missionId: string
+    isMissionStart: boolean
     nextLinks: NodeLink[]
     prevLinks: NodeLink[]
     label: string
@@ -132,6 +132,8 @@ export interface MissionNodeCreate {
     buttonLabel: string
     narrativeDescription: string
     missionConditions: string
+    missionId: string
+    isMissionStart: boolean
     positionX: number
     positionY: number
 }
@@ -236,4 +238,23 @@ export interface NodesPassedOnPairing {
     pairingId: string
     player?: User
     playerId: string
+}
+
+export interface CustomNotification {
+    [key: string]: any
+
+    id: string
+    campaign?: Campaign
+    campaignId: string
+    heading: string
+    text: string
+    createdAt: string
+}
+
+export interface CustomNotificationCreate {
+    [key: string]: any
+
+    campaignId: string
+    heading: string
+    text: string
 }

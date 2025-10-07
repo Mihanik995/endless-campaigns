@@ -204,20 +204,23 @@ export default function ({pairing, missions, playerRegisters, period, onChange}:
                             </Table.Cell>
                         </ContextMenu.Trigger>
                         <ContextMenu.Content>
-                            {!pairing.resultsApproved && <>
+                            {pairing.played && !pairing.resultsApproved && <>
                                 <ContextMenu.Item onSelect={approveResults}>
                                     Approve results
                                 </ContextMenu.Item>
                                 <ContextMenu.Item onSelect={() => setRejectOpen(true)}>
                                     Reject results
                                 </ContextMenu.Item>
-                                {pairing.mission?.startNode &&
+                                <ContextMenu.Separator/>
+                            </>}
+                            {pairing.mission?.nodes &&
+                                <>
                                     <ContextMenu.Item onSelect={() => setNodesOpen(true)}>
                                         Check nodes passed
                                     </ContextMenu.Item>
-                                }
-                                <ContextMenu.Separator/>
-                            </>}
+                                    <ContextMenu.Separator/>
+                                </>
+                            }
                             <ContextMenu.Item onSelect={() => setEdit(true)}>
                                 Edit
                             </ContextMenu.Item>

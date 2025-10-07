@@ -6,37 +6,33 @@ import {useAppSelector} from "../app/hooks.ts";
 import {selectAuth} from "../app/features/auth/authSlice.ts";
 import CampaignPeriods from "../components/CampaignPeriods.tsx";
 import {selectCampaign} from "../app/features/campaign/campaignSlice.ts";
-import type {Campaign} from "../types.ts";
+import type {Campaign, CustomNotification} from "../types.ts";
 import {useEffect, useState} from "react";
 import axios from "../axios/axiosConfig.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
+import CampaignNotifications from "./CampaignNotifications.tsx";
 
 interface Props {
     id?: string;
 }
 
 export default function ({id}: Props) {
+    const campaignId = id || useAppSelector(selectCampaign).id as string
     const [campaign, setCampaign] = useState<Campaign>()
     const [isOwner, setIsOwner] = useState<boolean>()
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<Error>()
-    const currentCampaign = useAppSelector(selectCampaign) as Campaign
 
     useEffect(() => {
-        if (id) {
-            setIsLoading(true)
-            axios.get(`campaigns/${id}`)
-                .then(res => {
-                    if (res.status === 200) {
-                        setCampaign(res.data)
-                        setIsOwner(res.data.ownerId === auth.id)
-                    }
-                }).catch(err => setError(err as Error))
-                .finally(() => setIsLoading(false))
-        } else {
-            setCampaign(currentCampaign)
-            setIsOwner(currentCampaign.ownerId === auth.id)
-        }
+        setIsLoading(true)
+        axios.get(`campaigns/${campaignId}`)
+            .then(res => {
+                if (res.status === 200) {
+                    setCampaign(res.data)
+                    setIsOwner(res.data.ownerId === auth.id)
+                }
+            }).catch(err => setError(err as Error))
+            .finally(() => setIsLoading(false))
     }, []);
 
     const auth = useAppSelector(selectAuth);
@@ -61,6 +57,9 @@ export default function ({id}: Props) {
                                     <Tabs.List>
                                         <Tabs.Trigger value='registers'>Players</Tabs.Trigger>
                                         <Tabs.Trigger value='periods'>Periods and Pairings</Tabs.Trigger>
+                                        {isOwner &&
+                                            <Tabs.Trigger value='notifications'>Notifications</Tabs.Trigger>
+                                        }
                                     </Tabs.List>
                                     <Tabs.Content value='registers'>
                                         <RegisteredPlayers
@@ -73,6 +72,14 @@ export default function ({id}: Props) {
                                         <CampaignPeriods
                                             campaignId={campaign.id}
                                             isOwner={isOwner as boolean}
+                                        />
+                                    </Tabs.Content>
+                                    <Tabs.Content value='notifications'>
+                                        <CampaignNotifications
+                                            campaignNotifications={
+                                                campaign.customNotifications as CustomNotification[]
+                                            }
+                                            campaignId={campaign.id}
                                         />
                                     </Tabs.Content>
                                 </Tabs.Root>

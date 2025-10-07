@@ -1,6 +1,6 @@
 import {Card, Dialog, Flex, Heading, IconButton, Link, Separator, Strong, Text} from "@radix-ui/themes";
 import SelectInput from "./SelectInput.tsx";
-import {useState, type UIEvent} from "react";
+import {type UIEventHandler, useState} from "react";
 import {ArrowUpIcon, CheckIcon, Cross2Icon, ExitIcon, PlusIcon} from "@radix-ui/react-icons";
 
 interface Props {
@@ -16,10 +16,9 @@ export default function ({open, setOpen}: Props) {
         if (el) el.scrollIntoView({behavior: 'smooth'});
     };
 
-    const handleScroll = (e: UIEvent<HTMLElement>) => {
+    const handleScroll: UIEventHandler<HTMLDivElement> = (e) => {
         const target = e.target as HTMLElement;
-        const scrollTop = target.scrollTop;
-        setShowButton(scrollTop > 100)
+        setShowButton(target.scrollTop > 100)
     }
 
     return <Dialog.Root open={open} onOpenChange={setOpen}>
@@ -139,17 +138,6 @@ export default function ({open, setOpen}: Props) {
                                         the layout will be saved for later use.
                                     </li>
                                     <li className='my-1'>
-                                        <Text color='red'>
-                                            <Strong>NOTICE!</Strong> All the nodes with no straight connection
-                                            with <Strong>ENTRYPOINT</Strong> (backward connections doesn't
-                                            count) would be lost once you'll update or leave the page! So we
-                                            strongly recommend you to update the existing nodes instead of
-                                            deleting
-                                            them and creating the new ones, and avoid connection deletes as
-                                            well.
-                                        </Text>
-                                    </li>
-                                    <li className='my-1'>
                                         How it works for a player:
                                         <ul className='pl-6 list-disc'>
                                             <li className='my-1'>
@@ -254,7 +242,7 @@ export default function ({open, setOpen}: Props) {
                                     </Strong>. The bot will provide you the chat ID.
                                     </li>
                                     <li className='my-1'>
-                                        The bot notifies you about following events:
+                                        The platform notifies you about following events:
                                         <ul className='pl-6 list-disc'>
                                             <li className='my-1'>
                                                 New player registered to your campaign.
@@ -272,6 +260,19 @@ export default function ({open, setOpen}: Props) {
                                             </li>
                                             <li className='my-1'>
                                                 One of your pairings' results was rejected.
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li className='my-1'>
+                                        You can also create your custom notifications
+                                        in the context of your campaign. To do so, open{' '}
+                                        <Strong>Notifications</Strong> tab on the campaign page
+                                        and click the <Strong>Create notification</Strong> button.
+                                        <ul className='pl-6 list-disc'>
+                                            <li className='my-1'>
+                                                <Strong>NOTICE!</Strong> Only players registered at the moment
+                                                of notification creation will get it. Their register should also
+                                                be approved, if your campaign settings require.
                                             </li>
                                         </ul>
                                     </li>

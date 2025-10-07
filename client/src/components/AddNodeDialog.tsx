@@ -20,7 +20,8 @@ export default function ({source, startNode = false, open, setOpen}: Props) {
 
     const [nodeData, setNodeData] = useState<MissionNodeCreate>({
         label: '', buttonLabel: '', narrativeDescription: '', missionConditions: '',
-        positionX: 0, positionY: 0,
+        positionX: 0, positionY: 0, isMissionStart: startNode,
+        missionId: source.data.missionId as string
     });
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<Error>()
@@ -30,7 +31,8 @@ export default function ({source, startNode = false, open, setOpen}: Props) {
             label: '', buttonLabel: '', narrativeDescription: '', missionConditions: '',
             positionX: source.position.x,
             positionY: source.position.y + 75,
-            missionId: startNode ? source.id : undefined,
+            missionId: source.data.missionId as string,
+            isMissionStart: startNode,
         })
     }, [source]);
 
@@ -56,6 +58,7 @@ export default function ({source, startNode = false, open, setOpen}: Props) {
                                 buttonLabel: res.data.buttonLabel,
                                 narrativeDescription: res.data.narrativeDescription,
                                 missionConditions: res.data.missionConditions,
+                                missionId: res.data.missionId
                             },
                             type: 'missionNode'
                         })
@@ -68,14 +71,13 @@ export default function ({source, startNode = false, open, setOpen}: Props) {
                             source: source.id,
                             target: res.data.id,
                             animated: true
-
                         })
                     }
                 })
                 .then(res => {
                     if (res && res.status === 201) {
                         addEdges({
-                            id: `${res.data.fromId}-${res.data.toId}`,
+                            id: `${res.data.id}`,
                             source: res.data.fromId,
                             target: res.data.toId,
                             type: 'customEdge',

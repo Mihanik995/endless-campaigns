@@ -20,6 +20,7 @@ export default function () {
         played: false, players: [], winners: [], resultsApproved: false,
         resultsRejected: false, nodesPassedOnPairing: []
     })
+    const [startNode, setStartNode] = useState<MissionNode>()
     const [nextNode, setNextNode] = useState<MissionNode>()
     const [isLoading, setIsLoading] = useState(false)
 
@@ -36,12 +37,16 @@ export default function () {
                         throw new Error(`You don't participate in that pairing!`)
                     }
                     setPairing(res.data);
-                    const passedNodes = res.data.nodesPassedOnPairing
-                    const pairingMissionStartNode = res.data.mission?.startNode
-                    if (passedNodes
-                        .some(passedNode => passedNode.nodeId === pairingMissionStartNode?.id)) {
-                        setNextNode(pairingMissionStartNode);
+                    if (res.data.mission?.nodes.length) {
+                        const pairingMissionStartNode = res.data.mission.nodes.find(node => node.isMissionStart)
+                        setStartNode(pairingMissionStartNode)
+                        const passedNodes = res.data.nodesPassedOnPairing
+                        if (passedNodes
+                            .some(passedNode => passedNode.nodeId === pairingMissionStartNode?.id)) {
+                            setNextNode(pairingMissionStartNode);
+                        }
                     }
+
                 }
             }).catch(error => setError(error as Error))
             .finally(() => setIsLoading(false))
@@ -50,7 +55,7 @@ export default function () {
     const handleStart: MouseEventHandler<HTMLButtonElement> = (e) => {
         e.preventDefault()
         setIsLoading(true)
-        axios.post(`/missions/nodes/passed/${pairing.mission?.startNode?.id}`, {pairingId: pairing.id})
+        axios.post(`/missions/nodes/passed/${startNode?.id}`, {pairingId: pairing.id})
             .then(res => {
                 if (res.status === 201) setNextNode(pairing.mission?.startNode)
             }).catch(error => setError(error as Error))
@@ -77,14 +82,14 @@ export default function () {
                                     />
                                 }
                                 <Separator size='4'/>
-                                {pairing.mission?.startNode
+                                {startNode
                                     ? !!nextNode
                                         ? <NextPairingStep
-                                            node={pairing.mission.startNode as MissionNode}
+                                            node={nextNode}
                                             pairing={pairing}
                                         />
                                         : <Button onClick={handleStart}>
-                                            {pairing.mission.startNode.buttonLabel}
+                                            {startNode.buttonLabel}
                                         </Button>
                                     : <SetPairingResults
                                         pairing={pairing}

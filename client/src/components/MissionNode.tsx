@@ -1,4 +1,4 @@
-import {Button, Card, ContextMenu, Dialog, Flex, Spinner, Strong, Text} from "@radix-ui/themes";
+import {Button, Card, ContextMenu, Dialog, Flex, Spinner, Text} from "@radix-ui/themes";
 import {Handle, type Node, type NodeProps, Position, useReactFlow} from "@xyflow/react";
 import AddNodeDialog from "./AddNodeDialog.tsx";
 import {type MouseEventHandler, useState} from "react";
@@ -10,7 +10,8 @@ type MissionNode = Node<{
     label: string,
     buttonLabel: string,
     narrativeDescription: string,
-    missionConditions: string
+    missionConditions: string,
+    missionId: string,
 }, 'custom'>
 
 export default function ({id, data, selected}: NodeProps<MissionNode>) {
@@ -82,10 +83,10 @@ export default function ({id, data, selected}: NodeProps<MissionNode>) {
             <Dialog.Root open={deleteOpen} onOpenChange={setDeleteOpen}>
                 <Dialog.Content width='50vw' minWidth='300px'>
                     <Dialog.Title>
-                        Notice!
+                        Are you sure?
                     </Dialog.Title>
                     <Dialog.Description>
-                        All nodes with no connections with <Strong>ENTRYPOINT</Strong> will be lost!
+                        This action cannot be undone!
                     </Dialog.Description>
                     <Flex gap='2' mt='3'>
                         <Dialog.Close>

@@ -47,7 +47,7 @@ pairingsRouter.get('/:id', verifyToken, async (req: Request, res: Response) => {
         const pairing = await dbClient.pairing.findUnique({
             where: {id},
             include: {
-                mission: {include: {startNode: {include: {nextLinks: true}}}},
+                mission: {include: {nodes: true}},
                 campaign: {include: {campaignRegisters: true}},
                 nodesPassedOnPairing: true,
                 players: {include: {player: {select: {id: true, username: true, email: true}}}},
@@ -90,7 +90,7 @@ pairingsRouter.get('/period/:periodId', verifyToken, async (req: Request, res: R
         const pairing = await dbClient.pairing.findMany({
             where: {periodId},
             include: {
-                mission: {include: {startNode: true}},
+                mission: {include: {nodes: true}},
                 players: {include: {player: {select: {id: true, username: true, email: true}}}},
                 winners: {include: {player: {select: {id: true, username: true, email: true}}}}
             }

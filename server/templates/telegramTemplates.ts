@@ -1,4 +1,4 @@
-import type {Campaign, CampaignRegister, Mission, Pairing, User} from "../generated/prisma";
+import type {Campaign, CampaignRegister, CustomNotification, Mission, Pairing, User} from "../generated/prisma";
 
 interface CampaignRegisterExt extends CampaignRegister {
     player: User
@@ -6,7 +6,7 @@ interface CampaignRegisterExt extends CampaignRegister {
 
 exports.newPlayerRegisteredMessage = (campaign: Campaign, register: CampaignRegisterExt) => {
     return `
-${campaign.title}
+<b>${campaign.title.toUpperCase()}</b>
 ${'-'.repeat(30)}
 New player just registered for your campaign.
 User: ${register.player.username}
@@ -20,7 +20,7 @@ ${campaign.requiresRegisterApproval
 
 exports.newQuestionMessage = (mission: Mission) => {
     return `
-${mission.title}
+<b>Mission: ${mission.title.toUpperCase()}</b>
 ${'-'.repeat(30)}
 New question was asked.
 For details: ${process.env.FRONTED_URL}/missions/${mission.id}`
@@ -28,7 +28,7 @@ For details: ${process.env.FRONTED_URL}/missions/${mission.id}`
 
 exports.newPairingMessage = (campaign: Campaign, pairing: Pairing) => {
     return `
-${campaign.title}
+<b>${campaign.title.toUpperCase()}</b>
 ${'-'.repeat(30)}
 New pairing assigned.
 For more details: ${process.env.FRONTED_URL}/pairings/${pairing.id}`
@@ -36,7 +36,7 @@ For more details: ${process.env.FRONTED_URL}/pairings/${pairing.id}`
 
 exports.pairingPlayedMessage = (campaign: Campaign, playersString: string) => {
     return `
-${campaign.title}
+<b>${campaign.title.toUpperCase()}</b>
 ${'-'.repeat(30)}
 ${playersString} just sent their pairing results.
 To verify: ${process.env.FRONTED_URL}/campaigns/${campaign.id}`
@@ -44,8 +44,16 @@ To verify: ${process.env.FRONTED_URL}/campaigns/${campaign.id}`
 
 exports.resultsRejectedMessage = (campaign: Campaign, pairing: Pairing) => {
     return `
-${campaign.title}
+<b>${campaign.title.toUpperCase()}</b>
 ${'-'.repeat(30)}
 One of your last pairing's result was rejected.
 For: details: ${process.env.FRONTED_URL}/pairings/${pairing.id}`
+}
+
+exports.customNotificationMessage = (campaign: Campaign, notification: CustomNotification) => {
+    return `
+<b>${campaign.title.toUpperCase()}</b>
+${'-'.repeat(30)}
+<b>${notification.heading}</b>
+${notification.text}`
 }

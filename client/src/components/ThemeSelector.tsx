@@ -1,5 +1,5 @@
 import {Avatar, Flex, IconButton, Popover, Separator, Spinner, Switch, Text} from "@radix-ui/themes";
-import {ShadowInnerIcon} from "@radix-ui/react-icons";
+import {MoonIcon, SunIcon} from "@radix-ui/react-icons";
 import {selectTheme, setBackground, toggleTheme} from "../app/features/theme/themeSlice.ts";
 import {useAppDispatch, useAppSelector} from "../app/hooks.ts";
 import {useEffect, useState} from "react";
@@ -40,7 +40,9 @@ export default function () {
                     size='3'
                     radius='full'
                 >
-                    <ShadowInnerIcon/>
+                    {theme.theme === 'light'
+                        ? <SunIcon/>
+                        : <MoonIcon/>}
                 </IconButton>
             </Popover.Trigger>
             <Popover.Content>
@@ -59,7 +61,7 @@ export default function () {
                             ? <button
                                 key={bg}
                                 onClick={() => {
-                                    if (loaded[bg]) dispatch(setBackground(bg))
+                                    if (loaded[bg] || bg === 'default') dispatch(setBackground(bg))
                                 }}
                                 style={{width: 40, height: 40, alignContent: 'center'}}
                             >

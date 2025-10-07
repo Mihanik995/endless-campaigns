@@ -10,10 +10,9 @@ import ErrorHandler from "./ErrorHandler.tsx";
 interface Props {
     campaignId: string;
     isOwner: boolean;
-    requiresApproval: boolean;
 }
 
-export default function ({campaignId, isOwner, requiresApproval}: Props) {
+export default function ({campaignId, isOwner}: Props) {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<Error>()
     const [registers, setRegisters] = useState<CampaignRegister[]>([])
@@ -125,9 +124,10 @@ export default function ({campaignId, isOwner, requiresApproval}: Props) {
                                 </Table.Root>
                             </ScrollArea>
                             : <Container width='100vw'>
-                                <Heading align='center'>No {
-                                    requiresApproval ? 'approved ' : ''
-                                }registrations found.</Heading>
+                                <Heading align='center'>
+                                    To invite players to your campaign, send them
+                                    the campaign link (see above).
+                                </Heading>
                             </Container>
                         }
                         </>

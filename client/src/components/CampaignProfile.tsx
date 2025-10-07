@@ -65,7 +65,6 @@ export default function ({id}: Props) {
                                         <RegisteredPlayers
                                             campaignId={campaign.id}
                                             isOwner={isOwner as boolean}
-                                            requiresApproval={campaign.requiresRegisterApproval}
                                         />
                                     </Tabs.Content>
                                     <Tabs.Content value='periods'>

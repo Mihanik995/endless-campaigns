@@ -1,5 +1,5 @@
 import type {Request, Response} from 'express'
-import type {Campaign} from "../../../generated/prisma";
+import type {Campaign, CampaignRegister, Pairing} from "../../../generated/prisma";
 
 const {Router} = require('express')
 const {PrismaClient} = require('../../../generated/prisma')
@@ -80,9 +80,19 @@ campaignRegisterRouter.put('/:id', verifyToken, async (req: Request, res: Respon
 campaignRegisterRouter.delete('/:id', verifyToken, async (req: Request, res: Response) => {
     const {id} = req.params
     try {
-        dbClient.campaignRegister.delete({where: {id}})
-            .then(() => res.sendStatus(204))
+        const reg: CampaignRegister = await dbClient.campaignRegister.findUnique({where: {id}})
+        const pairingsToDelete: Pairing[] = await dbClient.pairing.findMany({
+            where: {
+                campaignId: reg.campaignId,
+                players: {some: {playerId: reg.playerId}}
+            }
+        });
+        const pairingIds = pairingsToDelete.map(p => p.id);
+        await dbClient.pairing.deleteMany({where: {id: { in: pairingIds }}})
+        await dbClient.campaignRegister.delete({where: {id}})
+        res.sendStatus(204)
     } catch (error) {
+        console.log(error)
         res.status(500).json({error})
     }
 })

@@ -8,6 +8,8 @@ import {useNavigate} from "react-router";
 import ErrorHandler from "../components/ErrorHandler.tsx";
 import type {MissionCreate} from "../types.ts";
 import validateData from "../utils/validators/validateData.ts";
+import WYSIWYGInput from "../components/WYSIWYGInput.tsx";
+import type {Editor} from "@tiptap/react";
 
 type InputElement = HTMLInputElement | HTMLTextAreaElement
 
@@ -43,6 +45,13 @@ export default function () {
         }
     }
 
+    const handleWYSIWYGChange = (name: string, editor: Editor ): void => {
+        setMissionData({
+            ...missionData,
+            [name]: editor.getHTML()
+        })
+    }
+
     return (
         <>
             <Header/>
@@ -64,11 +73,11 @@ export default function () {
                                     value={missionData.narrativeDescription}
                                     onChange={handleChange}
                                 />
-                                <TextAreaInput
+                                <WYSIWYGInput
                                     label='Mission conditions'
                                     name='missionConditions'
                                     value={missionData.missionConditions as string}
-                                    onChange={handleChange}
+                                    onChange={handleWYSIWYGChange}
                                 />
                                 <Separator size='4'/>
                                 <Button onClick={handleSubmit}>

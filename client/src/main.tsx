@@ -12,7 +12,6 @@ import Background from "./components/Background.tsx";
 import ProtectedRoute from "./utils/ProtectedRoute.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 
-import "@radix-ui/themes/styles.css";
 import './index.css'
 import CreateCampaign from "./pages/CreateCampaign.tsx";
 import CampaignPage from "./pages/CampaignPage.tsx";

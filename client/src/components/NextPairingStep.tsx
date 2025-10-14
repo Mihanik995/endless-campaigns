@@ -72,7 +72,12 @@ export default function ({node, pairing, onPass}: Props) {
                         <Separator size='4'/>
                         <Text><Em>{nodeData.narrativeDescription}</Em></Text>
                         <Separator size='4'/>
-                        <Text>{nodeData.missionConditions}</Text>
+                        <Text>
+                            <div
+                                dangerouslySetInnerHTML={{ __html: nodeData.missionConditions}}
+                                className='ProseMirror'
+                            />
+                        </Text>
                     </Flex>
                 </Card>
             </Container>

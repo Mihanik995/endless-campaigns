@@ -60,13 +60,11 @@ body {
 .ProseMirror h1 {
     font-size: 1.5rem;
     font-weight: bold;
-    margin: 1rem 0 0.5rem;
 }
 
 .ProseMirror h2 {
     font-size: 1.25rem;
     font-weight: bold;
-    margin: 1rem 0 0.5rem;
 }
 
 /* Списки */
@@ -99,7 +97,6 @@ body {
     line-height: var(--line-height-3);
     color: var(--gray-12);
     min-height: 120px;
-    padding: var(--space-3);
     outline: none;
     white-space: pre-wrap;
 }

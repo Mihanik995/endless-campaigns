@@ -7,6 +7,8 @@ import axios from "../axios/axiosConfig.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
 import {type Node, useReactFlow} from '@xyflow/react'
 import validateData from "../utils/validators/validateData.ts";
+import WYSIWYGInput from "./WYSIWYGInput.tsx";
+import type {Editor} from "@tiptap/react";
 
 interface Props {
     source: Node
@@ -40,6 +42,13 @@ export default function ({source, startNode = false, open, setOpen}: Props) {
         setNodeData({
             ...nodeData,
             [e.target.name]: e.target.value
+        })
+    }
+
+    const handleWYSIWYGChange = (name: string, editor:Editor) => {
+        setNodeData({
+            ...nodeData,
+            [name]: editor.getHTML()
         })
     }
 
@@ -121,11 +130,11 @@ export default function ({source, startNode = false, open, setOpen}: Props) {
                             value={nodeData.narrativeDescription}
                             onChange={handleChange}
                         />
-                        <TextAreaInput
+                        <WYSIWYGInput
                             label='Mission Conditions'
                             name='missionConditions'
                             value={nodeData.missionConditions}
-                            onChange={handleChange}
+                            onChange={handleWYSIWYGChange}
                         />
                         <Separator size='4'/>
                         {!!error && <ErrorHandler error={error}/>}

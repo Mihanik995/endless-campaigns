@@ -37,7 +37,7 @@ export default function () {
                         throw new Error(`You don't participate in that pairing!`)
                     }
                     setPairing(res.data);
-                    if (res.data.mission?.nodes.length) {
+                    if (res.data.mission?.nodes?.length) {
                         const pairingMissionStartNode = res.data.mission.nodes.find(node => node.isMissionStart)
                         setStartNode(pairingMissionStartNode)
                         const passedNodes = res.data.nodesPassedOnPairing
@@ -57,7 +57,7 @@ export default function () {
         setIsLoading(true)
         axios.post(`/missions/nodes/passed/${startNode?.id}`, {pairingId: pairing.id})
             .then(res => {
-                if (res.status === 201) setNextNode(pairing.mission?.startNode)
+                if (res.status === 201) setNextNode(startNode)
             }).catch(error => setError(error as Error))
             .finally(() => setIsLoading(false))
     }

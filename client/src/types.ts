@@ -104,7 +104,7 @@ export interface Mission {
     title: string
     narrativeDescription: string
     missionConditions?: string
-    nodes: MissionNode[]
+    nodes?: MissionNode[]
 }
 
 export interface MissionNode {

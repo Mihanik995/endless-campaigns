@@ -22,6 +22,8 @@ import ErrorHandler from "./ErrorHandler.tsx";
 import {useNavigate} from "react-router";
 import type {Mission} from "../types.ts";
 import validateData from "../utils/validators/validateData.ts";
+import WYSIWYGInput from "./WYSIWYGInput.tsx";
+import type {Editor} from "@tiptap/react";
 
 interface Props {
     clickable: boolean
@@ -49,6 +51,13 @@ export default function ({clickable, onDelete, mission, owner}: Props) {
         })
     }
 
+    const handleWYSIWYGChange = (name: string, editor: Editor) => {
+        setMissionData({
+            ...missionData,
+            [name]: editor.getHTML()
+        })
+    }
+
     const handleDelete: MouseEventHandler<HTMLButtonElement> = () => {
         axios.delete(`/missions/${missionData.id}`)
             .then((response) => {
@@ -59,6 +68,7 @@ export default function ({clickable, onDelete, mission, owner}: Props) {
     const handleSubmit: MouseEventHandler<HTMLButtonElement> = () => {
         try {
             validateData<Mission>(missionData)
+            delete missionData.nodes
             axios.put(`/missions/${missionData.id}`, missionData)
                 .then((response) => {
                     if (response.status === 200) setEdit(false)
@@ -90,14 +100,12 @@ export default function ({clickable, onDelete, mission, owner}: Props) {
                                     value={missionData.narrativeDescription}
                                     onChange={handleChange}
                                 />
-                                {!!mission.missionConditions &&
-                                    <TextAreaInput
-                                        label='Missionc conditions'
-                                        name='missionConditions'
-                                        value={missionData.missionConditions as string}
-                                        onChange={handleChange}
-                                    />
-                                }
+                                <WYSIWYGInput
+                                    label='Missionc conditions'
+                                    name='missionConditions'
+                                    value={missionData.missionConditions as string}
+                                    onChange={handleWYSIWYGChange}
+                                />
                             </Flex>
                             <Flex direction={{
                                 initial: 'row',
@@ -131,7 +139,12 @@ export default function ({clickable, onDelete, mission, owner}: Props) {
                                 {!!missionData.missionConditions &&
                                     <>
                                         <Separator size='4' my='2'/>
-                                        <Text>{missionData.missionConditions}</Text>
+                                        <Text>
+                                            <div
+                                                dangerouslySetInnerHTML={{__html: missionData.missionConditions}}
+                                                className='ProseMirror'
+                                            />
+                                        </Text>
                                     </>
                                 }
                             </Flex>

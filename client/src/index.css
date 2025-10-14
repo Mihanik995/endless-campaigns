@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import "@radix-ui/themes/styles.css";
+
 
 body {
     margin: 0;
@@ -52,4 +54,61 @@ body {
 
 .leather-light {
     background-image: url("/assets/leather-light-bg.jpg");
+}
+
+/* Заголовки */
+.ProseMirror h1 {
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.ProseMirror h2 {
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+/* Списки */
+.ProseMirror ul {
+    list-style-type: disc;
+    padding-left: 1.5rem;
+    margin: 0.5rem 0;
+}
+
+.ProseMirror ol {
+    list-style-type: decimal;
+    padding-left: 1.5rem;
+    margin: 0.5rem 0;
+}
+
+.ProseMirror li {
+    margin-bottom: 0.25rem;
+}
+
+.ProseMirror blockquote {
+    margin: 1rem 0;
+    padding-left: var(--space-4);
+    border-left: 2px solid var(--gray-6);
+    color: var(--gray-11);
+    font-style: italic;
+}
+/* Общие стили */
+.ProseMirror {
+    font-size: var(--font-size-3);
+    line-height: var(--line-height-3);
+    color: var(--gray-12);
+    min-height: 120px;
+    outline: none;
+    white-space: pre-wrap;
+}
+
+.WYSIWYGWrapper {
+    @apply bg-[var(--gray-1)]/40;
+    padding: 12px;
+    border: 1px solid var(--gray-8);
+    border-radius: 10px;
+}
+
+.focused {
+    border-color: var(--accent-9);
+    box-shadow: 0 0 0 1px var(--accent-9)
 }

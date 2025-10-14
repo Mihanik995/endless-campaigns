@@ -145,7 +145,7 @@ export default function ({open, setOpen}: Props) {
                                                 which represents mission card you've created at the start.
                                             </li>
                                             <li className='my-1'>
-                                                Player follows th path you've created, from one node to another,
+                                                Player follows the path you've created, from one node to another,
                                                 via straight connections between them (backward connections
                                                 still
                                                 doesn't count). It looks like a buttons with options to choose

@@ -58,7 +58,7 @@ export default function () {
                         data: {missionId: res.data.id},
                         type: 'entryPoint'
                     })
-                    for (const missionNode of res.data.nodes) {
+                    if (res.data.nodes) for (const missionNode of res.data.nodes) {
                         uploadedNodes.push({
                             id: missionNode.id,
                             position: {

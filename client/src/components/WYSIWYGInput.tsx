@@ -1,5 +1,5 @@
-import {Button, Card, Flex, IconButton, Separator, Text, Tooltip} from "@radix-ui/themes";
-import {type ReactElement} from "react";
+import {Button, Flex, IconButton, Separator, Text, Tooltip} from "@radix-ui/themes";
+import {type ReactElement, useEffect, useState} from "react";
 import type {Editor} from '@tiptap/react'
 import {EditorContent, useEditor, useEditorState} from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
@@ -152,15 +152,31 @@ export default function ({label, onChange, name, value}: Props): ReactElement {
         onUpdate: ({editor}) => onChange(name, editor)
     })
 
+    const [isFocused, setIsFocused] = useState(false)
+    useEffect(() => {
+        if (!editor) return;
+
+        const handleFocus = () => setIsFocused(true);
+        const handleBlur = () => setIsFocused(false);
+
+        editor.on('focus', handleFocus);
+        editor.on('blur', handleBlur);
+
+        return () => {
+            editor.off('focus', handleFocus);
+            editor.off('blur', handleBlur);
+        };
+    }, [editor])
+
     return (
         <Flex direction='column' gap='1' as='div'>
             <Text>{label}:</Text>
-            <Card>
+            <div className={`WYSIWYGWrapper ${isFocused ? 'focused' : ''}`}>
                 <Flex direction='column' gap='3'>
                     <MenuBar editor={editor}/>
                     <EditorContent editor={editor}/>
                 </Flex>
-            </Card>
+            </div>
         </Flex>
     )
 }

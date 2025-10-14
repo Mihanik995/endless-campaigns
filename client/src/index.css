@@ -100,3 +100,15 @@ body {
     outline: none;
     white-space: pre-wrap;
 }
+
+.WYSIWYGWrapper {
+    @apply bg-[var(--gray-1)]/40;
+    padding: 12px;
+    border: 1px solid var(--gray-8);
+    border-radius: 10px;
+}
+
+.focused {
+    border-color: var(--accent-9);
+    box-shadow: 0 0 0 1px var(--accent-9)
+}

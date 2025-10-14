@@ -1,5 +1,5 @@
 import type {Question} from "../types.ts";
-import {Button, Card, Flex, Separator, Text, TextField} from "@radix-ui/themes";
+import {Box, Button, Card, Flex, Separator, Text, TextField} from "@radix-ui/themes";
 import {type MouseEventHandler, useState} from "react";
 import axios from "../axios/axiosConfig.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
@@ -54,10 +54,12 @@ export default function ({question, isMissionOwner, onChange}: Props) {
                     ? <>
                         <Separator size='4' my='2'/>
                         <Flex gap='3'>
-                            <TextField.Root
-                                value={answer}
-                                onChange={(e) => setAnswer(e.target.value)}
-                            />
+                            <Box width='100%'>
+                                <TextField.Root
+                                    value={answer}
+                                    onChange={(e) => setAnswer(e.target.value)}
+                                />
+                            </Box>
                             <Button onClick={handleAnswer}>Answer</Button>
                             <Button onClick={handleDelete} color='red'>Delete</Button>
                         </Flex>

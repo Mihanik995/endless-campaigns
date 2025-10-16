@@ -1,7 +1,7 @@
 import {Card, Dialog, Flex, Heading, IconButton, Link, Separator, Strong, Text} from "@radix-ui/themes";
 import SelectInput from "./SelectInput.tsx";
 import {type UIEventHandler, useState} from "react";
-import {ArrowUpIcon, CheckIcon, Cross2Icon, ExitIcon, PlusIcon} from "@radix-ui/react-icons";
+import {ArrowUpIcon, CheckIcon, ExitIcon, PlusIcon} from "@radix-ui/react-icons";
 
 interface Props {
     open: boolean;
@@ -189,12 +189,14 @@ export default function ({open, setOpen}: Props) {
                                                 <IconButton size='1' color='grass'>
                                                     <CheckIcon/>
                                                 </IconButton>
-                                                {' '}to submit the selection. To delete the player selected
-                                                previously, click the{' '}
-                                                <IconButton size='1' color='red' radius='full'>
-                                                    <Cross2Icon/>
-                                                </IconButton>
-                                                {' '}.
+                                                {' '}to submit the selection.
+                                            </li>
+                                            <li className='my-1'>
+                                                Each player can also get its personal mission. You can use
+                                                such a tool to create asymmetric games with unique agenda for
+                                                some players. Note that such a mission should be created first,
+                                                and even if every player would have its personal mission, the
+                                                general pairing mission still should be assigned.
                                             </li>
                                         </ul>
                                     </li>

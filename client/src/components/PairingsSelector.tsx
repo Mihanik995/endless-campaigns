@@ -34,6 +34,7 @@ export default function () {
                                     <PairingCard
                                         key={pairing.pairing.id}
                                         pairing={pairing.pairing}
+                                        personalMission={pairing.personalMission}
                                     />
                                 ))}
                                 </>

@@ -1,7 +1,7 @@
 import Header from "../components/Header.tsx";
 import {type MouseEventHandler, useEffect, useState} from "react";
 import {useParams} from "react-router";
-import type {Mission, MissionNode, Pairing, PlayersOnPairings} from "../types.ts";
+import type {Mission, MissionNode, NodesPassedOnPairing, Pairing, PlayersOnPairings} from "../types.ts";
 import axios from "../axios/axiosConfig.ts";
 import {useAppSelector} from "../app/hooks.ts";
 import {selectAuth} from "../app/features/auth/authSlice.ts";
@@ -20,6 +20,7 @@ export default function () {
         played: false, players: [], winners: [], resultsApproved: false,
         resultsRejected: false, nodesPassedOnPairing: []
     })
+    const [mission, setMission] = useState<Mission>()
     const [startNode, setStartNode] = useState<MissionNode>()
     const [nextNode, setNextNode] = useState<MissionNode>()
     const [isLoading, setIsLoading] = useState(false)
@@ -37,10 +38,14 @@ export default function () {
                         throw new Error(`You don't participate in that pairing!`)
                     }
                     setPairing(res.data);
-                    if (res.data.mission?.nodes?.length) {
-                        const pairingMissionStartNode = res.data.mission.nodes.find(node => node.isMissionStart)
+                    const mission = res.data.players
+                        .find(player => player.playerId === auth.id)?.personalMission || res.data.mission
+                    setMission(mission)
+                    if (mission?.nodes?.length) {
+                        const pairingMissionStartNode = mission.nodes.find(node => node.isMissionStart)
                         setStartNode(pairingMissionStartNode)
-                        const passedNodes = res.data.nodesPassedOnPairing
+                        const passedNodes: NodesPassedOnPairing[] = res.data.players
+                            .find(player => player.playerId === auth.id)?.nodesPassedOnPairing
                         if (passedNodes
                             .some(passedNode => passedNode.nodeId === pairingMissionStartNode?.id)) {
                             setNextNode(pairingMissionStartNode);
@@ -72,12 +77,12 @@ export default function () {
                         : !!error
                             ? <ErrorHandler error={error}/>
                             : <Flex direction='column' align='center' gap='2'>
-                                {pairing.mission &&
+                                {mission &&
                                     <MissionCard
                                         clickable={false}
                                         onDelete={() => {
                                         }}
-                                        mission={pairing.mission as Mission}
+                                        mission={mission as Mission}
                                         owner={false}
                                     />
                                 }

@@ -89,6 +89,8 @@ model Mission {
   question             Question[]
   missionConditions    String?
   nodes                MissionNode[]
+
+  playersOnPairings PlayersOnPairings[]
 }
 
 model MissionNode {
@@ -144,10 +146,12 @@ model Pairing {
 }
 
 model PlayersOnPairings {
-  player    User    @relation(fields: [playerId], references: [id], onDelete: Cascade)
-  playerId  String
-  pairing   Pairing @relation(fields: [pairingId], references: [id], onDelete: Cascade)
-  pairingId String
+  player            User     @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  playerId          String
+  pairing           Pairing  @relation(fields: [pairingId], references: [id], onDelete: Cascade)
+  pairingId         String
+  personalMission   Mission? @relation(fields: [personalMissionId], references: [id], onDelete: SetNull)
+  personalMissionId String?
 
   @@id([pairingId, playerId])
 }

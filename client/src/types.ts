@@ -216,6 +216,8 @@ export interface PlayersOnPairings {
     playerId: string
     pairing: Pairing
     pairingId: string
+    personalMission?: Mission
+    personalMissionId?: string
 }
 
 export interface PlayerRegister {

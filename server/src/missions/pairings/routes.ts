@@ -61,7 +61,12 @@ pairingsRouter.get('/:id', verifyToken, async (req: Request, res: Response) => {
                 mission: {include: {nodes: true}},
                 campaign: {include: {campaignRegisters: true}},
                 nodesPassedOnPairing: true,
-                players: {include: {player: {select: {id: true, username: true, email: true}}}},
+                players: {
+                    include: {
+                        player: {select: {id: true, username: true, email: true}},
+                        personalMission: {include: {nodes: true}},
+                    }
+                },
                 winners: {include: {player: {select: {id: true, username: true, email: true}}}}
             }
         })
@@ -128,7 +133,8 @@ pairingsRouter.get('/', verifyToken, async (req: Request, res: Response) => {
                         mission: true,
                         players: {include: {player: {select: {id: true, username: true, email: true}}}}
                     }
-                }
+                },
+                personalMission: true
             },
         })
         if (!pairing) return res.status(404).json({error: 'No pairing'})

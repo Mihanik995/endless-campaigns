@@ -1,4 +1,4 @@
-import {Button, Flex, IconButton, Table, Text} from "@radix-ui/themes";
+import {Button, Dialog, Flex, IconButton, Text} from "@radix-ui/themes";
 import {type MouseEventHandler, useState} from "react";
 import {CheckIcon, Cross2Icon, PlusIcon} from "@radix-ui/react-icons";
 import axios from "../axios/axiosConfig.ts";
@@ -6,15 +6,18 @@ import type {CampaignPeriod, Mission, PairingCreate, PlayerRegister} from "../ty
 import validateData from "../utils/validators/validateData.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
 import SelectInput from "./SelectInput.tsx";
+import NewPairingPlayer from "./NewPairingPlayer.tsx";
 
 interface Props {
+    open: boolean;
+    openChange: (open: boolean) => void;
     playerRegisters: PlayerRegister[],
     missions: Mission[],
     period: CampaignPeriod
     onChange: () => void
 }
 
-export default function ({playerRegisters, period, onChange, missions}: Props) {
+export default function ({playerRegisters, period, onChange, missions, open, openChange}: Props) {
     const [playersList, setPlayersList] = useState<PlayerRegister[]>([])
     const [playersOptions, setPlayersOptions] = useState<PlayerRegister[]>(playerRegisters)
     const [mission, setMission] = useState<Mission>()
@@ -32,6 +35,12 @@ export default function ({playerRegisters, period, onChange, missions}: Props) {
         setAddPlayer(!addPlayer)
     }
 
+    const handleAddCustomMission = (playerId: string, missionId: string) => {
+        setPlayersList(playersList.map(player => player.playerId === playerId
+            ? {...player, personalMissionId: missionId}
+            : player))
+    }
+
     const handleDelete = (id: string) => {
         setPlayersList(playersList.filter(player => player.id !== id))
         setPlayersOptions([
@@ -47,21 +56,30 @@ export default function ({playerRegisters, period, onChange, missions}: Props) {
                 campaignId: period.campaignId,
                 periodId: period.id,
                 missionId: mission.id,
-                playerIds: playersList.map(player => player.playerId)
+                players: playersList.map(player => {
+                    return {
+                        playerId: player.playerId,
+                        personalMissionId: player.personalMissionId
+                    }
+                })
             }
             validateData<PairingCreate>(data)
             axios.post('/missions/pairings', data).then(res => {
                 if (res.status === 201) onChange()
             })
         } catch (error) {
+            console.log(error)
             setError(error as Error)
         }
     }
 
     return (
-        <Table.Row>
-            <Table.Cell colSpan={2}>
-                <Flex direction='column' gap='2'>
+        <Dialog.Root open={open} onOpenChange={openChange}>
+            <Dialog.Content aria-describedby={undefined}>
+                <Dialog.Title>
+                    New Pairing
+                </Dialog.Title>
+                <Flex direction='column' gap='3'>
                     <SelectInput
                         size='2'
                         placeholder={'Choose a mission'}
@@ -72,25 +90,24 @@ export default function ({playerRegisters, period, onChange, missions}: Props) {
                             return acc
                         }, {} as Record<string, string>)}
                     />
-                    <Flex gap='2' align='center'>
+                    <Flex direction='column' gap='1'>
                         Players:
                         {!playersList.length && !playersOptions.length
                             ? <Text>no players available.</Text>
                             : playersList.map((player: PlayerRegister) => (
-                                <Flex gap='1' align='center' key={player.id}>
-                                    {player.playerUsername}
-                                    <IconButton
-                                        color='red'
-                                        size='1'
-                                        radius='full'
-                                        onClick={() => handleDelete(player.id)}
-                                    >
-                                        <Cross2Icon/>
-                                    </IconButton>
-                                </Flex>
-                            ))}
+                                <NewPairingPlayer
+                                    key={player.id}
+                                    player={player}
+                                    handleDelete={handleDelete}
+                                    missions={missions}
+                                    setCustomMission={handleAddCustomMission}
+                                />
+                            ))
+
+                        }
                         {!!playersOptions.length && <Flex gap='1' align='center'>
                             <IconButton
+                                size='1'
                                 onClick={handleAdd}
                                 color={addPlayer && playerToAdd.length ? 'grass' : undefined}
                             >
@@ -113,14 +130,17 @@ export default function ({playerRegisters, period, onChange, missions}: Props) {
                             />}
                         </Flex>}
                     </Flex>
-                </Flex>
-            </Table.Cell>
-            <Table.Cell>
-                <Flex direction='column' gap='2' align='start'>
                     {!!error && <ErrorHandler error={error}/>}
-                    <Button color='grass' onClick={handleSubmit}>Submit</Button>
+                    <Flex gap='2'>
+                        <Dialog.Close>
+                            <Button>
+                                Close
+                            </Button>
+                        </Dialog.Close>
+                        <Button color='grass' onClick={handleSubmit}>Submit</Button>
+                    </Flex>
                 </Flex>
-            </Table.Cell>
-        </Table.Row>
+            </Dialog.Content>
+        </Dialog.Root>
     )
 }

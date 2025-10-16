@@ -202,7 +202,11 @@ export interface PairingCreate {
     campaignId: string
     periodId: string
     missionId: string
-    playerIds: string[]
+    players: {
+        [key: string]: any
+
+        playerId: string
+    }[]
 }
 
 export interface PlayersOnPairings {
@@ -215,11 +219,12 @@ export interface PlayersOnPairings {
 }
 
 export interface PlayerRegister {
-    [key: string]: string
+    [key: string]: any
 
     id: string;
     playerId: string;
     playerUsername: string;
+    personalMissionId?: string
 }
 
 interface WinnersOnPairings {

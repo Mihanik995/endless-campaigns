@@ -7,19 +7,19 @@ interface Props {
     player: PlayerRegister
     handleDelete: (id: string) => void
     missions: Mission[]
-    setCustomMission: (playerId: string, missionId: string) => void
+    setCustomMission: (playerId: string, missionId?: string) => void
 }
 
 export default function ({player, handleDelete, missions, setCustomMission}: Props) {
     const [addPersonalMission, setAddPersonalMission] = useState(false)
-    const [personalMissionToAdd, setPersonalMissionToAdd] = useState('')
+    const [personalMissionToAdd, setPersonalMissionToAdd] = useState(player.personalMissionId)
 
     return <Flex gap='1' align='center' key={player.id}>
         - {player.playerUsername} {!!player.personalMissionId &&
         `(${missions.find(mission => mission.id === player.personalMissionId)?.title})`}
         {addPersonalMission
             ? <>
-                <Button
+                {!!personalMissionToAdd && <Button
                     color='grass'
                     size='1'
                     onClick={() => {
@@ -29,6 +29,7 @@ export default function ({player, handleDelete, missions, setCustomMission}: Pro
                 >
                     Add
                 </Button>
+                }
                 <Button
                     size='1'
                     onClick={() => setAddPersonalMission(false)}
@@ -37,7 +38,7 @@ export default function ({player, handleDelete, missions, setCustomMission}: Pro
                 </Button>
                 <SelectInput
                     size='2'
-                    value={personalMissionToAdd}
+                    value={personalMissionToAdd || ''}
                     onValueChange={setPersonalMissionToAdd}
                     options={missions.reduce((acc, mission) => {
                         acc[mission.id] = mission.title
@@ -53,12 +54,20 @@ export default function ({player, handleDelete, missions, setCustomMission}: Pro
                 >
                     Delete
                 </Button>
-                <Button
-                    size='1'
-                    onClick={() => setAddPersonalMission(true)}
-                >
-                    Add personal mission
-                </Button>
+                {player.personalMissionId
+                    ? <Button
+                        size='1'
+                        onClick={() => setCustomMission(player.playerId, undefined)}
+                    >
+                        Remove personal mission
+                    </Button>
+                    : <Button
+                        size='1'
+                        onClick={() => setAddPersonalMission(true)}
+                    >
+                        Add personal mission
+                    </Button>
+                }
             </>}
     </Flex>
 }

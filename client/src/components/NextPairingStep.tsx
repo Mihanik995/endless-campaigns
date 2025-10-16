@@ -5,6 +5,8 @@ import {type MouseEventHandler, useEffect, useState} from "react";
 import axios from "../axios/axiosConfig.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
 import NextPairingStep from "./NextPairingStep.tsx";
+import {useAppSelector} from "../app/hooks.ts";
+import {selectAuth} from "../app/features/auth/authSlice.ts";
 
 interface Props {
     node: MissionNode
@@ -13,6 +15,8 @@ interface Props {
 }
 
 export default function ({node, pairing, onPass}: Props) {
+    const auth = useAppSelector(selectAuth);
+
     const [nodeData, setNodeData] = useState<MissionNode>()
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<Error>()
@@ -24,9 +28,10 @@ export default function ({node, pairing, onPass}: Props) {
                 if (res.status === 200) {
                     setNodeData(res.data)
                     for (const nodeLink of res.data.nextLinks) {
-                        if (pairing.nodesPassedOnPairing
+                        if (pairing.players
+                            .find(player => player.playerId === auth.id)?.nodesPassedOnPairing
                             .map(node => node.nodeId)
-                            .includes(nodeLink.toId)){
+                            .includes(nodeLink.toId)) {
                             setNextNode(nodeLink.to)
                             if (onPass) onPass()
                             break
@@ -54,10 +59,10 @@ export default function ({node, pairing, onPass}: Props) {
         e.preventDefault()
         setIsLoading(true)
         axios.post(`/missions/nodes/cancel-pass/${nextNode?.id}`, {pairingId: pairing.id})
-        .then(res => {
-            if (res.status === 204) setNextNode(undefined)
-        }).catch(error => setError(error as Error))
-        .finally(() => setIsLoading(false))
+            .then(res => {
+                if (res.status === 204) setNextNode(undefined)
+            }).catch(error => setError(error as Error))
+            .finally(() => setIsLoading(false))
     }
 
     return isLoading
@@ -74,7 +79,7 @@ export default function ({node, pairing, onPass}: Props) {
                         <Separator size='4'/>
                         <Text>
                             <div
-                                dangerouslySetInnerHTML={{ __html: nodeData.missionConditions}}
+                                dangerouslySetInnerHTML={{__html: nodeData.missionConditions}}
                                 className='ProseMirror'
                             />
                         </Text>

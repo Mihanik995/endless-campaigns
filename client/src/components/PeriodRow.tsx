@@ -29,7 +29,9 @@ export default function ({isOwner, index, onChange, period, campaignPlayers, mis
 
         axios.get(`/missions/pairings/period/${period.id}`)
             .then(res => {
-                if (res.status === 200) setPairings(res.data)
+                if (res.status === 200) {
+                    setPairings(res.data)
+                }
             }).catch(err => setPairingsEError(err as Error))
             .finally(() => setIsLoading(false))
     }, [])
@@ -118,16 +120,6 @@ export default function ({isOwner, index, onChange, period, campaignPlayers, mis
                         </Flex>
                     </Table.Cell>}
             </Table.Row>
-            {addPairing &&
-                <PairingCreateDialog
-                    open={addPairing}
-                    openChange={(open) => setAddPairing(open)}
-                    playerRegisters={campaignPlayers}
-                    period={period}
-                    onChange={onChange}
-                    missions={missions}
-                />
-            }
             {unfold
                 ? isLoading
                     ? <Table.Row>
@@ -155,6 +147,14 @@ export default function ({isOwner, index, onChange, period, campaignPlayers, mis
                             </Table.Cell>
                         </Table.Row>
                 : <></>}
+            <PairingCreateDialog
+                open={addPairing}
+                openChange={(open) => setAddPairing(open)}
+                playerRegisters={campaignPlayers}
+                period={period}
+                onChange={onChange}
+                missions={missions}
+            />
         </>
     )
 }

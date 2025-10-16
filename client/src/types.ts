@@ -193,7 +193,6 @@ export interface Pairing {
     reportLink?: string
     resultsRejected: boolean
     rejectMessage?: string
-    nodesPassedOnPairing: NodesPassedOnPairing[]
 }
 
 export interface PairingCreate {
@@ -218,6 +217,7 @@ export interface PlayersOnPairings {
     pairingId: string
     personalMission?: Mission
     personalMissionId?: string
+    nodesPassedOnPairing: NodesPassedOnPairing[]
 }
 
 export interface PlayerRegister {
@@ -239,11 +239,10 @@ interface WinnersOnPairings {
 }
 
 export interface NodesPassedOnPairing {
-    node?: MissionNode
+    node: MissionNode
     nodeId: string
-    pairing?: Pairing
     pairingId: string
-    player?: User
+    playerOnPairing: PlayersOnPairings
     playerId: string
 }
 

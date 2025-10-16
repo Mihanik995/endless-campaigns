@@ -35,7 +35,7 @@ export default function ({playerRegisters, period, onChange, missions, open, ope
         setAddPlayer(!addPlayer)
     }
 
-    const handleAddCustomMission = (playerId: string, missionId: string) => {
+    const handleAddCustomMission = (playerId: string, missionId?: string) => {
         setPlayersList(playersList.map(player => player.playerId === playerId
             ? {...player, personalMissionId: missionId}
             : player))

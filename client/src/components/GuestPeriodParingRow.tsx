@@ -14,9 +14,9 @@ export default function ({pairing}: Props) {
             <Table.Cell>
                 <Link
                     href=''
-                    onClick={() => navigate(`/missions/${pairing.simpleMission?.id}`)}
+                    onClick={() => navigate(`/missions/${pairing.mission?.id}`)}
                 >
-                    {pairing.simpleMission?.title}
+                    {pairing.mission?.title}
                 </Link>
             </Table.Cell>
             <Table.Cell minWidth='150px'>

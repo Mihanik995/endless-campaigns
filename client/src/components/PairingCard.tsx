@@ -1,14 +1,16 @@
 import {Button, Card, Container, DataList, Flex, Link, Separator, Text} from "@radix-ui/themes";
 import {useNavigate} from "react-router";
-import type {CampaignRegister, Pairing} from "../types.ts";
+import type {CampaignRegister, Mission, Pairing} from "../types.ts";
 
 interface Props {
     pairing: Pairing
+    personalMission?: Mission
 }
 
-export default function ({pairing}: Props) {
+export default function ({pairing, personalMission}: Props) {
     const navigate = useNavigate()
 
+    const mission = personalMission || pairing.mission
     const campaignRegisters = pairing.campaign?.campaignRegisters as CampaignRegister[];
     const pairingPlayersIds = pairing.players.map(player => player.playerId)
     const pairingPlayersRegs = campaignRegisters
@@ -28,9 +30,9 @@ export default function ({pairing}: Props) {
                                 Mission:
                                 <Link
                                     href=''
-                                    onClick={() => navigate(`/missions/${pairing.mission?.id}`)}
+                                    onClick={() => navigate(`/missions/${mission?.id}`)}
                                 >
-                                    {pairing.mission?.title}
+                                    {mission?.title}
                                 </Link>
                             </Flex>
                         </Text>

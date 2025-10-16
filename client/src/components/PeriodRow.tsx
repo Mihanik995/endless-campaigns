@@ -2,7 +2,7 @@ import {Button, Flex, Spinner, Table, TextField} from "@radix-ui/themes";
 import {type ChangeEvent, type MouseEventHandler, useEffect, useState} from "react";
 import axios from "../axios/axiosConfig.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
-import PairingCreateRow from "./PairingCreateRow.tsx";
+import PairingCreateDialog from "./PairingCreateDialog.tsx";
 import type {CampaignPeriod, Pairing, PlayerRegister, Mission} from "../types.ts";
 import PeriodPairings from "./PeriodPairings.tsx";
 import {TriangleDownIcon, TriangleUpIcon} from "@radix-ui/react-icons";
@@ -29,7 +29,9 @@ export default function ({isOwner, index, onChange, period, campaignPlayers, mis
 
         axios.get(`/missions/pairings/period/${period.id}`)
             .then(res => {
-                if (res.status === 200) setPairings(res.data)
+                if (res.status === 200) {
+                    setPairings(res.data)
+                }
             }).catch(err => setPairingsEError(err as Error))
             .finally(() => setIsLoading(false))
     }, [])
@@ -106,7 +108,7 @@ export default function ({isOwner, index, onChange, period, campaignPlayers, mis
                                 ? <>
                                     <Button onClick={() => setEdit(true)}>Edit</Button>
                                     <Button onClick={() => setAddPairing(!addPairing)}>
-                                        {addPairing ? 'Cancel' : 'Add pairing'}
+                                        Add pairing
                                     </Button>
                                     <Button color='red' onClick={handleDelete}>Delete</Button>
                                 </>
@@ -118,14 +120,6 @@ export default function ({isOwner, index, onChange, period, campaignPlayers, mis
                         </Flex>
                     </Table.Cell>}
             </Table.Row>
-            {addPairing &&
-                <PairingCreateRow
-                    playerRegisters={campaignPlayers}
-                    period={period}
-                    onChange={onChange}
-                    missions={missions}
-                />
-            }
             {unfold
                 ? isLoading
                     ? <Table.Row>
@@ -153,6 +147,14 @@ export default function ({isOwner, index, onChange, period, campaignPlayers, mis
                             </Table.Cell>
                         </Table.Row>
                 : <></>}
+            <PairingCreateDialog
+                open={addPairing}
+                openChange={(open) => setAddPairing(open)}
+                playerRegisters={campaignPlayers}
+                period={period}
+                onChange={onChange}
+                missions={missions}
+            />
         </>
     )
 }

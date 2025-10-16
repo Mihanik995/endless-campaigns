@@ -1,7 +1,7 @@
 import Header from "../components/Header.tsx";
 import {type MouseEventHandler, useEffect, useState} from "react";
 import {useParams} from "react-router";
-import type {Mission, MissionNode, NodesPassedOnPairing, Pairing, PlayersOnPairings} from "../types.ts";
+import type {Mission, MissionNode, Pairing, PlayersOnPairings} from "../types.ts";
 import axios from "../axios/axiosConfig.ts";
 import {useAppSelector} from "../app/hooks.ts";
 import {selectAuth} from "../app/features/auth/authSlice.ts";
@@ -44,10 +44,10 @@ export default function () {
                     if (mission?.nodes?.length) {
                         const pairingMissionStartNode = mission.nodes.find(node => node.isMissionStart)
                         setStartNode(pairingMissionStartNode)
-                        const passedNodes: NodesPassedOnPairing[] = res.data.players
+                        const passedNodes = res.data.players
                             .find(player => player.playerId === auth.id)?.nodesPassedOnPairing
                         if (passedNodes
-                            .some(passedNode => passedNode.nodeId === pairingMissionStartNode?.id)) {
+                            ?.some(passedNode => passedNode.nodeId === pairingMissionStartNode?.id)) {
                             setNextNode(pairingMissionStartNode);
                         }
                     }

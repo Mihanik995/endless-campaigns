@@ -23,8 +23,8 @@ export default function ({label, name, control}: Props): ReactElement {
                                 name={name}
                                 value={field.value}
                                 onChange={field.onChange}
+                                onBlur={field.onBlur}
                                 size='3'
-                                variant='soft'
                                 color={fieldState.error ? 'red' : undefined}
                             />
                             {!!fieldState.error &&

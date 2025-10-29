@@ -38,7 +38,6 @@ export default function ({label, name, control, icon, type, placeholder, require
                                     onBlur={field.onBlur}
                                     size='3'
                                     placeholder={placeholder}
-                                    variant='soft'
                                     color={fieldState.error ? 'red' : undefined}
                                 >
                                     {!!icon &&
@@ -48,7 +47,7 @@ export default function ({label, name, control, icon, type, placeholder, require
                                     }
                                 </TextField.Root>
                                 {!!fieldState.error &&
-                                    <Text size='1' color='red' align='right'>{fieldState.error.message}</Text>}
+                                    <Text size='1' color='red'>{fieldState.error.message}</Text>}
                             </Flex>
                         }
                     />

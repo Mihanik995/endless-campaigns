@@ -29,7 +29,7 @@ export default function ({label, name, control, options, placeholder, hint, size
                             size={size || '3'}
                         >
                             <Select.Trigger placeholder={placeholder}/>
-                            <Select.Content variant='soft' color={fieldState.error ? 'red' : undefined}>
+                            <Select.Content onBlur={field.onBlur} color={fieldState.error ? 'red' : undefined}>
                                 {Object.entries(options).map(([key, value], index) => (
                                     <Select.Item key={index} value={key}>{value}</Select.Item>
                                 ))}

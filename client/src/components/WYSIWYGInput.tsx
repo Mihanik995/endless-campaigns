@@ -14,6 +14,8 @@ import {
     UnderlineIcon
 } from "@radix-ui/react-icons";
 import {type Control, Controller} from "react-hook-form";
+import {useAppSelector} from "../app/hooks.ts";
+import {selectTheme} from "../app/features/theme/themeSlice.ts";
 
 const extensions = [TextStyleKit, StarterKit]
 
@@ -147,6 +149,7 @@ interface Props {
 
 export default function ({label, name, control}: Props): ReactElement {
     const [isFocused, setIsFocused] = useState(false)
+    const theme = useAppSelector(selectTheme)
 
     return (
         <Flex direction="column" gap="1" as="div">
@@ -154,7 +157,13 @@ export default function ({label, name, control}: Props): ReactElement {
             <Controller
                 name={name}
                 control={control}
-                render={({field}) => {
+                rules={{
+                    validate: (value) => {
+                        const stripped = value.replace(/<[^>]+>/g, '').trim();
+                        return stripped.length > 0 || 'This field is required!';
+                    },
+                }}
+                render={({field, fieldState}) => {
                     const editor = useEditor({
                         extensions,
                         content: field.value,
@@ -168,7 +177,10 @@ export default function ({label, name, control}: Props): ReactElement {
                         if (!editor) return;
 
                         const handleFocus = () => setIsFocused(true);
-                        const handleBlur = () => setIsFocused(false);
+                        const handleBlur = () => {
+                            setIsFocused(false)
+                            field.onBlur()
+                        };
 
                         editor.on('focus', handleFocus);
                         editor.on('blur', handleBlur);
@@ -180,12 +192,20 @@ export default function ({label, name, control}: Props): ReactElement {
                     }, [editor]);
 
                     return (
-                        <div className={`WYSIWYGWrapper ${isFocused ? 'focused' : ''}`}>
-                            <Flex direction="column" gap="3">
-                                {editor && <MenuBar editor={editor}/>}
-                                <EditorContent editor={editor}/>
-                            </Flex>
-                        </div>
+                        <>
+                            <div className={`WYSIWYGWrapper ${theme.theme}-bg ${isFocused
+                                ? fieldState.error
+                                    ? 'focusedError'
+                                    : 'focused'
+                                : ''}`}>
+                                <Flex direction="column" gap="3">
+                                    {editor && <MenuBar editor={editor}/>}
+                                    <EditorContent editor={editor}/>
+                                </Flex>
+                            </div>
+                            {fieldState.error &&
+                                <Text size='1' color='red'>{fieldState.error.message}</Text>}
+                        </>
                     );
                 }}
             />

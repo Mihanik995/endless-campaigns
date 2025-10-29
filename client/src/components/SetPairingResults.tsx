@@ -1,44 +1,42 @@
-import {Button, Callout, CheckboxCards, Flex, Heading, IconButton, Popover, Spinner, Text} from "@radix-ui/themes";
+import {Button, Callout, Flex, Heading, IconButton, Popover, Spinner, Text} from "@radix-ui/themes";
 import type {CampaignRegister, Pairing} from "../types.ts";
 import {InfoCircledIcon, QuestionMarkIcon} from "@radix-ui/react-icons";
 import TextInput from "./TextInput.tsx";
 import {useNavigate} from "react-router";
-import {type MouseEventHandler, useState} from "react";
-import validateString from "../utils/validators/validateString.ts";
+import {useState} from "react";
 import axios from "../axios/axiosConfig.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
+import {type SubmitHandler, useForm} from "react-hook-form";
+import CheckManyInput from "./CheckManyInput.tsx";
 
 interface Props {
     pairing: Pairing;
 }
 
+interface PairingResults {
+    winners: string[]
+    reportLink?: string
+}
+
 export default function ({pairing}: Props) {
-    const [winners, setWinners] = useState<string[]>([])
-    const [reportLink, setReportLink] = useState<string>("")
+    const {control, handleSubmit} = useForm<PairingResults>({
+        defaultValues: {winners: []},
+        mode: "onBlur"
+    })
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<Error>()
 
-    const handleClick = (value: string) => {
-        winners.includes(value)
-            ? setWinners(winners.filter(id => id !== value))
-            : setWinners([...winners, value]);
+    const navigate = useNavigate()
+    const onSubmit: SubmitHandler<PairingResults> = (data) => {
+        setIsLoading(true)
+        axios.post(`/missions/pairings/${pairing.id}/set-winners`, data)
+            .then(res => {
+                if (res.status === 200) navigate('/dashboard')
+            })
+            .catch((error) => setError(error as Error))
+            .finally(() => setIsLoading(false))
     }
 
-    const navigate = useNavigate()
-    const handleSubmit: MouseEventHandler<HTMLButtonElement> = () => {
-        setIsLoading(true)
-        try {
-            if (pairing.campaign?.requiresPairingReport) validateString('Report link', reportLink)
-            axios.post(`/missions/pairings/${pairing.id}/set-winners`, {winners, reportLink})
-                .then(res => {
-                    if (res.status === 200) navigate('/dashboard')
-                })
-        } catch (error) {
-            setError(error as Error)
-        } finally {
-            setIsLoading(false)
-        }
-    }
 
     return isLoading
         ? <Spinner size='3'/>
@@ -86,47 +84,28 @@ export default function ({pairing}: Props) {
                 }
                 <Flex direction='column' gap='2'>
                     <Text weight='medium' size='4'>Choose the winner(s):</Text>
-                    <CheckboxCards.Root
-                        defaultValue={winners}
-                        columns={{
-                            initial: "1",
-                            sm: `${(pairing?.players.length as number) < 10
-                                ? pairing?.players.length
-                                : 10}`
-                        }}>
-                        {pairing?.players.map(player => (
-                            <CheckboxCards.Item
-                                key={player.playerId}
-                                value={player.playerId}
-                                onClick={() => handleClick(player.playerId)}
-                            >
-                                <Flex direction="column" width="100%">
-                                    <Text weight="bold">
-                                        {player.player.username}
-                                    </Text>
-                                    <Text>
-                                        {(pairing?.campaign?.campaignRegisters?.find(
-                                            reg => reg.playerId === player.playerId
-                                        ) as CampaignRegister)
-                                            .formationName}
-
-                                    </Text>
-                                </Flex>
-                            </CheckboxCards.Item>
-                        ))}
-                    </CheckboxCards.Root>
+                    <CheckManyInput
+                        name='winners'
+                        control={control}
+                        values={pairing.players.map((player) => {
+                            return {
+                                value: player.playerId,
+                                title: player.player.username,
+                                details: (pairing?.campaign?.campaignRegisters
+                                    ?.find(reg => reg.playerId === player.playerId) as CampaignRegister)
+                                    .formationName
+                            }
+                        })}
+                    />
                     {pairing.campaign?.requiresPairingReport &&
                         <TextInput
                             label='Report link'
-                            name='rosterLink'
-                            value={reportLink}
-                            onChange={
-                                (e) => setReportLink(e.target.value)
-                            }
+                            name='reportLink'
+                            control={control}
                         />
                     }
                     <Flex gap='3' align='center'>
-                        <Button size='3' onClick={handleSubmit}>Submit</Button>
+                        <Button size='3' onClick={handleSubmit(onSubmit)}>Submit</Button>
                         <Popover.Root>
                             <Popover.Trigger>
                                 <IconButton radius='full' variant='outline'>

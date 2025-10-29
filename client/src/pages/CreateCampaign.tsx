@@ -1,6 +1,6 @@
 import Header from "../components/Header.tsx";
 import {Button, Card, Container, Flex, Grid, Heading, Separator, Spinner} from "@radix-ui/themes";
-import {type ChangeEventHandler, type MouseEventHandler, useState} from "react";
+import {useState} from "react";
 import TextInput from "../components/TextInput.tsx";
 import TextAreaInput from "../components/TextAreaInput.tsx";
 import axios from "../axios/axiosConfig.ts";
@@ -8,45 +8,25 @@ import {useNavigate} from "react-router";
 import CheckInput from "../components/CheckInput.tsx";
 import ErrorHandler from "../components/ErrorHandler.tsx";
 import type {CampaignCreate} from "../types.ts";
-import validateData from "../utils/validators/validateData.ts";
-
-type InputElement = HTMLInputElement | HTMLTextAreaElement
+import {type SubmitHandler, useForm} from "react-hook-form";
 
 export default function () {
-    const [campaignData, setCampaignData] = useState<CampaignCreate>({
-        title: '',
-        description: '',
-        regulations: '',
-        dateStart: '',
-        dateEnd: '',
-        requiresRegisterApproval: false,
-        requiresPairingReport: false,
-        requiresPairingResultsApproval: false,
+    const {control, handleSubmit, watch} = useForm<CampaignCreate>({
+        defaultValues: {
+            requiresPairingReport: false,
+            requiresPairingResultsApproval: false,
+            requiresRegisterApproval: false
+        },
+        mode: "onBlur"
     })
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<Error>()
     const navigate = useNavigate();
 
-    const handleChange: ChangeEventHandler<InputElement> = function (e) {
-        setCampaignData({
-            ...campaignData,
-            [e.target.name]: e.target.value
-        })
-    }
-
-    const handleSwitch = (name: string) => {
-        setCampaignData({
-            ...campaignData,
-            [name]: !(campaignData[name] as boolean)
-        })
-    }
-
-    const handleSubmit: MouseEventHandler<HTMLButtonElement> = function () {
+    const onSubmit: SubmitHandler<CampaignCreate> = function (data) {
         setIsLoading(true);
-
         try {
-            validateData<CampaignCreate>(campaignData)
-            axios.post('/campaigns', campaignData)
+            axios.post('/campaigns', data)
                 .then(res => {
                     if (res.status === 201) navigate('/dashboard')
                 })
@@ -71,14 +51,12 @@ export default function () {
                                     <TextInput
                                         label='Title'
                                         name='title'
-                                        value={campaignData.title}
-                                        onChange={handleChange}
+                                        control={control}
                                     />
                                     <TextAreaInput
                                         label='Description'
                                         name='description'
-                                        value={campaignData.description}
-                                        onChange={handleChange}
+                                        control={control}
                                     />
                                     <Flex gap='5'>
                                         <Flex direction='column' align='end' gap='3'>
@@ -86,15 +64,13 @@ export default function () {
                                                 label='Date Start'
                                                 name='dateStart'
                                                 type='date'
-                                                value={campaignData.dateStart as string}
-                                                onChange={handleChange}
+                                                control={control}
                                             />
                                             <TextInput
                                                 label='End Date'
                                                 name='dateEnd'
                                                 type='date'
-                                                value={campaignData.dateEnd as string}
-                                                onChange={handleChange}
+                                                control={control}
                                             />
                                         </Flex>
                                         <Container>
@@ -102,14 +78,12 @@ export default function () {
                                                 <TextInput
                                                     label='Regulations link'
                                                     name='regulations'
-                                                    value={campaignData.regulations}
-                                                    onChange={handleChange}
+                                                    control={control}
                                                 />
                                                 <CheckInput
                                                     name='requiresRegisterApproval'
-                                                    value={Number(campaignData.requiresRegisterApproval)}
-                                                    onClick={() => handleSwitch('requiresRegisterApproval')}
                                                     label='Player register requires master approval'
+                                                    control={control}
                                                 />
                                             </Flex>
                                         </Container>
@@ -120,20 +94,18 @@ export default function () {
                                 <Grid my='2' columns="2" gap="3" width="auto">
                                     <CheckInput
                                         name='requiresPairingResultsApproval'
-                                        value={Number(campaignData.requiresPairingResultsApproval)}
-                                        onClick={() => handleSwitch('requiresPairingResultsApproval')}
                                         label='Pairings results should be approved by campaign master'
+                                        control={control}
                                     />
                                     <CheckInput
                                         name='requiresPairingReport'
-                                        disabled={!campaignData.requiresPairingResultsApproval}
-                                        value={Number(campaignData.requiresPairingReport)}
-                                        onClick={() => handleSwitch('requiresPairingReport')}
+                                        disabled={!watch('requiresPairingResultsApproval')}
                                         label='Players should attach the link to the pairing report'
+                                        control={control}
                                     />
                                 </Grid>
                                 <Separator size='4'/>
-                                <Button onClick={handleSubmit}>
+                                <Button onClick={handleSubmit(onSubmit)}>
                                     Create
                                 </Button>
                             </Flex>

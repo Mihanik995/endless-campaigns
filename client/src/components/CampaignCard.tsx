@@ -12,18 +12,18 @@ import {
     Text,
     Tooltip
 } from "@radix-ui/themes";
-import {type ChangeEvent, type MouseEventHandler, useState} from "react";
+import {type MouseEventHandler, useState} from "react";
 import axios from "../axios/axiosConfig.ts"
 import TextInput from "./TextInput.tsx";
 import TextAreaInput from "./TextAreaInput.tsx";
-import {CheckIcon, Cross2Icon, ExitIcon, Pencil2Icon, TrashIcon, UpdateIcon} from "@radix-ui/react-icons";
+import {CheckIcon, Cross2Icon, ExitIcon, Pencil2Icon, TrashIcon} from "@radix-ui/react-icons";
 import {useAppDispatch, useAppSelector} from "../app/hooks.ts";
 import {selectAuth} from "../app/features/auth/authSlice.ts";
 import CheckInput from "./CheckInput.tsx";
 import ErrorHandler from "./ErrorHandler.tsx";
 import {cleanCampaign, selectCampaign, updateCampaign} from "../app/features/campaign/campaignSlice.ts";
 import type {Campaign} from "../types.ts";
-import validateData from "../utils/validators/validateData.ts";
+import {type SubmitHandler, useForm} from "react-hook-form";
 
 interface Props {
     campaignData: Campaign
@@ -31,31 +31,28 @@ interface Props {
     onDelete: () => void
 }
 
+function toInputDateFormat(date: string): string {
+    const [day, month, year] = date.split('.');
+    return `${year}-${month}-${day}`;
+}
+
 export default function ({clickable, onDelete, campaignData}: Props) {
-    const [campaign, setCampaign] = useState<Campaign>(campaignData)
+    const [campaign, setCampaign] = useState<Campaign>(campaignData);
+    const {control, handleSubmit, watch} = useForm<Campaign>({
+        defaultValues: {
+            ...campaignData,
+            dateStart: toInputDateFormat(campaignData.dateStart),
+            dateEnd: toInputDateFormat(campaignData.dateEnd)
+        },
+        mode: "onBlur"
+    })
     const [edit, setEdit] = useState(false)
     const [error, setError] = useState<Error>()
 
     const auth = useAppSelector(selectAuth);
     const {id} = useAppSelector(selectCampaign);
     const dispatch = useAppDispatch();
-    const isOwner = auth.id === campaign.ownerId;
-
-    const handleChange = (
-        e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-    ) => {
-        setCampaign({
-            ...campaign,
-            [e.target.name]: e.target.value
-        })
-    }
-
-    const handleSwitch = (name: string) => {
-        setCampaign({
-            ...campaign,
-            [name]: !(campaign[name] as boolean)
-        })
-    }
+    const isOwner = auth.id === campaignData.ownerId;
 
     const handleDelete: MouseEventHandler<HTMLButtonElement> = () => {
         axios.delete(`/campaigns/${campaign.id}`)
@@ -64,16 +61,15 @@ export default function ({clickable, onDelete, campaignData}: Props) {
             }).catch((error) => setError(error as Error))
     }
 
-    const handleSubmit: MouseEventHandler<HTMLButtonElement> = () => {
+    const onSubmit: SubmitHandler<Campaign> = (data) => {
         try {
-            validateData<Campaign>(campaign)
-            axios.put(`/campaigns/${campaign.id}`, campaign)
+            axios.put<Campaign>(`/campaigns/${campaign.id}`, data)
                 .then((response) => {
                     if (response.status === 200) {
                         setCampaign({
                             ...response.data,
-                            dateStart: new Date(response.data.dateStart),
-                            dateEnd: new Date(response.data.dateEnd)
+                            dateStart: new Date(response.data.dateStart).toLocaleDateString(),
+                            dateEnd: new Date(response.data.dateEnd).toLocaleDateString(),
                         })
                         setEdit(false)
                     }
@@ -81,15 +77,6 @@ export default function ({clickable, onDelete, campaignData}: Props) {
         } catch (error) {
             setError(error as Error)
         }
-    }
-
-    const handleUpdate: MouseEventHandler<HTMLButtonElement> = () => {
-        axios.get(`/campaigns/${campaign.id}`)
-            .then((response) => {
-                if (response.status === 200) {
-                    dispatch(updateCampaign(response.data))
-                }
-            }).catch((error) => setError(error as Error))
     }
 
     return (
@@ -105,57 +92,49 @@ export default function ({clickable, onDelete, campaignData}: Props) {
                                 <TextInput
                                     label='Title'
                                     name='title'
-                                    value={campaign.title}
-                                    onChange={handleChange}
+                                    control={control}
                                 />
                                 <TextAreaInput
                                     label='Description'
                                     name='description'
-                                    value={campaign.description}
-                                    onChange={handleChange}
+                                    control={control}
                                 />
                                 <TextInput
                                     label='Regulations'
                                     name='regulations'
-                                    value={campaign.regulations}
-                                    onChange={handleChange}
+                                    control={control}
                                 />
                                 <Flex gap='3' justify='start'>
                                     <TextInput
                                         label='Start Date'
                                         name='dateStart'
                                         type='date'
-                                        value={campaign.dateStart.slice(0, 10)}
-                                        onChange={handleChange}
+                                        control={control}
                                     />
                                     <TextInput
                                         label='End Date'
                                         name='dateEnd'
                                         type='date'
-                                        value={campaign.dateEnd.slice(0, 10)}
-                                        onChange={handleChange}
+                                        control={control}
                                     />
                                 </Flex>
                                 <CheckInput
-                                    value={Number(campaign.requiresRegisterApproval)}
                                     name='requiresRegisterApproval'
-                                    onClick={() => handleSwitch('requiresRegisterApproval')}
                                     label='Player register requires master approval'
+                                    control={control}
                                 />
                                 <Separator size='4'/>
                                 <Grid my='2' columns="2" gap="3" width="auto">
                                     <CheckInput
                                         name='requiresPairingResultsApproval'
-                                        value={Number(campaign.requiresPairingResultsApproval)}
-                                        onClick={() => handleSwitch('requiresPairingResultsApproval')}
                                         label='Pairings results should be approved by campaign master'
+                                        control={control}
                                     />
                                     <CheckInput
                                         name='requiresPairingReport'
-                                        disabled={!campaign.requiresPairingResultsApproval}
-                                        value={Number(campaign.requiresPairingReport)}
-                                        onClick={() => handleSwitch('requiresPairingReport')}
+                                        disabled={!watch('requiresPairingResultsApproval')}
                                         label='Players should attach the link to the pairing report'
+                                        control={control}
                                     />
                                 </Grid>
                             </Flex>
@@ -169,7 +148,7 @@ export default function ({clickable, onDelete, campaignData}: Props) {
                                     </IconButton>
                                 </Tooltip>
                                 <Tooltip content='Submit'>
-                                    <IconButton radius='full' color='grass' onClick={handleSubmit}>
+                                    <IconButton radius='full' color='grass' onClick={handleSubmit(onSubmit)}>
                                         <CheckIcon/>
                                     </IconButton>
                                 </Tooltip>
@@ -181,7 +160,7 @@ export default function ({clickable, onDelete, campaignData}: Props) {
                                 direction='column'
                                 align='start'
                                 onClick={() => {
-                                    if (clickable) dispatch(updateCampaign(campaign))
+                                    if (clickable) dispatch(updateCampaign(campaign.id))
                                 }}
                                 className={`${clickable && 'cursor-pointer'}`}
                             >
@@ -196,15 +175,12 @@ export default function ({clickable, onDelete, campaignData}: Props) {
                                     </Link>
                                 </Text>
                                 <Separator size='4' my='2'/>
-                                <Text>Dates: {
-                                    new Date(campaign.dateStart).toLocaleDateString()
-                                } - {
-                                    new Date(campaign.dateEnd).toLocaleDateString()
-                                }</Text>
+                                <Text>Dates: {campaign.dateStart} - {campaign.dateEnd}</Text>
                                 <Separator size='4' my='2'/>
                                 <Text>
                                     Campaign Link:{' '}
-                                    <Link href={`https://www.endless-campaigns.com/campaigns/${campaign.id}`} target='_blank'>
+                                    <Link href={`https://www.endless-campaigns.com/campaigns/${campaign.id}`}
+                                          target='_blank'>
                                         https://www.endless-campaigns.com/campaigns/{campaign.id}
                                     </Link>
                                 </Text>
@@ -214,24 +190,14 @@ export default function ({clickable, onDelete, campaignData}: Props) {
                                 xs: 'column'
                             }} align='end' justify='start' gap='2'>
                                 {!!id.length &&
-                                    <>
-                                        <Tooltip content='Exit'>
-                                            <IconButton
-                                                radius='full'
-                                                onClick={() => dispatch(cleanCampaign())}
-                                            >
-                                                <ExitIcon/>
-                                            </IconButton>
-                                        </Tooltip>
-                                        <Tooltip content='Refresh'>
-                                            <IconButton
-                                                radius='full'
-                                                onClick={handleUpdate}
-                                            >
-                                                <UpdateIcon/>
-                                            </IconButton>
-                                        </Tooltip>
-                                    </>
+                                    <Tooltip content='Exit'>
+                                        <IconButton
+                                            radius='full'
+                                            onClick={() => dispatch(cleanCampaign())}
+                                        >
+                                            <ExitIcon/>
+                                        </IconButton>
+                                    </Tooltip>
                                 }
                                 {isOwner &&
                                     <>

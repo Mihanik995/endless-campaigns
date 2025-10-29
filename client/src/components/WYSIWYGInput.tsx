@@ -13,6 +13,9 @@ import {
     QuoteIcon,
     UnderlineIcon
 } from "@radix-ui/react-icons";
+import {type Control, Controller} from "react-hook-form";
+import {useAppSelector} from "../app/hooks.ts";
+import {selectTheme} from "../app/features/theme/themeSlice.ts";
 
 const extensions = [TextStyleKit, StarterKit]
 
@@ -141,42 +144,71 @@ function MenuBar({editor}: { editor: Editor }) {
 interface Props {
     label: string,
     name: string,
-    value: string,
-    onChange: (name: string, editor: Editor) => void,
+    control: Control<any>,
 }
 
-export default function ({label, onChange, name, value}: Props): ReactElement {
-    const editor = useEditor({
-        extensions: extensions,
-        content: value,
-        onUpdate: ({editor}) => onChange(name, editor)
-    })
-
+export default function ({label, name, control}: Props): ReactElement {
     const [isFocused, setIsFocused] = useState(false)
-    useEffect(() => {
-        if (!editor) return;
-
-        const handleFocus = () => setIsFocused(true);
-        const handleBlur = () => setIsFocused(false);
-
-        editor.on('focus', handleFocus);
-        editor.on('blur', handleBlur);
-
-        return () => {
-            editor.off('focus', handleFocus);
-            editor.off('blur', handleBlur);
-        };
-    }, [editor])
+    const theme = useAppSelector(selectTheme)
 
     return (
-        <Flex direction='column' gap='1' as='div'>
+        <Flex direction="column" gap="1" as="div">
             <Text>{label}:</Text>
-            <div className={`WYSIWYGWrapper ${isFocused ? 'focused' : ''}`}>
-                <Flex direction='column' gap='3'>
-                    <MenuBar editor={editor}/>
-                    <EditorContent editor={editor}/>
-                </Flex>
-            </div>
+            <Controller
+                name={name}
+                control={control}
+                rules={{
+                    validate: (value) => {
+                        const stripped = value.replace(/<[^>]+>/g, '').trim();
+                        return stripped.length > 0 || 'This field is required!';
+                    },
+                }}
+                render={({field, fieldState}) => {
+                    const editor = useEditor({
+                        extensions,
+                        content: field.value,
+                        onUpdate: ({editor}) => {
+                            const html = editor.getHTML();
+                            field.onChange(html);
+                        },
+                    });
+
+                    useEffect(() => {
+                        if (!editor) return;
+
+                        const handleFocus = () => setIsFocused(true);
+                        const handleBlur = () => {
+                            setIsFocused(false)
+                            field.onBlur()
+                        };
+
+                        editor.on('focus', handleFocus);
+                        editor.on('blur', handleBlur);
+
+                        return () => {
+                            editor.off('focus', handleFocus);
+                            editor.off('blur', handleBlur);
+                        };
+                    }, [editor]);
+
+                    return (
+                        <>
+                            <div className={`WYSIWYGWrapper ${theme.theme}-bg ${isFocused
+                                ? fieldState.error
+                                    ? 'focusedError'
+                                    : 'focused'
+                                : ''}`}>
+                                <Flex direction="column" gap="3">
+                                    {editor && <MenuBar editor={editor}/>}
+                                    <EditorContent editor={editor}/>
+                                </Flex>
+                            </div>
+                            {fieldState.error &&
+                                <Text size='1' color='red'>{fieldState.error.message}</Text>}
+                        </>
+                    );
+                }}
+            />
         </Flex>
-    )
+    );
 }

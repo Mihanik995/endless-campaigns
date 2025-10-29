@@ -12,13 +12,22 @@ export default function () {
     const [error, setError] = useState<Error>()
     useEffect(() => {
         setIsLoading(true)
-        axios.get('/campaigns')
+        axios.get<Campaign[]>('/campaigns')
             .then((res) => {
-                setCampaigns(res.data as Campaign[])
+                setCampaigns(res.data
+                    .map(c => {
+                        return {
+                            ...c,
+                            dateStart: new Date(c.dateStart).toLocaleDateString(),
+                            dateEnd: new Date(c.dateEnd).toLocaleDateString(),
+                        }
+                    }))
             })
             .catch((err) => setError(err as Error))
             .finally(() => setIsLoading(false))
     }, [])
+
+    console.log(campaigns)
 
     const navigate = useNavigate();
     return (

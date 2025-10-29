@@ -1,10 +1,13 @@
-import {Box, Button, CheckboxGroup, Dialog, Flex, IconButton, Strong, Text} from "@radix-ui/themes";
+import {Button, Dialog, Flex, IconButton, Strong, Text} from "@radix-ui/themes";
 import SelectInput from "./SelectInput.tsx";
 import type {CampaignPeriod, Mission, Pairing, PlayerRegister} from "../types.ts";
-import {CheckIcon, Cross2Icon, PlusIcon} from "@radix-ui/react-icons";
+import {PlusIcon} from "@radix-ui/react-icons";
 import axios from "../axios/axiosConfig.ts";
-import {type MouseEventHandler, useState} from "react";
+import {useState} from "react";
 import NewPairingPlayer from "./NewPairingPlayer.tsx";
+import AddPlayerToPairing from "./AddPlayerToPairing.tsx";
+import {type SubmitHandler, useForm} from "react-hook-form";
+import CheckManyInput from "./CheckManyInput.tsx";
 
 interface Props {
     open: boolean
@@ -17,67 +20,73 @@ interface Props {
     onError: (error: Error) => void
 }
 
-export default function ({open, onOpenChange, missions, playerRegisters, period, pairing, onChange, onError}: Props) {
-    const [missionId, setMissionId] = useState<string>(pairing.missionId)
+interface PairingMissionAndWinners {
+    missionId: string
+    winners: string[]
+}
+
+export default function ({open, onOpenChange, missions, playerRegisters, pairing, onChange, onError}: Props) {
     const [playersList, setPlayersList] = useState<PlayerRegister[]>(
         pairing.players.map(player => {
             return {
-                id: playerRegisters.find(reg => reg.playerId === player.playerId)?.id,
-                playerId: player.playerId,
                 playerUsername: player.player.username,
+                playerId: player.playerId,
                 personalMissionId: player.personalMissionId
             } as PlayerRegister
-        })
-    )
+        }))
+    const {control, handleSubmit} = useForm<PairingMissionAndWinners>({
+        defaultValues: {
+            missionId: pairing.missionId,
+            winners: pairing.winners.map(winner => winner.playerId as string)
+        }
+    })
+
     const [playersOptions, setPlayersOptions] = useState<PlayerRegister[]>(
-        playerRegisters.filter(pr => !playersList.map(p => p.playerId).includes(pr.playerId))
+        playerRegisters.filter(pr => !playersList
+            .map(p => p.playerId).includes(pr.playerId))
     )
     const [addPlayer, setAddPlayer] = useState(false)
     const [playerToAdd, setPlayerToAdd] = useState('')
-    const [winners, setWinners] = useState<string[]>([])
-
-    const handleWinnerClick = (value: string) => {
-        winners.includes(value)
-            ? setWinners(winners.filter(item => item !== value))
-            : setWinners([...winners, value])
-    }
 
     const handleAdd = () => {
         if (addPlayer && playerToAdd.length) {
-            const newPlayer = JSON.parse(playerToAdd) as PlayerRegister
-            setPlayersList([...playersList, newPlayer])
-            setPlayersOptions(playersOptions.filter(player => player.id !== newPlayer.id))
+            setPlayersList([
+                ...playersList,
+                playerRegisters.find(player => player.playerId === playerToAdd) as PlayerRegister
+            ])
+            setPlayersOptions(playersOptions.filter(player => player.playerId !== playerToAdd))
         }
         setPlayerToAdd('')
         setAddPlayer(!addPlayer)
     }
 
     const handleSetCustomMission = (playerId: string, missionId?: string) => {
-        setPlayersList(playersList.map(player => player.playerId === playerId
-            ? {...player, personalMissionId: missionId}
-            : player))
+        setPlayersList(playersList
+            .map(player => player.playerId === playerId
+                ? {...player, personalMissionId: missionId}
+                : player))
     }
 
     const handleDelete = (id: string) => {
-        setPlayersList(playersList.filter(player => player.id !== id))
+        setPlayersList(playersList
+            .filter(player => player.playerId !== id))
         setPlayersOptions([
             ...playersOptions,
-            playerRegisters.find(player => player.id === id) as PlayerRegister
+            playerRegisters.find(player => player.playerId === id) as PlayerRegister
         ])
     }
 
-    const handleSubmit: MouseEventHandler<HTMLButtonElement> = () => {
+    const onSubmit: SubmitHandler<PairingMissionAndWinners> = (data) => {
         axios.put(`/missions/pairings/${pairing.id}`, {
-            campaignId: period.campaignId,
-            periodId: period.id,
-            missionId: missionId,
+            campaignId: pairing.campaignId,
+            periodId: pairing.periodId,
             players: playersList.map(player => {
                 return {
                     playerId: player.playerId,
                     personalMissionId: player.personalMissionId,
                 }
             }),
-            winners
+            ...data
         }).then(res => {
             if (res.status === 200) {
                 onChange()
@@ -97,9 +106,9 @@ export default function ({open, onOpenChange, missions, playerRegisters, period,
             <Flex direction='column' gap='2' mt='3'>
                 <SelectInput
                     size='2'
-                    placeholder={'Choose a mission'}
-                    value={missionId}
-                    onValueChange={setMissionId}
+                    placeholder='Choose a mission'
+                    name='missionId'
+                    control={control}
                     options={missions.reduce((acc, mission) => {
                         acc[mission.id] = mission.title
                         return acc
@@ -107,59 +116,50 @@ export default function ({open, onOpenChange, missions, playerRegisters, period,
                 />
                 <Flex gap='2' direction='column'>
                     Players:
-                    {playersList.map((player: PlayerRegister) => (
-                        <NewPairingPlayer
-                            key={player.id}
-                            player={player}
-                            handleDelete={handleDelete}
-                            missions={missions}
-                            setCustomMission={handleSetCustomMission}
-                        />
-                    ))}
-                    {!!playersOptions.length && <Box>
-                        <IconButton
-                            onClick={handleAdd}
-                            color={addPlayer && playerToAdd.length ? 'grass' : undefined}
-                        >
-                            {addPlayer
-                                ? playerToAdd.length
-                                    ? <CheckIcon/>
-                                    : <Cross2Icon/>
-                                : <PlusIcon/>
-                            }
-                        </IconButton>
-                        {addPlayer &&
-                            <SelectInput
-                                value={JSON.stringify(playerToAdd)}
-                                onValueChange={setPlayerToAdd}
-                                options={playersOptions.reduce((acc, player) => {
-                                    acc[player.id] = JSON.stringify(player)
-                                    return acc
-                                }, {} as Record<string, string>)}
-                                placeholder='Choose a player'
+                    {playersList
+                        .map((player: PlayerRegister) => (
+                            <NewPairingPlayer
+                                key={player.playerId}
+                                player={player}
+                                handleDelete={handleDelete}
+                                missions={missions}
+                                setCustomMission={handleSetCustomMission}
                             />
-                        }
-                    </Box>}
+                        ))}
+                    {!!playersOptions.length && <Flex gap='1' align='center'>
+                        {addPlayer
+                            ? <AddPlayerToPairing
+                                playersOptions={playersOptions}
+                                handleAdd={handleAdd}
+                                setPlayerToAdd={setPlayerToAdd}
+                            />
+                            : <IconButton
+                                size='1'
+                                onClick={handleAdd}
+                                color='grass'
+                            >
+                                <PlusIcon/>
+                            </IconButton>}
+                    </Flex>}
                 </Flex>
                 <Flex gap='2' align='center'>
                     Winners:
-                    <CheckboxGroup.Root>
-                        {playersList.map(player => (
-                            <CheckboxGroup.Item
-                                key={player.playerId}
-                                value={player.playerId}
-                                onClick={() => handleWinnerClick(player.playerId)}
-                            >
-                                {player.playerUsername}
-                            </CheckboxGroup.Item>
-                        ))}
-                    </CheckboxGroup.Root>
+                    <CheckManyInput
+                        name='winners'
+                        control={control}
+                        values={playersList.map((player) => {
+                            return {
+                                value: player.playerId,
+                                title: player.playerUsername
+                            }
+                        })}
+                    />
                 </Flex>
                 <Flex gap='3'>
                     <Dialog.Close>
                         <Button>Cancel</Button>
                     </Dialog.Close>
-                    <Button color='grass' onClick={handleSubmit}>Submit</Button>
+                    <Button color='grass' onClick={handleSubmit(onSubmit)}>Submit</Button>
                 </Flex>
             </Flex>
         </Dialog.Content>

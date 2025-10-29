@@ -1,4 +1,4 @@
-import {type ChangeEvent, type MouseEventHandler, type ReactElement, useState} from "react";
+import {type ReactElement, useState} from "react";
 import Header from "../components/Header.tsx";
 import {useAppDispatch, useAppSelector} from "../app/hooks.ts";
 import {login, selectAuth} from "../app/features/auth/authSlice.ts";
@@ -9,11 +9,14 @@ import TextInput from "../components/TextInput.tsx";
 import type {UserLogin} from "../types.ts";
 import ErrorHandler from "../components/ErrorHandler.tsx";
 import CheckInput from "../components/CheckInput.tsx";
-import validateData from "../utils/validators/validateData.ts";
+import {useForm} from "react-hook-form";
 
 export default function (): ReactElement {
-    const [loginData, setLoginData] = useState<UserLogin>({
-        username: '', password: '', rememberMe: false,
+    const {control, handleSubmit} = useForm<UserLogin>({
+        defaultValues: {
+            rememberMe: false
+        },
+        mode: "onBlur"
     })
 
     const auth = useAppSelector(selectAuth)
@@ -22,24 +25,9 @@ export default function (): ReactElement {
 
     const [error, setError] = useState<Error>()
 
-    const handleChange = function (e: ChangeEvent<HTMLInputElement>) {
-        setLoginData({
-            ...loginData,
-            [e.target.name]: e.target.value
-        })
-    }
-
-    const handleSwitch = (name: string) => {
-        setLoginData({
-            ...loginData,
-            [name]: !loginData[name]
-        })
-    }
-
-    const handleSubmit: MouseEventHandler<HTMLButtonElement> = function () {
+    const onSubmit = (data: UserLogin) => {
         try {
-            validateData<UserLogin>(loginData)
-            dispatch(login(loginData))
+            dispatch(login(data))
         } catch (error) {
             setError(error as Error)
         }
@@ -56,17 +44,15 @@ export default function (): ReactElement {
                             <TextInput
                                 label='Username'
                                 name='username'
-                                value={loginData.username}
-                                onChange={handleChange}
+                                control={control}
                                 icon={<PersonIcon/>}
                             />
                             <Flex direction='column'>
                                 <TextInput
                                     label='Password'
                                     name='password'
+                                    control={control}
                                     type='password'
-                                    value={loginData.password}
-                                    onChange={handleChange}
                                     icon={<LockClosedIcon/>}
                                 />
                                 <Link href='' size='1' onClick={() => navigate('/auth/forgot-password')}>
@@ -75,15 +61,14 @@ export default function (): ReactElement {
                             </Flex>
                             <CheckInput
                                 name='rememberMe'
-                                value={Number(loginData.rememberMe)}
+                                control={control}
                                 label='Remember Me'
-                                onClick={() => handleSwitch('rememberMe')}
                             />
                             <Separator size='4'/>
                             {!!error && <ErrorHandler error={error}/>}
                             {!!auth.error && <ErrorHandler error={auth.error as Error}/>}
                             <Button
-                                onClick={handleSubmit}
+                                onClick={handleSubmit(onSubmit)}
                                 size='3'
                             >
                                 Log In

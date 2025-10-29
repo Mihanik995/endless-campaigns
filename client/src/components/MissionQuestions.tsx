@@ -1,16 +1,21 @@
 import {Button, Flex, Grid, Heading, Popover, Spinner, Text} from "@radix-ui/themes";
-import type {Question, Mission} from "../types.ts";
-import {type MouseEventHandler, useEffect, useState} from "react";
+import type {Mission, Question} from "../types.ts";
+import {useEffect, useState} from "react";
 import axios from "../axios/axiosConfig.ts";
 import MissionQuestionCard from "./MissionQuestionCard.tsx";
 import ErrorHandler from "./ErrorHandler.tsx";
 import {useAppSelector} from "../app/hooks.ts";
 import {selectAuth} from "../app/features/auth/authSlice.ts";
 import TextInput from "./TextInput.tsx";
-import validateString from "../utils/validators/validateString.ts";
+import {type SubmitHandler, useForm} from "react-hook-form";
 
 interface Props {
     mission: Mission
+}
+
+interface NewQuestion {
+    text: string;
+    missionId: string;
 }
 
 export default function ({mission}: Props) {
@@ -32,12 +37,14 @@ export default function ({mission}: Props) {
             .finally(() => setIsLoading(false))
     }, [change]);
 
-    const [newQuestionText, setNewQuestionText] = useState('')
+    const {control, handleSubmit} = useForm<NewQuestion>({
+        defaultValues: {missionId: mission.id},
+        mode: 'onBlur'
+    })
     const [updateError, setUpdateError] = useState<Error>()
-    const handleNewQuestion: MouseEventHandler<HTMLButtonElement> = () => {
+    const onNewQuestion: SubmitHandler<NewQuestion> = (data) => {
         try {
-            validateString('Question', newQuestionText)
-            axios.post(`missions/questions/`, {text: newQuestionText, missionId: mission.id})
+            axios.post(`missions/questions/`, data)
                 .then(res => {
                     if (res.status === 201) setQuestions([...questions, res.data])
                 })
@@ -83,9 +90,8 @@ export default function ({mission}: Props) {
                             <Flex direction='column' gap='2'>
                                 <TextInput
                                     label='Question'
-                                    value={newQuestionText}
-                                    onChange={(e) => setNewQuestionText(e.target.value)}
                                     name='newQuestionText'
+                                    control={control}
                                 />
                                 {!!updateError && <ErrorHandler error={updateError}/>}
                                 <Flex gap='2'>
@@ -93,7 +99,7 @@ export default function ({mission}: Props) {
                                         <Button>Close</Button>
                                     </Popover.Close>
                                     <Popover.Close>
-                                        <Button onClick={handleNewQuestion}>Submit</Button>
+                                        <Button onClick={handleSubmit(onNewQuestion)}>Submit</Button>
                                     </Popover.Close>
                                 </Flex>
                             </Flex>

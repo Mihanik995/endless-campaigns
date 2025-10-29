@@ -11,7 +11,7 @@ import {
     Text,
     Tooltip
 } from "@radix-ui/themes";
-import {type ChangeEvent, type MouseEventHandler, useState} from "react";
+import {type MouseEventHandler, useState} from "react";
 import axios from "../axios/axiosConfig.ts"
 import TextInput from "./TextInput.tsx";
 import TextAreaInput from "./TextAreaInput.tsx";
@@ -21,9 +21,8 @@ import {selectAuth} from "../app/features/auth/authSlice.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
 import {useNavigate} from "react-router";
 import type {Mission} from "../types.ts";
-import validateData from "../utils/validators/validateData.ts";
 import WYSIWYGInput from "./WYSIWYGInput.tsx";
-import type {Editor} from "@tiptap/react";
+import {type SubmitHandler, useForm} from "react-hook-form";
 
 interface Props {
     clickable: boolean
@@ -34,6 +33,10 @@ interface Props {
 
 export default function ({clickable, onDelete, mission, owner}: Props) {
     const [missionData, setMissionData] = useState<Mission>(mission)
+    const {control, handleSubmit} = useForm<Mission>({
+        defaultValues: mission,
+        mode: "onBlur"
+    })
     const [edit, setEdit] = useState(false)
     const [error, setError] = useState<Error>()
 
@@ -42,22 +45,6 @@ export default function ({clickable, onDelete, mission, owner}: Props) {
 
     const navigate = useNavigate()
 
-    const handleChange = (
-        e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-    ) => {
-        setMissionData({
-            ...missionData,
-            [e.target.name]: e.target.value
-        })
-    }
-
-    const handleWYSIWYGChange = (name: string, editor: Editor) => {
-        setMissionData({
-            ...missionData,
-            [name]: editor.getHTML()
-        })
-    }
-
     const handleDelete: MouseEventHandler<HTMLButtonElement> = () => {
         axios.delete(`/missions/${missionData.id}`)
             .then((response) => {
@@ -65,17 +52,16 @@ export default function ({clickable, onDelete, mission, owner}: Props) {
             }).catch((error) => setError(error as Error))
     }
 
-    const handleSubmit: MouseEventHandler<HTMLButtonElement> = () => {
-        try {
-            validateData<Mission>(missionData)
-            delete missionData.nodes
-            axios.put(`/missions/${missionData.id}`, missionData)
-                .then((response) => {
-                    if (response.status === 200) setEdit(false)
-                })
-        } catch (error) {
-            setError(error as Error)
-        }
+    const onSubmit: SubmitHandler<Mission> = (data) => {
+        delete data.nodes
+        axios.put<Mission>(`/missions/${missionData.id}`, data)
+            .then((response) => {
+                if (response.status === 200) {
+                    setMissionData(response.data)
+                    setEdit(false)
+                }
+            })
+            .catch((error) => setError(error as Error))
     }
 
     return (
@@ -91,20 +77,17 @@ export default function ({clickable, onDelete, mission, owner}: Props) {
                                 <TextInput
                                     label='Title'
                                     name='title'
-                                    value={missionData.title}
-                                    onChange={handleChange}
+                                    control={control}
                                 />
                                 <TextAreaInput
                                     label='Narrative description'
                                     name='narrativeDescription'
-                                    value={missionData.narrativeDescription}
-                                    onChange={handleChange}
+                                    control={control}
                                 />
                                 <WYSIWYGInput
                                     label='Missionc conditions'
                                     name='missionConditions'
-                                    value={missionData.missionConditions as string}
-                                    onChange={handleWYSIWYGChange}
+                                    control={control}
                                 />
                             </Flex>
                             <Flex direction={{
@@ -117,7 +100,7 @@ export default function ({clickable, onDelete, mission, owner}: Props) {
                                     </IconButton>
                                 </Tooltip>
                                 <Tooltip content='Submit'>
-                                    <IconButton radius='full' color='grass' onClick={handleSubmit}>
+                                    <IconButton radius='full' color='grass' onClick={handleSubmit(onSubmit)}>
                                         <CheckIcon/>
                                     </IconButton>
                                 </Tooltip>

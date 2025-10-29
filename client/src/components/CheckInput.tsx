@@ -1,29 +1,32 @@
 import {Flex, IconButton, Popover, Switch, Text} from "@radix-ui/themes";
 import {QuestionMarkIcon} from "@radix-ui/react-icons";
 import type {ReactElement} from "react";
+import {type Control, Controller} from "react-hook-form";
 
 interface Props {
     name: string;
-    value: number;
-    onClick: () => void;
     label: string;
+    control: Control<any>;
     disabled?: boolean;
     hint?: ReactElement;
 }
 
-export default function ({name, value, onClick, label, disabled, hint}: Props) {
+export default function ({name, label, control, disabled, hint}: Props) {
     return (
         <div className='isolate'>
             <Text as='label' size='3'>
                 <Flex gap='2' align='center'>
-                    <Switch
-                        disabled={disabled || false}
-                        defaultChecked={value !== 0}
+                    <Controller
                         name={name}
-                        value={value}
-                        onClick={onClick}
-                        size='3'
-                        color='grass'
+                        control={control}
+                        render={({field}) => <Switch
+                            disabled={disabled || false}
+                            checked={!!field.value}
+                            onCheckedChange={field.onChange}
+                            name={field.name}
+                            size='3'
+                            color='grass'
+                        />}
                     />
                     {label}
                     {hint &&

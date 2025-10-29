@@ -2,6 +2,7 @@ import {Button, Flex} from "@radix-ui/themes";
 import type {Mission, PlayerRegister} from "../types.ts";
 import {useState} from "react";
 import SelectInput from "./SelectInput.tsx";
+import {useForm} from "react-hook-form";
 
 interface Props {
     player: PlayerRegister
@@ -10,20 +11,26 @@ interface Props {
     setCustomMission: (playerId: string, missionId?: string) => void
 }
 
+interface PersonalMission {
+    personalMissionId: string
+}
+
 export default function ({player, handleDelete, missions, setCustomMission}: Props) {
     const [addPersonalMission, setAddPersonalMission] = useState(false)
-    const [personalMissionToAdd, setPersonalMissionToAdd] = useState(player.personalMissionId)
+    const {control, watch} = useForm<PersonalMission>({
+        defaultValues: {personalMissionId: player.personalMissionId}
+    })
 
     return <Flex gap='1' align='center' key={player.id}>
-        - {player.playerUsername} {!!player.personalMissionId &&
+        - {player.playerUsername} {!!player.personalMissionId?.length &&
         `(${missions.find(mission => mission.id === player.personalMissionId)?.title})`}
         {addPersonalMission
             ? <>
-                {!!personalMissionToAdd && <Button
+                {!!watch('personalMissionId') && <Button
                     color='grass'
                     size='1'
                     onClick={() => {
-                        setCustomMission(player.playerId, personalMissionToAdd)
+                        setCustomMission(player.playerId, watch('personalMissionId'))
                         setAddPersonalMission(false)
                     }}
                 >
@@ -38,8 +45,9 @@ export default function ({player, handleDelete, missions, setCustomMission}: Pro
                 </Button>
                 <SelectInput
                     size='2'
-                    value={personalMissionToAdd || ''}
-                    onValueChange={setPersonalMissionToAdd}
+                    placeholder='Choose a mission'
+                    name='personalMissionId'
+                    control={control}
                     options={missions.reduce((acc, mission) => {
                         acc[mission.id] = mission.title
                         return acc
@@ -50,7 +58,7 @@ export default function ({player, handleDelete, missions, setCustomMission}: Pro
                 <Button
                     color='red'
                     size='1'
-                    onClick={() => handleDelete(player.id)}
+                    onClick={() => handleDelete(player.playerId)}
                 >
                     Delete
                 </Button>

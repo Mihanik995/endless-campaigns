@@ -1,33 +1,45 @@
-import {Flex, IconButton, Popover, Select} from "@radix-ui/themes";
+import {Flex, IconButton, Popover, Select, Text} from "@radix-ui/themes";
 import {QuestionMarkIcon} from "@radix-ui/react-icons";
 import {type ReactElement} from "react";
+import {type Control, Controller} from "react-hook-form";
 
 interface Props {
     label?: string
-    value: string
-    onValueChange: (value: string) => void
+    name: string
+    control: Control<any>
     options: { [key: string]: string }
     placeholder?: string
     hint?: ReactElement
     size?: '1' | '2' | '3'
 }
 
-export default function ({label, value, onValueChange, options, placeholder, hint, size}: Props) {
+export default function ({label, name, control, options, placeholder, hint, size}: Props) {
     return <Flex gap='1' direction='column'>
         {!!label && `${label}:`}
-        <Flex gap='2' align='center'>
-            <Select.Root
-                value={value}
-                onValueChange={onValueChange}
-                size={size || '3'}
-            >
-                <Select.Trigger placeholder={placeholder}/>
-                <Select.Content>
-                    {Object.entries(options).map(([key, value], index) => (
-                        <Select.Item key={index} value={key}>{value}</Select.Item>
-                    ))}
-                </Select.Content>
-            </Select.Root>
+        <Flex gap='2'>
+            <Controller
+                name={name}
+                control={control}
+                rules={{required: 'This field is required'}}
+                render={({field, fieldState}) =>
+                    <Flex direction='column' gap='1'>
+                        <Select.Root
+                            value={field.value}
+                            onValueChange={field.onChange}
+                            size={size || '3'}
+                        >
+                            <Select.Trigger placeholder={placeholder}/>
+                            <Select.Content onBlur={field.onBlur} color={fieldState.error ? 'red' : undefined}>
+                                {Object.entries(options).map(([key, value], index) => (
+                                    <Select.Item key={index} value={key}>{value}</Select.Item>
+                                ))}
+                            </Select.Content>
+                        </Select.Root>
+                        {!!fieldState.error &&
+                            <Text size='1' color='red'>{fieldState.error.message}</Text>
+                        }
+                    </Flex>}
+            />
             {hint &&
                 <Popover.Root>
                     <Popover.Trigger>

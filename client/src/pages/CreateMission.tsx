@@ -2,54 +2,31 @@ import Header from "../components/Header.tsx";
 import {Box, Button, Card, Flex, Separator, Spinner} from "@radix-ui/themes";
 import TextInput from "../components/TextInput.tsx";
 import TextAreaInput from "../components/TextAreaInput.tsx";
-import {type ChangeEventHandler, type MouseEventHandler, useState} from "react";
+import {useState} from "react";
 import axios from "../axios/axiosConfig.ts";
 import {useNavigate} from "react-router";
 import ErrorHandler from "../components/ErrorHandler.tsx";
 import type {MissionCreate} from "../types.ts";
-import validateData from "../utils/validators/validateData.ts";
 import WYSIWYGInput from "../components/WYSIWYGInput.tsx";
-import type {Editor} from "@tiptap/react";
-
-type InputElement = HTMLInputElement | HTMLTextAreaElement
+import {type SubmitHandler, useForm} from "react-hook-form";
 
 export default function () {
-    const [missionData, setMissionData] = useState<MissionCreate>({
-        title: '',
-        narrativeDescription: '',
+    const {control, handleSubmit} = useForm<MissionCreate>({
+        defaultValues: {missionConditions: ''},
+        mode: "onBlur"
     })
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<Error>()
     const navigate = useNavigate()
 
-    const handleChange: ChangeEventHandler<InputElement> = function (e) {
-        setMissionData({
-            ...missionData,
-            [e.target.name]: e.target.value
-        })
-    }
-
-    const handleSubmit: MouseEventHandler<HTMLButtonElement> = function () {
+    const onSubmit: SubmitHandler<MissionCreate> = function (data) {
         setIsLoading(true);
-
-        try {
-            validateData<MissionCreate>(missionData)
-            axios.post(`/missions`, missionData)
-                .then(res => {
-                    if (res.status === 201) navigate(`/missions/${res.data.id}`)
-                })
-        } catch (error) {
-            setError(error as Error)
-        } finally {
-            setIsLoading(false);
-        }
-    }
-
-    const handleWYSIWYGChange = (name: string, editor: Editor ): void => {
-        setMissionData({
-            ...missionData,
-            [name]: editor.getHTML()
-        })
+        axios.post(`/missions`, data)
+            .then(res => {
+                if (res.status === 201) navigate(`/missions/${res.data.id}`)
+            })
+            .catch((error) => setError(error as Error))
+            .finally(() => setIsLoading(false))
     }
 
     return (
@@ -64,23 +41,20 @@ export default function () {
                                 <TextInput
                                     label='Title'
                                     name='title'
-                                    value={missionData.title}
-                                    onChange={handleChange}
+                                    control={control}
                                 />
                                 <TextAreaInput
                                     label='Narrative description'
                                     name='narrativeDescription'
-                                    value={missionData.narrativeDescription}
-                                    onChange={handleChange}
+                                    control={control}
                                 />
                                 <WYSIWYGInput
                                     label='Mission conditions'
                                     name='missionConditions'
-                                    value={missionData.missionConditions as string}
-                                    onChange={handleWYSIWYGChange}
+                                    control={control}
                                 />
                                 <Separator size='4'/>
-                                <Button onClick={handleSubmit}>
+                                <Button onClick={handleSubmit(onSubmit)}>
                                     Create
                                 </Button>
                             </Flex>

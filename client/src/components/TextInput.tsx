@@ -1,42 +1,56 @@
 import {Flex, IconButton, Popover, Text, TextField} from "@radix-ui/themes";
-import {type ChangeEvent, type ReactElement} from "react";
+import {type ReactElement} from "react";
 import {QuestionMarkIcon} from "@radix-ui/react-icons";
+import {type Control, Controller} from "react-hook-form";
 
 interface Props {
-    label: string,
+    label?: string,
     name: string,
-    value: string,
     type?: "number" | "search" | "time" | "text" | "hidden" | "tel" | "url" | "email" | "date" | "datetime-local" | "month" | "password" | "week",
-    onChange: (e: ChangeEvent<HTMLInputElement>) => void,
     icon?: ReactElement,
     placeholder?: string
     required?: boolean
     hint?: ReactElement
+    control: Control<any>
+    rules?: object
 }
 
-export default function (props: Props): ReactElement {
-    const {label, name, value, onChange, icon, type, placeholder, required, hint} = props;
-
+export default function ({label, name, control, icon, type, placeholder, required, hint, rules}: Props): ReactElement {
     return (
         <Text as='label' size='3'>
             <Flex direction='column' gap='1'>
-                {label}:
+                {!!label && `${label}:`}
                 <Flex gap='2'>
-                    <TextField.Root
+                    <Controller
                         name={name}
-                        value={value}
-                        type={type || 'text'}
-                        onChange={onChange}
-                        size='3'
-                        placeholder={placeholder}
-                        required={required || true}
-                    >
-                        {!!icon &&
-                            <TextField.Slot>
-                                {icon}
-                            </TextField.Slot>
+                        control={control}
+                        rules={{
+                            required: required ? undefined : 'This field is required!',
+                            ...rules
+                        }}
+                        render={({field, fieldState}) =>
+                            <Flex direction='column' gap='1'>
+                                <TextField.Root
+                                    name={field.name}
+                                    value={field.value}
+                                    type={type || 'text'}
+                                    onChange={field.onChange}
+                                    onBlur={field.onBlur}
+                                    size='3'
+                                    placeholder={placeholder}
+                                    color={fieldState.error ? 'red' : undefined}
+                                >
+                                    {!!icon &&
+                                        <TextField.Slot>
+                                            {icon}
+                                        </TextField.Slot>
+                                    }
+                                </TextField.Root>
+                                {!!fieldState.error &&
+                                    <Text size='1' color='red'>{fieldState.error.message}</Text>}
+                            </Flex>
                         }
-                    </TextField.Root>
+                    />
                     {hint &&
                         <Popover.Root>
                             <Popover.Trigger>

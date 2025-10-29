@@ -1,10 +1,10 @@
-import {Dialog} from "@radix-ui/themes";
-import {Button, Flex, Spinner} from "@radix-ui/themes";
+import {Button, Dialog, Flex, Spinner} from "@radix-ui/themes";
 import TextInput from "./TextInput.tsx";
-import {type MouseEventHandler, useState} from "react";
+import {useState} from "react";
 import axios from "../axios/axiosConfig.ts";
 import type {Pairing} from "../types.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
+import {type SubmitHandler, useForm} from "react-hook-form";
 
 interface Props {
     open: boolean
@@ -13,13 +13,19 @@ interface Props {
     onChange: () => void
 }
 
+interface RejectMessage{
+    rejectMessage: string
+}
+
 export default function ({open, setOpen, pairing, onChange}: Props) {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<Error>()
-    const [rejectMessage, setRejectMessage] = useState('')
-    const rejectResults: MouseEventHandler<HTMLButtonElement> = () => {
+    const {control, handleSubmit} = useForm<RejectMessage>({
+        mode: "onBlur"
+    })
+    const onRejectResults: SubmitHandler<RejectMessage> = (data) => {
         setIsLoading(true)
-        axios.put(`/missions/pairings/${pairing.id}/reject`, {rejectMessage})
+        axios.put(`/missions/pairings/${pairing.id}/reject`, data)
             .then(res => {
                 if (res.status === 200) onChange()
             }).catch(err => setError(err as Error))
@@ -40,16 +46,13 @@ export default function ({open, setOpen, pairing, onChange}: Props) {
                                 <TextInput
                                     label={'Reject message'}
                                     name={'rejectMessage'}
-                                    value={rejectMessage}
-                                    onChange={(e) => {
-                                        setRejectMessage(e.target.value)
-                                    }}
+                                    control={control}
                                 />
                                 <Dialog.Close>
                                     <Button>Cancel</Button>
                                 </Dialog.Close>
                                 <Dialog.Close>
-                                    <Button onClick={rejectResults}
+                                    <Button onClick={handleSubmit(onRejectResults)}
                                             color='red'>Submit</Button>
                                 </Dialog.Close>
                             </Flex>

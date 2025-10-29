@@ -25,10 +25,14 @@ export default function ({id}: Props) {
 
     useEffect(() => {
         setIsLoading(true)
-        axios.get(`campaigns/${campaignId}`)
+        axios.get<Campaign>(`campaigns/${campaignId}`)
             .then(res => {
                 if (res.status === 200) {
-                    setCampaign(res.data)
+                    setCampaign({
+                        ...res.data,
+                        dateStart: new Date(res.data.dateStart).toLocaleDateString(),
+                        dateEnd: new Date(res.data.dateEnd).toLocaleDateString(),
+                    })
                     setIsOwner(res.data.ownerId === auth.id)
                 }
             }).catch(err => setError(err as Error))

@@ -1,6 +1,6 @@
 import Header from "../components/Header.tsx";
-import {Card, Container, DataList, Flex, IconButton, Spinner, Text, TextField, Tooltip} from "@radix-ui/themes";
-import {type ChangeEvent, type MouseEventHandler, useEffect, useState} from "react";
+import {Card, Container, DataList, Flex, IconButton, Spinner, Text, Tooltip} from "@radix-ui/themes";
+import {useEffect, useState} from "react";
 import axios from "../axios/axiosConfig.ts";
 import {useParams} from "react-router";
 import {useAppSelector} from "../app/hooks.ts";
@@ -11,9 +11,10 @@ import EmailChangeButton from "../components/EmailChangeButton.tsx";
 import UserCampaigns from "../components/UserCampaigns.tsx";
 import ErrorHandler from "../components/ErrorHandler.tsx";
 import type {User} from "../types.ts";
-import validateData from "../utils/validators/validateData.ts";
 import CheckInput from "../components/CheckInput.tsx";
 import SelectInput from "../components/SelectInput.tsx";
+import {type SubmitHandler, useForm} from "react-hook-form";
+import TextInput from "../components/TextInput.tsx";
 
 export default function () {
     const auth = useAppSelector(selectAuth);
@@ -30,56 +31,36 @@ export default function () {
         allowPlatformNotification: false,
         notifications: 'none'
     });
+    const {control, handleSubmit, reset} = useForm<User>({
+        mode: "onBlur"
+    });
     useEffect(() => {
         setIsLoading(true)
         axios.get(`/auth/${id}`)
             .then(res => {
-                if (res.status === 200) setUserData({...res.data});
+                if (res.status === 200) {
+                    setUserData({...res.data})
+                    reset({...res.data})
+                }
             }).catch(err => setError(err as Error))
             .finally(() => setIsLoading(false))
     }, [])
 
     const [edit, setEdit] = useState(false)
-    const handleProfileChange = (event: ChangeEvent<HTMLInputElement>) => {
-        setUserData({
-            ...userData,
-            [event.target.name]: event.target.value
-        })
-        console.log(userData)
-    }
-
-    const handleSelect = (value: string) => {
-        setUserData({
-            ...userData,
-            notifications: value as 'none' | 'email' | 'telegram'
-        })
-    }
-
-    const handleSwitch = (name: string) => {
-        setUserData({
-            ...userData,
-            [name]: !userData[name]
-        })
-    }
 
     const [updateError, setUpdateError] = useState<Error>()
     const [isUpdating, setIsUpdating] = useState(false)
-    const handleSubmitProfileChange: MouseEventHandler<HTMLButtonElement> = () => {
+    const onSubmitProfileChange: SubmitHandler<User> = (data) => {
         setIsUpdating(true)
-        try {
-            validateData<User>(userData)
-            axios.put(`/auth/${id}`, userData)
-                .then((response) => {
-                    if (response.status === 200) {
-                        setUserData({...response.data})
-                        setEdit(false)
-                    }
-                })
-        } catch (error) {
-            setUpdateError(error as Error)
-        } finally {
-            setIsUpdating(false)
-        }
+        axios.put(`/auth/${id}`, data)
+            .then((response) => {
+                if (response.status === 200) {
+                    setUserData({...response.data})
+                    setEdit(false)
+                }
+            })
+            .catch((error) => setUpdateError(error as Error))
+            .finally(() => setIsUpdating(false))
     }
 
     return (
@@ -112,10 +93,9 @@ export default function () {
                                                         </DataList.Label>
                                                         <DataList.Value>
                                                             {edit
-                                                                ? <TextField.Root
+                                                                ? <TextInput
                                                                     name='username'
-                                                                    value={userData.username}
-                                                                    onChange={handleProfileChange}
+                                                                    control={control}
                                                                 />
                                                                 : <Text size='3'>
                                                                     {userData.username}
@@ -142,10 +122,9 @@ export default function () {
                                                         </DataList.Label>
                                                         <DataList.Value>
                                                             {edit
-                                                                ? <TextField.Root
+                                                                ? <TextInput
                                                                     name='telegramId'
-                                                                    value={userData.telegramId}
-                                                                    onChange={handleProfileChange}
+                                                                    control={control}
                                                                 />
                                                                 : <Text size='3'>
                                                                     {userData.telegramId || '-'}
@@ -159,10 +138,10 @@ export default function () {
                                                             </Text>
                                                         </DataList.Label>
                                                         {edit
-                                                            ?<SelectInput
+                                                            ? <SelectInput
                                                                 size='2'
-                                                                value={userData.notifications}
-                                                                onValueChange={handleSelect}
+                                                                name='notifications'
+                                                                control={control}
                                                                 options={{
                                                                     none: 'None',
                                                                     email: 'E-mail',
@@ -181,9 +160,8 @@ export default function () {
                                                         label={'Allow Endless Campaigns to ' +
                                                             'send you notifications about platform ' +
                                                             'changes and updates.'}
-                                                        value={Number(userData.allowPlatformNotification)}
                                                         name='allowPlatformNotification'
-                                                        onClick={() => handleSwitch('allowPlatformNotification')}
+                                                        control={control}
                                                     />
                                                 }
                                             </Flex>
@@ -206,7 +184,7 @@ export default function () {
                                                                 <IconButton
                                                                     radius='full'
                                                                     color='grass'
-                                                                    onClick={handleSubmitProfileChange}
+                                                                    onClick={handleSubmit(onSubmitProfileChange)}
                                                                 >
                                                                     <CheckIcon/>
                                                                 </IconButton>

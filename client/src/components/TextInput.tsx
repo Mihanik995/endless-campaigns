@@ -4,7 +4,7 @@ import {QuestionMarkIcon} from "@radix-ui/react-icons";
 import {type Control, Controller} from "react-hook-form";
 
 interface Props {
-    label: string,
+    label?: string,
     name: string,
     type?: "number" | "search" | "time" | "text" | "hidden" | "tel" | "url" | "email" | "date" | "datetime-local" | "month" | "password" | "week",
     icon?: ReactElement,
@@ -12,19 +12,21 @@ interface Props {
     required?: boolean
     hint?: ReactElement
     control: Control<any>
+    rules?: object
 }
 
-export default function ({label, name, control, icon, type, placeholder, required, hint}: Props): ReactElement {
+export default function ({label, name, control, icon, type, placeholder, required, hint, rules}: Props): ReactElement {
     return (
         <Text as='label' size='3'>
             <Flex direction='column' gap='1'>
-                {label}:
+                {!!label && `${label}:`}
                 <Flex gap='2'>
                     <Controller
                         name={name}
                         control={control}
                         rules={{
-                            required: required ? undefined : 'This field is required!'
+                            required: required ? undefined : 'This field is required!',
+                            ...rules
                         }}
                         render={({field, fieldState}) =>
                             <Flex direction='column' gap='1'>
@@ -34,7 +36,6 @@ export default function ({label, name, control, icon, type, placeholder, require
                                     type={type || 'text'}
                                     onChange={field.onChange}
                                     onBlur={field.onBlur}
-                                    ref={field.ref}
                                     size='3'
                                     placeholder={placeholder}
                                     variant='soft'

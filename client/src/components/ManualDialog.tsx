@@ -1,5 +1,4 @@
-import {Card, Dialog, Flex, Heading, IconButton, Link, Separator, Strong, Text} from "@radix-ui/themes";
-import SelectInput from "./SelectInput.tsx";
+import {Card, Dialog, Flex, Heading, IconButton, Link, Select, Separator, Strong, Text} from "@radix-ui/themes";
 import {type UIEventHandler, useState} from "react";
 import {ArrowUpIcon, CheckIcon, ExitIcon, PlusIcon} from "@radix-ui/react-icons";
 
@@ -10,6 +9,14 @@ interface Props {
 
 export default function ({open, setOpen}: Props) {
     const [showButton, setShowButton] = useState(false);
+    const navigateOptions = {
+        intro: 'Introduction',
+        nav: 'Navigation',
+        campaigns: 'Campaigns',
+        missions: 'Missions',
+        pairings: 'Pairings',
+        notifications: 'Notifications',
+    }
 
     const scrollTo = (id: string) => {
         const el = document.getElementById(id);
@@ -30,19 +37,15 @@ export default function ({open, setOpen}: Props) {
                 <Separator size='4'/>
             </Dialog.Description>
             <Flex direction='column' gap='5' height='100%'>
-                <SelectInput
-                    placeholder='Manual Navigation'
-                    value={''}
-                    onValueChange={scrollTo}
-                    options={{
-                        intro: 'Introduction',
-                        nav: 'Navigation',
-                        campaigns: 'Campaigns',
-                        missions: 'Missions',
-                        pairings: 'Pairings',
-                        notifications: 'Notifications',
-                    }}
-                />
+                <Select.Root onValueChange={scrollTo}>
+                    <Select.Trigger placeholder='Manual Navigation'/>
+                    <Select.Content>
+                        {Object.entries(navigateOptions)
+                            .map(([key, value]) => (
+                                <Select.Item value={key} key={key}>{value}</Select.Item>
+                            ))}
+                    </Select.Content>
+                </Select.Root>
                 <Separator size='4'/>
                 <Flex direction='column' gap='4'>
                     <Card id='intro' size='2' m='2'>

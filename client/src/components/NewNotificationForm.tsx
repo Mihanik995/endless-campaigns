@@ -1,11 +1,11 @@
 import {Button, Flex, Popover, Spinner, Text} from "@radix-ui/themes";
 import TextInput from "./TextInput.tsx";
-import {type ChangeEventHandler, type MouseEventHandler, useState} from "react";
+import {useState} from "react";
 import type {CustomNotification, CustomNotificationCreate} from "../types.ts";
 import TextAreaInput from "./TextAreaInput.tsx";
 import axios from "../axios/axiosConfig.ts";
-import validateData from "../utils/validators/validateData.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
+import {type SubmitHandler, useForm} from "react-hook-form";
 
 interface Props {
     campaignId: string;
@@ -13,34 +13,22 @@ interface Props {
 }
 
 export default function ({campaignId, setNew}: Props) {
-    const [newNotification, setNewNotification] = useState<CustomNotificationCreate>({
-        heading: '', text: '', campaignId
+    const {control, handleSubmit} = useForm<CustomNotificationCreate>({
+        defaultValues: {campaignId},
+        mode: "onBlur"
     })
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<Error>()
 
-    const handleChange: ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> = (e) => {
-        setNewNotification({
-            ...newNotification,
-            [e.target.name]: e.target.value
-        })
-    }
-
-    const handleSubmit: MouseEventHandler<HTMLButtonElement> = () => {
+    const onSubmit: SubmitHandler<CustomNotificationCreate> = (data) => {
         setIsLoading(true)
-        try {
-            validateData(newNotification)
-            axios.post<CustomNotification>('/campaigns/notifications', newNotification)
-                .then((res) => {
-                    if (res.status === 201) {
-                        setNew(res.data)
-                    }
-                }).catch((err: Error) => setError(err))
-        } catch (error) {
-            setError(error as Error)
-        } finally {
-            setIsLoading(false)
-        }
+        axios.post<CustomNotification>('/campaigns/notifications', data)
+            .then((res) => {
+                if (res.status === 201) {
+                    setNew(res.data)
+                }
+            }).catch((err: Error) => setError(err))
+            .finally(() => setIsLoading(false))
     }
 
     return <Popover.Root>
@@ -59,15 +47,13 @@ export default function ({campaignId, setNew}: Props) {
                     </Text>
                     <TextInput
                         label='Heading'
-                        value={newNotification.heading}
                         name='heading'
-                        onChange={handleChange}
+                        control={control}
                     />
                     <TextAreaInput
                         label='Text'
-                        value={newNotification.text}
                         name='text'
-                        onChange={handleChange}
+                        control={control}
                     />
                     {!!error && <ErrorHandler error={error}/>}
                     <Flex gap='2'>
@@ -75,7 +61,7 @@ export default function ({campaignId, setNew}: Props) {
                             <Button>Cancel</Button>
                         </Popover.Close>
                         <Popover.Close>
-                            <Button onClick={handleSubmit} color='grass'>
+                            <Button onClick={handleSubmit(onSubmit)} color='grass'>
                                 Submit
                             </Button>
                         </Popover.Close>

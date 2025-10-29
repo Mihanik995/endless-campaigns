@@ -1,4 +1,4 @@
-import {type ChangeEventHandler, type MouseEventHandler, useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import {Button, Dialog, Flex, Separator, Spinner} from "@radix-ui/themes";
 import TextInput from "./TextInput.tsx";
 import type {MissionNode, MissionNodeCreate} from "../types.ts";
@@ -8,7 +8,7 @@ import ErrorHandler from "./ErrorHandler.tsx";
 import {type Node, useReactFlow} from '@xyflow/react'
 import validateData from "../utils/validators/validateData.ts";
 import WYSIWYGInput from "./WYSIWYGInput.tsx";
-import type {Editor} from "@tiptap/react";
+import {type SubmitHandler, useForm} from "react-hook-form";
 
 interface Props {
     source: Node
@@ -20,43 +20,32 @@ interface Props {
 export default function ({source, startNode = false, open, setOpen}: Props) {
     const {addNodes, addEdges} = useReactFlow()
 
-    const [nodeData, setNodeData] = useState<MissionNodeCreate>({
-        label: '', buttonLabel: '', narrativeDescription: '', missionConditions: '',
-        positionX: 0, positionY: 0, isMissionStart: startNode,
-        missionId: source.data.missionId as string
-    });
+    const {control, handleSubmit, reset} = useForm<MissionNodeCreate>({
+        defaultValues: {
+            positionX: 0,
+            positionY: 0,
+            missionId: source.data.missionId as string,
+            isMissionStart: startNode
+        },
+         mode: "onBlur"
+    })
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<Error>()
 
     useEffect(() => {
-        setNodeData({
-            label: '', buttonLabel: '', narrativeDescription: '', missionConditions: '',
+        reset({
             positionX: source.position.x,
             positionY: source.position.y + 75,
             missionId: source.data.missionId as string,
-            isMissionStart: startNode,
+            isMissionStart: startNode
         })
     }, [source]);
 
-    const handleChange: ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement> = (e) => {
-        setNodeData({
-            ...nodeData,
-            [e.target.name]: e.target.value
-        })
-    }
-
-    const handleWYSIWYGChange = (name: string, editor:Editor) => {
-        setNodeData({
-            ...nodeData,
-            [name]: editor.getHTML()
-        })
-    }
-
-    const handleSubmit: MouseEventHandler<HTMLButtonElement> = (e) => {
+    const onSubmit: SubmitHandler<MissionNodeCreate> = (data) => {
         setIsLoading(true)
         try {
-            validateData(nodeData)
-            axios.post<MissionNode>('/missions/nodes', nodeData)
+            validateData(data)
+            axios.post<MissionNode>('/missions/nodes', data)
                 .then(res => {
                     if (res.status === 201) {
                         addNodes({
@@ -95,7 +84,6 @@ export default function ({source, startNode = false, open, setOpen}: Props) {
                     }
                 })
         } catch (err) {
-            e.preventDefault()
             setError(err as Error)
         } finally {
             setIsLoading(false)
@@ -114,27 +102,23 @@ export default function ({source, startNode = false, open, setOpen}: Props) {
                             label='Node label'
                             placeholder='using only for mission editor navigation'
                             name='label'
-                            value={nodeData.label}
-                            onChange={handleChange}
+                            control={control}
                         />
                         <TextInput
                             label='Button label'
                             placeholder='button sign for players to choose the path'
                             name='buttonLabel'
-                            value={nodeData.buttonLabel}
-                            onChange={handleChange}
+                            control={control}
                         />
                         <TextAreaInput
                             label='Narrative Description'
                             name='narrativeDescription'
-                            value={nodeData.narrativeDescription}
-                            onChange={handleChange}
+                            control={control}
                         />
                         <WYSIWYGInput
                             label='Mission Conditions'
                             name='missionConditions'
-                            value={nodeData.missionConditions}
-                            onChange={handleWYSIWYGChange}
+                            control={control}
                         />
                         <Separator size='4'/>
                         {!!error && <ErrorHandler error={error}/>}
@@ -143,7 +127,7 @@ export default function ({source, startNode = false, open, setOpen}: Props) {
                                 <Button>Cancel</Button>
                             </Dialog.Close>
                             <Dialog.Close>
-                                <Button color='grass' onClick={handleSubmit}>
+                                <Button color='grass' onClick={handleSubmit(onSubmit)}>
                                     Submit
                                 </Button>
                             </Dialog.Close>

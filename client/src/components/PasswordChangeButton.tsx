@@ -1,4 +1,4 @@
-import {type ChangeEvent, type MouseEventHandler, useState} from "react";
+import {useState} from "react";
 import axios from "../axios/axiosConfig.ts";
 import {Button, Flex, IconButton, Popover, Strong, Text, Tooltip} from "@radix-ui/themes";
 import {DotsHorizontalIcon} from "@radix-ui/react-icons";
@@ -6,8 +6,7 @@ import {useAppDispatch, useAppSelector} from "../app/hooks.ts";
 import {logout, selectAuth} from "../app/features/auth/authSlice.ts";
 import TextInput from "./TextInput.tsx";
 import ErrorHandler from "./ErrorHandler.tsx";
-import validatePassword from "../utils/validators/validatePassword.ts";
-import validateData from "../utils/validators/validateData.ts";
+import {type SubmitHandler, useForm} from "react-hook-form";
 
 interface NewPassword {
     [key: string]: string;
@@ -21,27 +20,15 @@ export default function () {
     const dispatch = useAppDispatch();
     const [error, setError] = useState<Error>()
 
-    const [newPassword, setNewPassword] = useState<NewPassword>({
-        password: '',
-        confirmPassword: '',
+    const {control, handleSubmit, watch} = useForm<NewPassword>({
+        mode: "onBlur"
     })
-    const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-        setNewPassword({
-            ...newPassword,
-            [event.target.name]: event.target.value
-        })
-    }
-    const handleSubmit: MouseEventHandler<HTMLButtonElement> = () => {
-        try {
-            validateData<NewPassword>(newPassword)
-            validatePassword<NewPassword>(newPassword)
-            axios.put(`/auth/${id}/change-password`, {password: newPassword.password})
-                .then((response) => {
-                    if (response.status === 200) dispatch(logout())
-                })
-        } catch (error) {
-            setError(error as Error)
-        }
+    const onSubmit: SubmitHandler<NewPassword> = (data) => {
+        axios.put(`/auth/${id}/change-password`, {password: data.password})
+            .then((response) => {
+                if (response.status === 200) dispatch(logout())
+            })
+            .catch((error) => setError(error as Error))
     }
 
     return (
@@ -59,15 +46,23 @@ export default function () {
                         label='Password'
                         name='password'
                         type='password'
-                        value={newPassword.password}
-                        onChange={handleChange}
+                        control={control}
+                        rules={{
+                            minLength: {
+                                value: 8,
+                                message: 'Password should be minimum 8 symbols length',
+                            }
+                        }}
                     />
                     <TextInput
                         label='Confirm Password'
                         name='confirmPassword'
                         type='password'
-                        value={newPassword.confirmPassword}
-                        onChange={handleChange}
+                        control={control}
+                        rules={{
+                            validate: (value: string)  =>
+                                value === watch('password') || "Passwords don't match"
+                        }}
                     />
                     <Text>
                         <Strong>Notice!</Strong> After the submission you'll be logged out.
@@ -81,7 +76,7 @@ export default function () {
                         <Popover.Close>
                             <Button
                                 color='grass'
-                                onClick={handleSubmit}
+                                onClick={handleSubmit(onSubmit)}
                             >
                                 Submit
                             </Button>

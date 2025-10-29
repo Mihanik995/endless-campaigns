@@ -2,28 +2,30 @@ import {Button, Flex, IconButton, Popover, Strong, Text, Tooltip} from "@radix-u
 import {EnvelopeClosedIcon} from "@radix-ui/react-icons";
 import {useAppDispatch, useAppSelector} from "../app/hooks.ts";
 import {logout, selectAuth} from "../app/features/auth/authSlice.ts";
-import {type MouseEventHandler, useState} from "react";
+import {useState} from "react";
 import axios from "../axios/axiosConfig.ts";
 import TextInput from "./TextInput.tsx";
 import ErrorHandler from "./ErrorHandler.tsx";
-import validateString from "../utils/validators/validateString.ts";
+import {type SubmitHandler, useForm} from "react-hook-form";
+
+interface NewEmail {
+    email: string;
+}
 
 export default function () {
     const {id} = useAppSelector(selectAuth);
     const dispatch = useAppDispatch();
     const [error, setError] = useState<Error>()
 
-    const [newEmail, setNewEmail] = useState<string>('')
-    const handleSubmit: MouseEventHandler<HTMLButtonElement> = () => {
-        try {
-            validateString('Email', newEmail)
-            axios.put(`/auth/${id}/change-email`, {email: newEmail})
-                .then((response) => {
-                    if (response.status === 200) dispatch(logout())
-                })
-        } catch (error) {
-            setError(error as Error)
-        }
+    const {control, handleSubmit} = useForm<NewEmail>({
+        mode: "onBlur"
+    })
+    const onSubmit: SubmitHandler<NewEmail> = (data) => {
+        axios.put(`/auth/${id}/change-email`, data)
+            .then((response) => {
+                if (response.status === 200) dispatch(logout())
+            })
+            .catch((error) => setError(error as Error))
     }
 
     return (
@@ -40,8 +42,7 @@ export default function () {
                     <TextInput
                         label='Email'
                         name='email'
-                        value={newEmail}
-                        onChange={(e) => setNewEmail(e.target.value)}
+                        control={control}
                     />
                     <Text>
                         <Strong>Notice!</Strong> After the submission you'll be logged out and have to verify your new
@@ -57,7 +58,7 @@ export default function () {
                         <Popover.Close>
                             <Button
                                 color='grass'
-                                onClick={handleSubmit}
+                                onClick={handleSubmit(onSubmit)}
                             >
                                 Submit
                             </Button>

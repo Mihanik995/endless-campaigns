@@ -1,10 +1,10 @@
 import {Button, Flex, Popover} from "@radix-ui/themes";
 import TextInput from "./TextInput.tsx";
 import ErrorHandler from "./ErrorHandler.tsx";
-import {type ChangeEvent, type MouseEventHandler, useState} from "react";
+import {useState} from "react";
 import type {CampaignPeriod, CampaignPeriodCreate} from "../types.ts";
-import validateData from "../utils/validators/validateData.ts";
 import axios from "../axios/axiosConfig.ts";
+import {type SubmitHandler, useForm} from "react-hook-form";
 
 interface Props {
     campaignId: string
@@ -13,27 +13,19 @@ interface Props {
 }
 
 export default function ({campaignId, periods, setPeriods}: Props) {
-    const [newPeriod, setNewPeriod] = useState<CampaignPeriodCreate>({
-        campaignId: campaignId,
-        dateStart: '',
-        dateEnd: ''
+    const {control, handleSubmit, reset} = useForm<CampaignPeriodCreate>({
+        defaultValues: {campaignId},
+        mode: "onBlur"
     })
 
     const [createError, setCreateError] = useState<Error>()
-    const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-        setNewPeriod({
-            ...newPeriod,
-            [event.target.name]: event.target.value
-        })
-    }
-    const handleSubmit: MouseEventHandler<HTMLButtonElement> = () => {
+    const onSubmit: SubmitHandler<CampaignPeriodCreate> = (data) => {
         try {
-            validateData<CampaignPeriodCreate>(newPeriod)
-            axios.post('/campaigns/periods', newPeriod)
+            axios.post('/campaigns/periods', data)
                 .then(res => {
                     if (res.status === 200) {
                         setPeriods([...periods, {...res.data}])
-                        setNewPeriod({id: '', campaignId, dateStart: '', dateEnd: ''})
+                        reset({campaignId, dateStart: '', dateEnd: ''})
                     }
                 })
         } catch (error) {
@@ -52,15 +44,13 @@ export default function ({campaignId, periods, setPeriods}: Props) {
                         label='Start Date'
                         name='dateStart'
                         type='date'
-                        value={newPeriod.dateStart.slice(0, 10)}
-                        onChange={handleChange}
+                        control={control}
                     />
                     <TextInput
                         label='End Date'
                         name='dateEnd'
                         type='date'
-                        value={newPeriod.dateEnd.slice(0, 10)}
-                        onChange={handleChange}
+                        control={control}
                     />
                     {!!createError && <ErrorHandler error={createError}/>}
                     <Flex gap='2'>
@@ -70,7 +60,7 @@ export default function ({campaignId, periods, setPeriods}: Props) {
                         <Popover.Close>
                             <Button
                                 color='grass'
-                                onClick={handleSubmit}
+                                onClick={handleSubmit(onSubmit)}
                             >
                                 Submit
                             </Button>

@@ -1,65 +1,34 @@
-import {type ChangeEvent, type MouseEventHandler, type ReactElement, useState} from "react";
+import {type ReactElement, useState} from "react";
 import Header from "../components/Header.tsx";
 import axios from "axios";
 import {Button, Card, Flex, Heading, Link, Separator, Text} from "@radix-ui/themes";
 import {EnvelopeClosedIcon, LockClosedIcon, PersonIcon} from "@radix-ui/react-icons";
 import TextInput from "../components/TextInput.tsx";
 import type {UserRegister} from "../types.ts";
-import validateData from "../utils/validators/validateData.ts";
-import validatePassword from "../utils/validators/validatePassword.ts";
 import ErrorHandler from "../components/ErrorHandler.tsx";
 import CheckInput from "../components/CheckInput.tsx";
 import SelectInput from "../components/SelectInput.tsx";
+import {type SubmitHandler, useForm} from "react-hook-form";
 
 export default function (): ReactElement {
     const [error, setError] = useState<Error>()
-    const [registerData, setRegisterData] = useState<UserRegister>({
-        username: '',
-        password: '',
-        confirmPassword: '',
-        email: '',
-        notifications: 'none',
-        allowPlatformNotification: false
+    const {control, handleSubmit, watch} = useForm<UserRegister>({
+        defaultValues: {allowPlatformNotification: false},
+        mode: "onBlur"
     })
 
-    const handleChange = function (e: ChangeEvent<HTMLInputElement>) {
-        setRegisterData({
-            ...registerData,
-            [e.target.name]: e.target.value
-        })
-    }
-
-    const handleSelect = (name: string, value: string) => {
-        setRegisterData({
-            ...registerData,
-            [name]: value
-        })
-    }
-
-    const handleSwitch = (name: string) => {
-        setRegisterData({
-            ...registerData,
-            [name]: !registerData[name]
-        })
-    }
-
-    const handleSubmit: MouseEventHandler<HTMLButtonElement> = function (e) {
-        e.preventDefault();
-        try {
-            validateData<UserRegister>(registerData)
-            validatePassword<UserRegister>(registerData)
-            axios.post(
-                import.meta.env.VITE_BACKEND_URL
-                    ? `${import.meta.env.VITE_BACKEND_URL}/auth/register`
-                    : `/api/auth/register`,
-                registerData,
-                {headers: {'Content-Type': 'application/json'}}
-            ).then(res => {
+    const onSubmit: SubmitHandler<UserRegister> = function (data) {
+        axios.post(
+            import.meta.env.VITE_BACKEND_URL
+                ? `${import.meta.env.VITE_BACKEND_URL}/auth/register`
+                : `/api/auth/register`,
+            data,
+            {headers: {'Content-Type': 'application/json'}}
+        )
+            .then(res => {
                 if (res.status === 201) setSuccess(true)
             })
-        } catch (error) {
-            setError(error as Error)
-        }
+            .catch((error) => setError(error as Error))
     }
 
     const [success, setSuccess] = useState(false)
@@ -89,17 +58,25 @@ export default function (): ReactElement {
                                     <TextInput
                                         label='Username'
                                         name='username'
-                                        value={registerData.username}
-                                        onChange={handleChange}
+                                        control={control}
                                         icon={<PersonIcon/>}
                                     />
                                     <TextInput
                                         label='E-mail'
                                         type='email'
                                         name='email'
-                                        value={registerData.email}
-                                        onChange={handleChange}
+                                        control={control}
                                         icon={<EnvelopeClosedIcon/>}
+                                        rules={{
+                                            pattern: {
+                                                value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                                                message: 'Incorrect e-mail',
+                                            },
+                                            maxLength: {
+                                                value: 254,
+                                                message: 'Email is too long',
+                                            },
+                                        }}
                                     />
                                 </Flex>
                                 <Flex direction='column' gap='3'>
@@ -107,16 +84,24 @@ export default function (): ReactElement {
                                         label='Password'
                                         type='password'
                                         name='password'
-                                        value={registerData.password}
-                                        onChange={handleChange}
+                                        control={control}
+                                        rules={{
+                                            minLength: {
+                                                value: 8,
+                                                message: 'Password should be minimum 8 symbols length',
+                                            }
+                                        }}
                                         icon={<LockClosedIcon/>}
                                     />
                                     <TextInput
                                         label='Confirm Password'
                                         type='password'
                                         name='confirmPassword'
-                                        value={registerData.confirmPassword}
-                                        onChange={handleChange}
+                                        control={control}
+                                        rules={{
+                                            validate: (value: string) =>
+                                                value === watch('password') || "Passwords don't match"
+                                        }}
                                         icon={<LockClosedIcon/>}
                                     />
                                 </Flex>
@@ -133,10 +118,8 @@ export default function (): ReactElement {
                             }}>
                                 <SelectInput
                                     label='Notifications'
-                                    value={registerData.notifications}
-                                    onValueChange={
-                                        (value) => handleSelect('notifications', value)
-                                    }
+                                    name='notifications'
+                                    control={control}
                                     options={{
                                         none: 'None',
                                         email: 'E-mail',
@@ -151,9 +134,8 @@ export default function (): ReactElement {
                                 />
                                 <CheckInput
                                     label='Platform News'
-                                    value={Number(registerData.allowPlatformNotification)}
                                     name='allowPlatformNotification'
-                                    onClick={() => handleSwitch('allowPlatformNotification')}
+                                    control={control}
                                     hint={<Text>
                                         Allow Endless Campaigns to send you
                                         notifications about platform changes and updates.
@@ -163,7 +145,7 @@ export default function (): ReactElement {
                             <Separator size='4'/>
                             {!!error && <ErrorHandler error={error}/>}
                             <Button
-                                onClick={handleSubmit}
+                                onClick={handleSubmit(onSubmit)}
                                 size='3'
                             >
                                 Register

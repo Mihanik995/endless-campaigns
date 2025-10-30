@@ -1,4 +1,4 @@
-import type {Request, Response} from "express";
+import type {Request, Response, NextFunction} from "express";
 import type {User} from "../../generated/prisma";
 
 declare function require(module: string): any;
@@ -19,7 +19,7 @@ const dbClient = new PrismaClient();
 
 type UserData = Partial<User>
 
-authRouter.post('/register', (req: Request, res: Response) => {
+authRouter.post('/register', (req: Request, res: Response, next: NextFunction) => {
     const {password, ...data} = req.body;
     delete data.confirmPassword
     const salt = crypto.randomBytes(16)
@@ -45,12 +45,12 @@ authRouter.post('/register', (req: Request, res: Response) => {
         })
             .then(() => res.sendStatus(201))
             .catch((err: Error) => {
-                res.status(500).send({error: err.message})
+                next(err)
             })
     })
 })
 
-authRouter.get('/verify/:token', (req: Request, res: Response) => {
+authRouter.get('/verify/:token', (req: Request, res: Response, next: NextFunction) => {
     const {token} = req.params;
     const {userId} = jwt.verify(token, process.env.JWT_SECRET);
     if (!userId) return res.status(400).send({error: 'Invalid link'});
@@ -58,10 +58,10 @@ authRouter.get('/verify/:token', (req: Request, res: Response) => {
         .then((user: User) => {
             if (user) res.status(200).send({userId})
         })
-        .catch((err: Error) => res.status(500).send({error: err.message}))
+        .catch((err: Error) => next(err))
 })
 
-authRouter.post('/login', async (req: Request, res: Response) => {
+authRouter.post('/login', async (req: Request, res: Response, next: NextFunction) => {
     const {username, password, rememberMe} = req.body;
     dbClient.user.findUnique({where: {username}})
         .then((user: User) => {
@@ -89,10 +89,10 @@ authRouter.post('/login', async (req: Request, res: Response) => {
                     .cookie('refreshToken', refreshToken, {httpOnly: true, maxAge: refreshTokenExpires * 1000})
                     .json({accessToken, userId, username});
             });
-        }).catch((err: Error) => res.status(500).send({error: err.message}));
+        }).catch((err: Error) => next(err));
 });
 
-authRouter.post('/refresh', async (req: Request, res: Response) => {
+authRouter.post('/refresh', async (req: Request, res: Response, next: NextFunction) => {
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) return res.status(401).json({error: 'Authentication failed'});
 
@@ -103,11 +103,11 @@ authRouter.post('/refresh', async (req: Request, res: Response) => {
         const accessToken = jwt.sign({userId, username}, process.env.JWT_SECRET, {expiresIn: '5m'});
         return res.status(200).json({accessToken, userId, username});
     } catch (error) {
-        return res.status(401).json({error: 'Authentication failed'});
+        next(error);
     }
 })
 
-authRouter.post('/forgot-password', async (req: Request, res: Response) => {
+authRouter.post('/forgot-password', async (req: Request, res: Response, next: NextFunction) => {
     const {email} = req.body;
     try {
         const user = await dbClient.user.findUnique({where: {email}}) as User
@@ -121,11 +121,11 @@ authRouter.post('/forgot-password', async (req: Request, res: Response) => {
         })
         res.sendStatus(200)
     } catch (error) {
-        res.status(500).send({error});
+        next(error)
     }
 })
 
-authRouter.get('/restore-access/:token', async (req: Request, res: Response) => {
+authRouter.get('/restore-access/:token', async (req: Request, res: Response, next: NextFunction) => {
     const {token} = req.params;
     try {
         const {userId, username} = jwt.verify(token, process.env.JWT_SECRET);
@@ -136,17 +136,21 @@ authRouter.get('/restore-access/:token', async (req: Request, res: Response) => 
             .cookie('refreshToken', refreshToken, {httpOnly: true, maxAge: 3 * 24 * 60 * 60})
             .json({userId, username, accessToken});
     } catch (error) {
-        res.status(500).send({error});
+        next(error)
     }
 })
 
-authRouter.post('/logout', (req: Request, res: Response) => {
-    delete req.cookies.refreshToken
-    res.cookie('refreshToken', null)
-        .sendStatus(200)
+authRouter.post('/logout', (req: Request, res: Response, next: NextFunction) => {
+    try {
+        delete req.cookies.refreshToken
+        res.cookie('refreshToken', null)
+            .sendStatus(200)
+    } catch (err) {
+        next(err)
+    }
 })
 
-authRouter.get('/:id', verifyToken, async (req: Request, res: Response) => {
+authRouter.get('/:id', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const {id} = req.params;
     try {
         const user: UserData = await dbClient.user.findUnique({where: {id}})
@@ -155,11 +159,11 @@ authRouter.get('/:id', verifyToken, async (req: Request, res: Response) => {
         delete user.password
         return res.status(200).json(user)
     } catch (error) {
-        res.status(500).json({error})
+        next(error)
     }
 })
 
-authRouter.put('/:id', verifyToken, async (req: Request, res: Response) => {
+authRouter.put('/:id', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const {id} = req.params;
     const token = req.header('Authorization');
     const data: UserData = req.body;
@@ -177,11 +181,11 @@ authRouter.put('/:id', verifyToken, async (req: Request, res: Response) => {
         delete user.salt
         return res.status(200).json(user)
     } catch (error) {
-        res.status(500).json({error})
+        next(error)
     }
 })
 
-authRouter.put('/:id/change-password', verifyToken, async (req: Request, res: Response) => {
+authRouter.put('/:id/change-password', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const {id} = req.params;
     const token = req.header('Authorization');
     const {password} = req.body;
@@ -198,11 +202,11 @@ authRouter.put('/:id/change-password', verifyToken, async (req: Request, res: Re
                 })
         })
     } catch (error) {
-        res.status(500).json({error})
+        next(error)
     }
 })
 
-authRouter.put('/:id/change-email', verifyToken, async (req: Request, res: Response) => {
+authRouter.put('/:id/change-email', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const {id} = req.params;
     const token = req.header('Authorization');
     const {email} = req.body;
@@ -222,7 +226,7 @@ authRouter.put('/:id/change-email', verifyToken, async (req: Request, res: Respo
         })
         return res.sendStatus(200)
     } catch (error) {
-        res.status(500).json({error});
+        next(error)
     }
 })
 

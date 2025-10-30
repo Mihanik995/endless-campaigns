@@ -1,4 +1,4 @@
-import type {Request, Response} from "express";
+import type {Request, Response, NextFunction} from "express";
 import type {Campaign} from "../../../generated/prisma";
 
 const {Router} = require("express")
@@ -12,7 +12,7 @@ require("dotenv").config();
 const periodsRouter = Router();
 const dbClient = new PrismaClient();
 
-periodsRouter.post('/', verifyToken, async (req: Request, res: Response) => {
+periodsRouter.post('/', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const data = req.body;
     const token = req.header('Authorization');
     try {
@@ -27,21 +27,21 @@ periodsRouter.post('/', verifyToken, async (req: Request, res: Response) => {
         const period = await dbClient.campaignPeriod.create({data})
         return res.status(200).json(period)
     } catch (error) {
-        res.status(500).json({error})
+        next(error)
     }
 })
 
-periodsRouter.get('/:campaignId', verifyToken, async (req: Request, res: Response) => {
+periodsRouter.get('/:campaignId', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const {campaignId} = req.params;
     try {
         const periods = await dbClient.campaignPeriod.findMany({where: {campaignId}});
         return res.status(200).json(periods)
     } catch (error) {
-        res.status(500).json({error})
+        next(error)
     }
 })
 
-periodsRouter.put('/:id', verifyToken, async (req: Request, res: Response) => {
+periodsRouter.put('/:id', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const {id} = req.params;
     const data = req.body;
     if (data.dateStart) data.dateStart = new Date(data.dateStart)
@@ -51,15 +51,15 @@ periodsRouter.put('/:id', verifyToken, async (req: Request, res: Response) => {
         if (!period) return res.status(404).json({error: "Period not found"});
         return res.status(200).json(period)
     } catch (error) {
-        res.status(500).json({error})
+        next(error)
     }
 })
 
-periodsRouter.delete('/:id', verifyToken, async (req: Request, res: Response) => {
+periodsRouter.delete('/:id', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const {id} = req.params;
     dbClient.campaignPeriod.delete({where: {id}})
         .then(() => res.sendStatus(204))
-        .catch((error: Error) => res.status(500).json({error}))
+        .catch((error: Error) => next(error))
 })
 
 module.exports = periodsRouter

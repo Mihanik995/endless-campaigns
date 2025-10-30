@@ -1,4 +1,4 @@
-import type {Request, Response} from 'express'
+import type {Request, Response, NextFunction} from 'express'
 
 const {Router} = require('express');
 const {verifyToken} = require('../auth/middleware')
@@ -21,7 +21,7 @@ missionsRouter.use('/questions', questionsRouter)
 missionsRouter.use('/node-links', linksRouter)
 missionsRouter.use('/nodes', nodesRouter)
 
-missionsRouter.post('/', verifyToken, async (req: Request, res: Response) => {
+missionsRouter.post('/', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const data = req.body
     const token = req.header('Authorization')
     try {
@@ -31,11 +31,11 @@ missionsRouter.post('/', verifyToken, async (req: Request, res: Response) => {
         const mission = await dbClient.mission.create({data})
         res.status(201).json(mission)
     } catch (error) {
-        res.status(500).json({error})
+        next(error)
     }
 })
 
-missionsRouter.get('/:id', verifyToken, async (req: Request, res: Response) => {
+missionsRouter.get('/:id', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id
     try {
         const missions = await dbClient.mission.findUnique({
@@ -44,22 +44,22 @@ missionsRouter.get('/:id', verifyToken, async (req: Request, res: Response) => {
         })
         res.status(200).json(missions)
     } catch (error) {
-        res.status(500).json({error})
+        next(error)
     }
 })
 
-missionsRouter.get('/', verifyToken, async (req: Request, res: Response) => {
+missionsRouter.get('/', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const token = req.header('Authorization')
     try {
         const {userId} = jwt.verify(token, process.env.JWT_SECRET)
         const missions = await dbClient.mission.findMany({where: {creatorId: userId}})
         res.status(200).json(missions)
     } catch (error) {
-        res.status(500).json({error})
+        next(error)
     }
 })
 
-missionsRouter.put('/:id', verifyToken, async (req: Request, res: Response) => {
+missionsRouter.put('/:id', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id
     const token = req.header('Authorization')
     const data = req.body
@@ -71,11 +71,11 @@ missionsRouter.put('/:id', verifyToken, async (req: Request, res: Response) => {
         const updatedMission = await dbClient.mission.update({where: {id}, data})
         res.status(200).json(updatedMission)
     } catch (error) {
-        res.status(500).json({error})
+        next(error)
     }
 })
 
-missionsRouter.delete('/:id', verifyToken, async (req: Request, res: Response) => {
+missionsRouter.delete('/:id', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id
     const token = req.header('Authorization')
     try {
@@ -86,7 +86,7 @@ missionsRouter.delete('/:id', verifyToken, async (req: Request, res: Response) =
         dbClient.mission.delete({where: {id}})
             .then(() => res.sendStatus(204))
     } catch (error) {
-        res.status(500).json({error})
+        next(error)
     }
 })
 

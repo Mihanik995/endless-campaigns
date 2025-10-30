@@ -1,4 +1,4 @@
-import type {Request, Response} from 'express';
+import type {Request, Response, NextFunction} from 'express';
 
 const {Router} = require("express");
 const {PrismaClient} = require("../../../generated/prisma");
@@ -12,7 +12,7 @@ require("dotenv").config();
 const questionsRouter = new Router();
 const dbClient = new PrismaClient();
 
-questionsRouter.post("/", verifyToken, async (req: Request, res: Response) => {
+questionsRouter.post("/", verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const {text, missionId} = req.body;
     const token = req.header("Authorization");
     try {
@@ -25,22 +25,21 @@ questionsRouter.post("/", verifyToken, async (req: Request, res: Response) => {
         await newQuestionNotify(question.mission)
         res.status(201).json(question)
     } catch (error) {
-        console.error(error)
-        res.status(500).json({error})
+        next(error)
     }
 })
 
-questionsRouter.get("/mission/:missionId", verifyToken, async (req: Request, res: Response) => {
+questionsRouter.get("/mission/:missionId", verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const {missionId} = req.params;
     try {
         const questions = await dbClient.question.findMany({where: {missionId}})
         res.status(200).json(questions)
     } catch (error) {
-        res.status(500).json({error})
+        next(error)
     }
 })
 
-questionsRouter.put('/:id', verifyToken, async (req: Request, res: Response) => {
+questionsRouter.put('/:id', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const {id} = req.params;
     const data = req.body;
     try {
@@ -52,17 +51,17 @@ questionsRouter.put('/:id', verifyToken, async (req: Request, res: Response) => 
         })
         res.status(200).json(updatedQuestion)
     } catch (error) {
-        res.status(500).json({error})
+        next(error)
     }
 })
 
-questionsRouter.delete('/:id', verifyToken, async (req: Request, res: Response) => {
+questionsRouter.delete('/:id', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const {id} = req.params;
     try {
         dbClient.question.delete({where: {id}})
             .then(() => res.sendStatus(204))
     } catch (error) {
-        res.status(500).json({error})
+        next(error)
     }
 })
 

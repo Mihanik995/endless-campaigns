@@ -6,7 +6,6 @@ import TextAreaInput from "./TextAreaInput.tsx";
 import axios from "../axios/axiosConfig.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
 import {type Node, useReactFlow} from '@xyflow/react'
-import validateData from "../utils/validators/validateData.ts";
 import WYSIWYGInput from "./WYSIWYGInput.tsx";
 import {type SubmitHandler, useForm} from "react-hook-form";
 
@@ -27,7 +26,7 @@ export default function ({source, startNode = false, open, setOpen}: Props) {
             missionId: source.data.missionId as string,
             isMissionStart: startNode
         },
-         mode: "onBlur"
+        mode: "onBlur"
     })
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<Error>()
@@ -43,51 +42,50 @@ export default function ({source, startNode = false, open, setOpen}: Props) {
 
     const onSubmit: SubmitHandler<MissionNodeCreate> = (data) => {
         setIsLoading(true)
-        try {
-            validateData(data)
-            axios.post<MissionNode>('/missions/nodes', data)
-                .then(res => {
-                    if (res.status === 201) {
-                        addNodes({
-                            id: res.data.id,
-                            position: {x: res.data.positionX, y: res.data.positionY},
-                            data: {
-                                label: res.data.label,
-                                buttonLabel: res.data.buttonLabel,
-                                narrativeDescription: res.data.narrativeDescription,
-                                missionConditions: res.data.missionConditions,
-                                missionId: res.data.missionId
-                            },
-                            type: 'missionNode'
-                        })
-                        if (!startNode) return axios.post('/missions/node-links', {
-                            fromId: source.id,
-                            toId: res.data.id,
-                        })
-                        else addEdges({
+        axios.post<MissionNode>('/missions/nodes', data)
+            .then(res => {
+                if (res.status === 201) {
+                    addNodes({
+                        id: res.data.id,
+                        position: {x: res.data.positionX, y: res.data.positionY},
+                        data: {
+                            label: res.data.label,
+                            buttonLabel: res.data.buttonLabel,
+                            narrativeDescription: res.data.narrativeDescription,
+                            missionConditions: res.data.missionConditions,
+                            missionId: res.data.missionId
+                        },
+                        type: 'missionNode'
+                    })
+                    if (!startNode) return axios.post('/missions/node-links', {
+                        fromId: source.id,
+                        toId: res.data.id,
+                    })
+                    else {
+                        addEdges({
                             id: '0',
                             source: source.id,
                             target: res.data.id,
                             animated: true
                         })
+                        setOpen(false)
                     }
-                })
-                .then(res => {
-                    if (res && res.status === 201) {
-                        addEdges({
-                            id: `${res.data.id}`,
-                            source: res.data.fromId,
-                            target: res.data.toId,
-                            type: 'customEdge',
-                            animated: true
-                        })
-                    }
-                })
-        } catch (err) {
-            setError(err as Error)
-        } finally {
-            setIsLoading(false)
-        }
+                }
+            })
+            .then(res => {
+                if (res && res.status === 201) {
+                    addEdges({
+                        id: `${res.data.id}`,
+                        source: res.data.fromId,
+                        target: res.data.toId,
+                        type: 'customEdge',
+                        animated: true
+                    })
+                    setOpen(false)
+                }
+            })
+            .catch((err) => setError(err as Error))
+            .finally(() => setIsLoading(false))
     }
 
     return (

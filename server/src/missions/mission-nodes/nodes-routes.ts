@@ -1,4 +1,4 @@
-import type {Request, Response} from 'express'
+import type {Request, Response, NextFunction} from 'express'
 import type {MissionNode} from "../../../generated/prisma";
 
 const {Router} = require('express')
@@ -11,18 +11,17 @@ require('dotenv').config()
 const nodesRouter = Router()
 const dbClient = new PrismaClient()
 
-nodesRouter.post('/', verifyToken, async (req: Request, res: Response) => {
+nodesRouter.post('/', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const data = req.body
     try {
         const node = await dbClient.missionNode.create({data})
         res.status(201).send(node)
     } catch (error) {
-        console.log(error)
-        res.status(500).json({error})
+        next(error)
     }
 })
 
-nodesRouter.get('/:id', verifyToken, async (req: Request, res: Response) => {
+nodesRouter.get('/:id', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id
     try {
         const node = await dbClient.missionNode.findUnique({
@@ -32,11 +31,11 @@ nodesRouter.get('/:id', verifyToken, async (req: Request, res: Response) => {
         if (!node) return res.status(404).send('Node not found')
         res.status(200).send(node)
     } catch (error) {
-        res.status(500).json({error})
+        next(error)
     }
 })
 
-nodesRouter.get('/mission/:id', verifyToken, async (req: Request, res: Response) => {
+nodesRouter.get('/mission/:id', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id
     try {
         const nodes: MissionNode[] = await dbClient.missionNode.findMany({where: {missionId: id}});
@@ -45,11 +44,11 @@ nodesRouter.get('/mission/:id', verifyToken, async (req: Request, res: Response)
         });
         res.status(200).json({nodes, links})
     } catch (error) {
-        res.status(500).json({error})
+        next(error)
     }
 })
 
-nodesRouter.put('/:id', verifyToken, async (req: Request, res: Response) => {
+nodesRouter.put('/:id', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id
     const data = req.body
     try {
@@ -58,21 +57,21 @@ nodesRouter.put('/:id', verifyToken, async (req: Request, res: Response) => {
         const updatedNode = await dbClient.missionNode.update({where: {id}, data})
         res.status(200).send(updatedNode)
     } catch (error) {
-        res.status(500).json({error})
+        next(error)
     }
 })
 
-nodesRouter.delete('/:id', (req: Request, res: Response) => {
+nodesRouter.delete('/:id', (req: Request, res: Response, next: NextFunction) => {
     const id = req.params.id
     try {
         dbClient.missionNode.delete({where: {id}})
             .then(() => res.sendStatus(204))
     } catch (error) {
-        res.status(500).json({error})
+        next(error)
     }
 })
 
-nodesRouter.post('/passed/:id', verifyToken, async (req: Request, res: Response) => {
+nodesRouter.post('/passed/:id', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const nodeId = req.params.id
     const {pairingId} = req.body
     const token = req.header('Authorization')
@@ -83,12 +82,11 @@ nodesRouter.post('/passed/:id', verifyToken, async (req: Request, res: Response)
         })
         res.status(201).send(nodePassed)
     } catch (error) {
-        console.log(error)
-        res.status(500).json({error})
+        next(error)
     }
 })
 
-nodesRouter.get('/passed/pairing/:id', verifyToken, async (req: Request, res: Response) => {
+nodesRouter.get('/passed/pairing/:id', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const pairingId = req.params.id
     try {
         const nodesPassed = await dbClient.nodesPassedOnPairing.findMany({
@@ -97,11 +95,11 @@ nodesRouter.get('/passed/pairing/:id', verifyToken, async (req: Request, res: Re
         })
         res.status(200).send(nodesPassed)
     } catch (error) {
-        res.status(500).json({error})
+        next(error)
     }
 })
 
-nodesRouter.post('/cancel-pass/:id', verifyToken, async (req: Request, res: Response) => {
+nodesRouter.post('/cancel-pass/:id', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const nodeId = req.params.id
     const {pairingId} = req.body
     const token = req.header('Authorization')
@@ -113,7 +111,7 @@ nodesRouter.post('/cancel-pass/:id', verifyToken, async (req: Request, res: Resp
             }
         }).then(() => res.sendStatus(204))
     } catch (error) {
-        res.status(500).json({error})
+        next(error)
     }
 })
 

@@ -1,4 +1,4 @@
-import type {Request, Response} from 'express'
+import type {Request, Response, NextFunction} from 'express'
 
 const {Router} = require('express')
 const {PrismaClient} = require('../../../generated/prisma')
@@ -11,7 +11,7 @@ require('dotenv').config()
 const notificationsRouter = new Router()
 const dbClient = new PrismaClient()
 
-notificationsRouter.post('/', verifyToken, async (req: Request, res: Response) => {
+notificationsRouter.post('/', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const data = req.body
     const token = req.header('Authorization')
     try {
@@ -26,7 +26,7 @@ notificationsRouter.post('/', verifyToken, async (req: Request, res: Response) =
         await customNotification(campaign, notification)
         return res.status(201).send(notification)
     } catch (error) {
-        res.status(500).send({error})
+        next(error)
     }
 })
 

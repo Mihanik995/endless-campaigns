@@ -77,6 +77,7 @@ nodesRouter.post('/passed/:id', verifyToken, async (req: Request, res: Response,
     const token = req.header('Authorization')
     try {
         const {userId: playerId} = jwt.verify(token, process.env.JWT_SECRET)
+        console.log(playerId, nodeId, pairingId)
         const nodePassed = await dbClient.nodesPassedOnPairing.create({
             data: {playerId, pairingId, nodeId}
         })

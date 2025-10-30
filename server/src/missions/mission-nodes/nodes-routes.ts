@@ -77,7 +77,10 @@ nodesRouter.post('/passed/:id', verifyToken, async (req: Request, res: Response,
     const token = req.header('Authorization')
     try {
         const {userId: playerId} = jwt.verify(token, process.env.JWT_SECRET)
-        console.log(playerId, nodeId, pairingId)
+        const nodeExists = await dbClient.missionNode.findUnique({where: {id: nodeId}})
+        const playerOnPairingExists = await dbClient.playersOnPairings.findUnique({where: {playerId, pairingId}})
+        if (!playerOnPairingExists) next(new Error('No PoP found!'))
+        if (!nodeExists) next(new Error('Node not found!'))
         const nodePassed = await dbClient.nodesPassedOnPairing.create({
             data: {playerId, pairingId, nodeId}
         })

@@ -1,4 +1,4 @@
-import type {Request, Response} from 'express'
+import type {Request, Response, NextFunction} from 'express'
 import type {Campaign, CampaignRegister, Pairing} from "../../../generated/prisma";
 
 const {Router} = require('express')
@@ -14,7 +14,7 @@ require('dotenv').config()
 const campaignRegisterRouter = new Router()
 const dbClient = new PrismaClient()
 
-campaignRegisterRouter.post('/', verifyToken, async (req: Request, res: Response) => {
+campaignRegisterRouter.post('/', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const token = req.header('Authorization')
     const {campaignId, formationName, rosterLink} = req.body
     try {
@@ -35,12 +35,11 @@ campaignRegisterRouter.post('/', verifyToken, async (req: Request, res: Response
         await newRegisterNotify(campaign, register)
         res.status(201).json(register)
     } catch (error) {
-        console.log(error)
-        res.status(500).json({error})
+        next(error)
     }
 })
 
-campaignRegisterRouter.get('/campaign/:id', verifyToken, async (req: Request, res: Response) => {
+campaignRegisterRouter.get('/campaign/:id', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const {id} = req.params
     try {
         const regs = await dbClient.campaignRegister.findMany({
@@ -49,11 +48,11 @@ campaignRegisterRouter.get('/campaign/:id', verifyToken, async (req: Request, re
         })
         res.status(200).json(regs)
     } catch (error) {
-        res.status(500).json({error})
+        next(error)
     }
 })
 
-campaignRegisterRouter.get('/user/:id', verifyToken, async (req: Request, res: Response) => {
+campaignRegisterRouter.get('/user/:id', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const {id} = req.params
     try {
         const regs = await dbClient.campaignRegister.findMany({
@@ -62,22 +61,22 @@ campaignRegisterRouter.get('/user/:id', verifyToken, async (req: Request, res: R
         })
         return res.status(200).json(regs)
     } catch (error) {
-        res.status(500).json({error})
+        next(error)
     }
 })
 
-campaignRegisterRouter.put('/:id', verifyToken, async (req: Request, res: Response) => {
+campaignRegisterRouter.put('/:id', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const {id} = req.params
     const data = req.body
     try {
         const reg = await dbClient.campaignRegister.update({where: {id}, data})
         res.status(200).json(reg)
     } catch (error) {
-        res.status(500).json({error})
+        next(error)
     }
 })
 
-campaignRegisterRouter.delete('/:id', verifyToken, async (req: Request, res: Response) => {
+campaignRegisterRouter.delete('/:id', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const {id} = req.params
     try {
         const reg: CampaignRegister = await dbClient.campaignRegister.findUnique({where: {id}})
@@ -92,8 +91,7 @@ campaignRegisterRouter.delete('/:id', verifyToken, async (req: Request, res: Res
         await dbClient.campaignRegister.delete({where: {id}})
         res.sendStatus(204)
     } catch (error) {
-        console.log(error)
-        res.status(500).json({error})
+        next(error)
     }
 })
 

@@ -1,4 +1,4 @@
-import type {Request, Response} from 'express';
+import type {Request, Response, NextFunction} from 'express';
 import type {PlayersOnPairings} from '../../../generated/prisma'
 
 const {Router} = require("express");
@@ -13,7 +13,7 @@ require("dotenv").config();
 const pairingsRouter = new Router();
 const dbClient = new PrismaClient();
 
-pairingsRouter.post('/', verifyToken, async (req: Request, res: Response) => {
+pairingsRouter.post('/', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const {campaignId, periodId, players, missionId} = req.body;
     try {
         const id = uuid()
@@ -48,11 +48,11 @@ pairingsRouter.post('/', verifyToken, async (req: Request, res: Response) => {
         await newPairingNotify(pairing)
         res.status(201).json(pairing);
     } catch (error) {
-        res.status(500).json({error})
+        next(error)
     }
 })
 
-pairingsRouter.get('/:id', verifyToken, async (req: Request, res: Response) => {
+pairingsRouter.get('/:id', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const {id} = req.params;
     try {
         const pairing = await dbClient.pairing.findUnique({
@@ -73,12 +73,11 @@ pairingsRouter.get('/:id', verifyToken, async (req: Request, res: Response) => {
         if (!pairing) return res.status(404).json({error: 'No pairing'})
         res.status(200).json(pairing);
     } catch (error) {
-        console.log(error)
-        res.status(500).json({error})
+        next(error)
     }
 })
 
-pairingsRouter.get('/campaign/:campaignId', verifyToken, async (req: Request, res: Response) => {
+pairingsRouter.get('/campaign/:campaignId', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const {campaignId} = req.params;
     try {
         const pairing = await dbClient.pairing.findMany({
@@ -97,11 +96,11 @@ pairingsRouter.get('/campaign/:campaignId', verifyToken, async (req: Request, re
         if (!pairing) return res.status(404).json({error: 'No pairing'})
         res.status(200).json(pairing);
     } catch (error) {
-        res.status(500).json({error})
+        next(error)
     }
 })
 
-pairingsRouter.get('/period/:periodId', verifyToken, async (req: Request, res: Response) => {
+pairingsRouter.get('/period/:periodId', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const {periodId} = req.params;
     try {
         const pairing = await dbClient.pairing.findMany({
@@ -120,11 +119,11 @@ pairingsRouter.get('/period/:periodId', verifyToken, async (req: Request, res: R
         if (!pairing) return res.status(404).json({error: 'No pairing'})
         res.status(200).json(pairing);
     } catch (error) {
-        res.status(500).json({error})
+        next(error)
     }
 })
 
-pairingsRouter.get('/', verifyToken, async (req: Request, res: Response) => {
+pairingsRouter.get('/', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const token = req.header('Authorization')
     try {
         const {userId: playerId} = jwt.verify(token, process.env.JWT_SECRET)
@@ -146,11 +145,11 @@ pairingsRouter.get('/', verifyToken, async (req: Request, res: Response) => {
         if (!pairing) return res.status(404).json({error: 'No pairing'})
         res.status(200).json(pairing);
     } catch (error) {
-        res.status(500).json({error})
+        next(error)
     }
 })
 
-pairingsRouter.put('/:id', verifyToken, async (req: Request, res: Response) => {
+pairingsRouter.put('/:id', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const {id} = req.params;
     const {campaignId, periodId, players, simpleMissionId, winners} = req.body;
     try {
@@ -181,21 +180,21 @@ pairingsRouter.put('/:id', verifyToken, async (req: Request, res: Response) => {
         })
         res.status(200).json(updatedPairing);
     } catch (error) {
-        res.status(500).json({error})
+        next(error)
     }
 })
 
-pairingsRouter.delete('/:id', verifyToken, async (req: Request, res: Response) => {
+pairingsRouter.delete('/:id', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const {id} = req.params;
     try {
         dbClient.pairing.delete({where: {id}})
             .then(() => res.sendStatus(204))
     } catch (error) {
-        res.status(500).json({error})
+        next(error)
     }
 })
 
-pairingsRouter.post('/:id/set-winners/', verifyToken, async (req: Request, res: Response) => {
+pairingsRouter.post('/:id/set-winners/', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const {id} = req.params;
     const winnersIds = req.body.winners as string[]
     const reportLink = req.body.reportLink as string
@@ -233,11 +232,11 @@ pairingsRouter.post('/:id/set-winners/', verifyToken, async (req: Request, res: 
         }
         res.status(200).json(updatedPairing);
     } catch (error) {
-        res.status(500).json({error})
+        next(error)
     }
 })
 
-pairingsRouter.put('/:id/approve', verifyToken, async (req: Request, res: Response) => {
+pairingsRouter.put('/:id/approve', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const {id} = req.params;
     try {
         const pairing = await dbClient.pairing.findUnique({where: {id}})
@@ -250,11 +249,11 @@ pairingsRouter.put('/:id/approve', verifyToken, async (req: Request, res: Respon
         })
         res.status(200).json(approvedPairing);
     } catch (error) {
-        res.status(500).json({error})
+        next(error)
     }
 })
 
-pairingsRouter.put('/:id/reject', verifyToken, async (req: Request, res: Response) => {
+pairingsRouter.put('/:id/reject', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const {id} = req.params
     const {rejectMessage} = req.body
     try {
@@ -289,7 +288,7 @@ pairingsRouter.put('/:id/reject', verifyToken, async (req: Request, res: Respons
         await resultsRejectedNotify(pairing)
         res.status(200).json(rejectedPairing);
     } catch (error) {
-        res.status(500).json({error})
+        next(error)
     }
 })
 

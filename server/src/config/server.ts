@@ -42,8 +42,14 @@ app.use('/api/missions', missionsRouter)
 
 if (!process.env.LOCAL) app.use('/telegram-webhook', webhookCallback(bot));
 
+app.use((err: any, req: Request, res: Response) => {
+    console.error(err);
+    res.status(err.status || 500).json({
+        message: err.message || 'Internal Server Error',
+    });
+});
+
 app.use((req: Request, res: Response) => {
-    console.warn(`404: ${req.url}`);
     res.sendFile(path.join(reactBuildPath, 'index.html'));
 });
 

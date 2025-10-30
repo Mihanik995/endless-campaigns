@@ -1,4 +1,4 @@
-import type {Request, Response} from 'express'
+import type {NextFunction, Request, Response} from 'express'
 
 const express = require('express');
 const cors = require("cors");
@@ -42,7 +42,7 @@ app.use('/api/missions', missionsRouter)
 
 if (!process.env.LOCAL) app.use('/telegram-webhook', webhookCallback(bot));
 
-app.use((err: any, req: Request, res: Response) => {
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     console.error(err);
     res.status(err.status || 500).json({
         message: err.message || 'Internal Server Error',

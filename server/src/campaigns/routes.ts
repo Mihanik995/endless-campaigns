@@ -10,6 +10,7 @@ const {v4: uuid} = require('uuid');
 const campaignRegisterRouter = require('./register/routes')
 const periodsRouter = require('./periods/routes')
 const notificationsRouter = require('./notifications/routes')
+const assetsRouter = require('./assets/routes')
 
 require('dotenv').config();
 
@@ -19,6 +20,7 @@ const campaignsRouter = new Router();
 campaignsRouter.use('/register', campaignRegisterRouter);
 campaignsRouter.use('/periods', periodsRouter);
 campaignsRouter.use('/notifications', notificationsRouter);
+campaignsRouter.use('/assets', assetsRouter);
 
 campaignsRouter.get("/", verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const token = req.header('Authorization');

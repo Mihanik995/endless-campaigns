@@ -183,7 +183,7 @@ model WinnersOnPairings {
 model NodesPassedOnPairing {
   node            MissionNode       @relation(fields: [nodeId], references: [id], onDelete: Cascade)
   nodeId          String
-  playerOnPairing PlayersOnPairings @relation(fields: [pairingId, playerId], references: [playerId, pairingId], onDelete: Cascade)
+  playerOnPairing PlayersOnPairings @relation(fields: [playerId, pairingId], references: [playerId, pairingId], onDelete: Cascade)
   pairingId       String
   playerId        String
 

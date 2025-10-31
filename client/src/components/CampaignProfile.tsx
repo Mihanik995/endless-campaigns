@@ -56,6 +56,10 @@ export default function ({id}: Props) {
                                 campaignData={campaign}
                                 clickable={false}
                                 onDelete={() => navigate('/dashboard')}
+                                onEdit={(updatedCampaign) => setCampaign({
+                                    ...campaign,
+                                    ...updatedCampaign
+                                })}
                             />
                             <Box m='2'>
                                 <Tabs.Root defaultValue='registers'>
@@ -87,6 +91,8 @@ export default function ({id}: Props) {
                                         <CampaignAssets
                                             campaign={campaign}
                                             isOwner={isOwner as boolean}
+                                            onEdit={(assets) =>
+                                                setCampaign({...campaign, assets})}
                                         />
                                     </Tabs.Content>
                                     <Tabs.Content value='notifications'>
@@ -95,6 +101,11 @@ export default function ({id}: Props) {
                                                 campaign.customNotifications as CustomNotification[]
                                             }
                                             campaignId={campaign.id}
+                                            onEdit={(notifications) =>
+                                                setCampaign({
+                                                    ...campaign,
+                                                    customNotifications: notifications
+                                                })}
                                         />
                                     </Tabs.Content>
                                 </Tabs.Root>

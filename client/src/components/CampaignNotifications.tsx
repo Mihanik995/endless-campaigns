@@ -1,24 +1,23 @@
 import type {CustomNotification} from "../types.ts";
 import {Card, Container, Flex, Heading, ScrollArea, Table} from "@radix-ui/themes";
 import NewNotificationForm from "./NewNotificationForm.tsx";
-import {useState} from "react";
 
 interface Props {
     campaignNotifications: CustomNotification[]
     campaignId: string
+    onEdit: (notifications: CustomNotification[]) => void
 }
 
-export default function ({campaignNotifications, campaignId}: Props) {
-    const [notifications, setNotifications] = useState(campaignNotifications)
+export default function ({campaignNotifications, campaignId, onEdit}: Props) {
+    const notifications = campaignNotifications
 
     return <Container mt='3'>
         <Card size='3'>
             <Flex direction='column' gap='3' align='start'>
                 <NewNotificationForm
                     campaignId={campaignId}
-                    setNew={(notification) => {
-                        setNotifications([...notifications, notification])
-                    }}
+                    setNew={(notification) =>
+                        onEdit([...notifications, notification])}
                 />
                 {notifications.length
                     ? <ScrollArea type='hover' scrollbars='horizontal'>

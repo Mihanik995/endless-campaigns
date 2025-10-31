@@ -7,10 +7,11 @@ import CampaignAssetRow from "./CampaignAssetRow.tsx";
 interface Props {
     campaign: Campaign;
     isOwner: boolean
+    onEdit: (assets: CampaignAsset[]) => void
 }
 
-export default function ({campaign, isOwner}: Props) {
-    const [assets, setAssets] = useState<CampaignAsset[]>(campaign.assets)
+export default function ({campaign, isOwner, onEdit}: Props) {
+    const assets = campaign.assets;
     const [newOpen, setNewOpen] = useState(false);
 
     return <Container mt='3'>
@@ -42,13 +43,13 @@ export default function ({campaign, isOwner}: Props) {
                                     asset={asset}
                                     isOwner={isOwner}
                                     onEdit={(updatedAsset) =>
-                                        setAssets(assets.map(asset =>
+                                        onEdit(assets.map(asset =>
                                             asset.id === updatedAsset.id
                                                 ? updatedAsset
                                                 : asset))
                                     }
                                     onDelete={(id) =>
-                                        setAssets(assets.filter(asset =>
+                                        onEdit(assets.filter(asset =>
                                             asset.id !== id))
                                     }
                                 />
@@ -67,9 +68,7 @@ export default function ({campaign, isOwner}: Props) {
             open={newOpen}
             setOpen={setNewOpen}
             campaignId={campaign.id}
-            setNew={(asset: CampaignAsset) => setAssets([
-                ...assets, asset
-            ])}
+            setNew={(asset: CampaignAsset) => onEdit([...assets, asset])}
         />
     </Container>
 }

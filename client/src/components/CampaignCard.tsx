@@ -29,6 +29,7 @@ interface Props {
     campaignData: Campaign
     clickable: boolean
     onDelete: () => void
+    onEdit: (campaign: Campaign) => void
 }
 
 function toInputDateFormat(date: string): string {
@@ -36,8 +37,8 @@ function toInputDateFormat(date: string): string {
     return `${year}-${month}-${day}`;
 }
 
-export default function ({clickable, onDelete, campaignData}: Props) {
-    const [campaign, setCampaign] = useState<Campaign>(campaignData);
+export default function ({clickable, onDelete, campaignData, onEdit}: Props) {
+    const campaign = campaignData
     const {control, handleSubmit, watch} = useForm<Campaign>({
         defaultValues: {
             ...campaignData,
@@ -66,7 +67,7 @@ export default function ({clickable, onDelete, campaignData}: Props) {
             axios.put<Campaign>(`/campaigns/${campaign.id}`, data)
                 .then((response) => {
                     if (response.status === 200) {
-                        setCampaign({
+                        onEdit({
                             ...response.data,
                             dateStart: new Date(response.data.dateStart).toLocaleDateString(),
                             dateEnd: new Date(response.data.dateEnd).toLocaleDateString(),

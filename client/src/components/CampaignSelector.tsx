@@ -49,6 +49,12 @@ export default function () {
                                             onDelete={() => setCampaigns(campaigns.filter(
                                                 camp => camp.id !== campaign.id
                                             ))}
+                                            onEdit={(updatedCampaign) =>
+                                                setCampaigns(campaigns.map(campaign =>
+                                                    campaign.id === updatedCampaign.id
+                                                        ? updatedCampaign
+                                                        : campaign))
+                                            }
                                         />
                                     ))}
                                     <Button

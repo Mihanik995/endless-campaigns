@@ -66,8 +66,8 @@ model CampaignAsset {
   id          String            @id @default(uuid(4))
   title       String
   description String
-  campaign    Campaign          @relation(fields: [campaignid], references: [id], onDelete: Cascade)
-  campaignid  String
+  campaign    Campaign          @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  campaignId  String
   owner       CampaignRegister? @relation(fields: [ownerId], references: [id], onDelete: SetNull)
   ownerId     String?
 }

@@ -7,6 +7,7 @@ import ErrorHandler from "./ErrorHandler.tsx";
 import NextPairingStep from "./NextPairingStep.tsx";
 import {useAppSelector} from "../app/hooks.ts";
 import {selectAuth} from "../app/features/auth/authSlice.ts";
+import purifyHTML from "../utils/validators/purifyHTML.ts";
 
 interface Props {
     node: MissionNode
@@ -79,7 +80,9 @@ export default function ({node, pairing, onPass}: Props) {
                         <Separator size='4'/>
                         <Text>
                             <div
-                                dangerouslySetInnerHTML={{__html: nodeData.missionConditions}}
+                                dangerouslySetInnerHTML={{
+                                    __html: purifyHTML(nodeData.missionConditions)
+                                }}
                                 className='ProseMirror'
                             />
                         </Text>

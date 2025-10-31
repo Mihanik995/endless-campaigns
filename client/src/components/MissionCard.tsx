@@ -23,6 +23,7 @@ import {useNavigate} from "react-router";
 import type {Mission} from "../types.ts";
 import WYSIWYGInput from "./WYSIWYGInput.tsx";
 import {type SubmitHandler, useForm} from "react-hook-form";
+import purifyHTML from "../utils/validators/purifyHTML.ts";
 
 interface Props {
     clickable: boolean
@@ -124,7 +125,9 @@ export default function ({clickable, onDelete, mission, owner}: Props) {
                                         <Separator size='4' my='2'/>
                                         <Text>
                                             <div
-                                                dangerouslySetInnerHTML={{__html: missionData.missionConditions}}
+                                                dangerouslySetInnerHTML={{
+                                                    __html: purifyHTML(missionData.missionConditions)
+                                            }}
                                                 className='ProseMirror'
                                             />
                                         </Text>

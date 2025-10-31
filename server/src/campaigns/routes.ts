@@ -50,7 +50,10 @@ campaignsRouter.get("/:id", verifyToken, async (req: Request, res: Response, nex
     try {
         const campaign = await dbClient.campaign.findUnique({
             where: {id: campaignId},
-            include: {customNotifications: true}
+            include: {
+                customNotifications: true,
+                assets: true
+            }
         })
         if (!campaign) return res.status(404).json({error: 'Campaign not found'})
         return res.status(200).json(campaign)

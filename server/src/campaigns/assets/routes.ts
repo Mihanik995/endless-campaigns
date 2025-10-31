@@ -1,8 +1,8 @@
 import type {Request, Response, NextFunction} from 'express'
 
 const {Router} = require('express');
-const {PrismaClient} = require("../../generated/prisma")
-const {verifyToken} = require('../auth/middleware')
+const {PrismaClient} = require("../../../generated/prisma")
+const {verifyToken} = require('../../auth/middleware')
 
 const assetsRouter = new Router()
 const dbClient = new PrismaClient();

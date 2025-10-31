@@ -56,6 +56,18 @@ model Campaign {
   requiresPairingReport          Boolean            @default(true)
 
   customNotifications CustomNotification[]
+
+  assets CampaignAsset[]
+}
+
+model CampaignAsset {
+  id          String            @id @default(uuid(4))
+  title       String
+  description String
+  campaign    Campaign          @relation(fields: [campaignid], references: [id], onDelete: Cascade)
+  campaignid  String
+  owner       CampaignRegister? @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  ownerId     String?
 }
 
 model CampaignRegister {
@@ -67,6 +79,8 @@ model CampaignRegister {
   formationName String
   rosterLink    String
   approved      Boolean
+
+  campaignAssets CampaignAsset[]
 }
 
 model CampaignPeriod {

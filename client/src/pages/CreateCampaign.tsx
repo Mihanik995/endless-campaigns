@@ -15,7 +15,8 @@ export default function () {
         defaultValues: {
             requiresPairingReport: false,
             requiresPairingResultsApproval: false,
-            requiresRegisterApproval: false
+            requiresRegisterApproval: false,
+            usesAssets: false
         },
         mode: "onBlur"
     })
@@ -91,7 +92,10 @@ export default function () {
                                 </Flex>
                                 <Separator size='4'/>
                                 <Heading>Pairings</Heading>
-                                <Grid my='2' columns="2" gap="3" width="auto">
+                                <Grid my='2' columns={{
+                                    initial: '1',
+                                    xs: '2'
+                                }} gap="3" width="auto">
                                     <CheckInput
                                         name='requiresPairingResultsApproval'
                                         label='Pairings results should be approved by campaign master'
@@ -104,6 +108,20 @@ export default function () {
                                         control={control}
                                     />
                                 </Grid>
+                                <Separator size='4'/>
+                                <CheckInput
+                                    label='Campaign uses assets'
+                                    name='usesAssets'
+                                    control={control}
+                                />
+                                {watch('usesAssets') &&
+                                    <TextInput
+                                        control={control}
+                                        name='assetsTitle'
+                                        label='Assets Title'
+                                        placeholder='one word explaining what your assets are'
+                                    />
+                                }
                                 <Separator size='4'/>
                                 <Button onClick={handleSubmit(onSubmit)}>
                                     Create

@@ -11,6 +11,7 @@ import {useEffect, useState} from "react";
 import axios from "../axios/axiosConfig.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
 import CampaignNotifications from "./CampaignNotifications.tsx";
+import CampaignAssets from "./CampaignAssets.tsx";
 
 interface Props {
     id?: string;
@@ -61,6 +62,11 @@ export default function ({id}: Props) {
                                     <Tabs.List>
                                         <Tabs.Trigger value='registers'>Players</Tabs.Trigger>
                                         <Tabs.Trigger value='periods'>Periods and Pairings</Tabs.Trigger>
+                                        {campaign.usesAssets &&
+                                            <Tabs.Trigger value='assets'>
+                                                {campaign.assetsTitle}
+                                            </Tabs.Trigger>
+                                        }
                                         {isOwner &&
                                             <Tabs.Trigger value='notifications'>Notifications</Tabs.Trigger>
                                         }
@@ -74,6 +80,12 @@ export default function ({id}: Props) {
                                     <Tabs.Content value='periods'>
                                         <CampaignPeriods
                                             campaignId={campaign.id}
+                                            isOwner={isOwner as boolean}
+                                        />
+                                    </Tabs.Content>
+                                    <Tabs.Content value='assets'>
+                                        <CampaignAssets
+                                            campaign={campaign}
                                             isOwner={isOwner as boolean}
                                         />
                                     </Tabs.Content>

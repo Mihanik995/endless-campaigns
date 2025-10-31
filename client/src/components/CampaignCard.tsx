@@ -137,6 +137,20 @@ export default function ({clickable, onDelete, campaignData}: Props) {
                                         control={control}
                                     />
                                 </Grid>
+                                <Separator size='4'/>
+                                <CheckInput
+                                    label='Campaign uses assets'
+                                    name='usesAssets'
+                                    control={control}
+                                />
+                                {watch('usesAssets') &&
+                                    <TextInput
+                                        control={control}
+                                        name='assetsTitle'
+                                        label='Assets Title'
+                                        placeholder='one word explaining what your assets are'
+                                    />
+                                }
                             </Flex>
                             <Flex direction={{
                                 initial: 'row',

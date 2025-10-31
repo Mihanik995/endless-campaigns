@@ -57,7 +57,9 @@ model Campaign {
 
   customNotifications CustomNotification[]
 
-  assets CampaignAsset[]
+  usesAssets  Boolean         @default(false)
+  assetsTitle String?
+  assets      CampaignAsset[]
 }
 
 model CampaignAsset {

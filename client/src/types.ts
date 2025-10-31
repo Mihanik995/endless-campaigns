@@ -44,6 +44,30 @@ export interface Campaign {
     requiresPairingReport: boolean
     campaignRegisters?: CampaignRegister[]
     customNotifications?: CustomNotification[]
+
+    usesAssets: boolean
+    assetsTitle: string
+    assets: CampaignAsset[]
+}
+
+export interface CampaignAsset {
+    [key: string]: any
+
+    id: string
+    title: string
+    description: string
+    campaign?: Campaign
+    campaignId: string
+    owner?: CampaignRegister
+    ownerId?: string
+}
+
+export interface CampaignAssetCreate {
+    [key: string]: any
+
+    title: string
+    description: string
+    campaignId: string
 }
 
 export interface CampaignCreate {

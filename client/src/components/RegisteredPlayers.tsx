@@ -1,6 +1,6 @@
 import {Button, Card, Container, Flex, Heading, Link, ScrollArea, Spinner, Table} from "@radix-ui/themes";
-import {useEffect, useState} from "react";
-import type {CampaignRegister} from "../types.ts";
+import {useState} from "react";
+import type {Campaign, CampaignRegister} from "../types.ts";
 import axios from "../axios/axiosConfig.ts";
 import {useAppSelector} from "../app/hooks.ts";
 import {selectAuth} from "../app/features/auth/authSlice.ts";
@@ -8,44 +8,39 @@ import CampaignRegisterForm from "./CampaignRegisterForm.tsx";
 import ErrorHandler from "./ErrorHandler.tsx";
 
 interface Props {
-    campaignId: string;
+    campaign: Campaign;
     isOwner: boolean;
+    onEdit: (regs: CampaignRegister[]) => void;
 }
 
-export default function ({campaignId, isOwner}: Props) {
+export default function ({campaign, isOwner, onEdit}: Props) {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<Error>()
-    const [registers, setRegisters] = useState<CampaignRegister[]>([])
+    const registers = campaign.campaignRegisters as CampaignRegister[]
 
     const auth = useAppSelector(selectAuth)
 
-    useEffect(() => {
-        setIsLoading(true)
-        axios.get(`/campaigns/register/campaign/${campaignId}`)
-            .then(regsRes => {
-                if (regsRes.status === 200) setRegisters(regsRes.data)
-            }).catch(err => setError(err as Error))
-            .finally(() => {
-                setIsLoading(false)
-            })
-    }, [])
-
     const handleAccept = (id: string) => {
-        axios.put(`/campaigns/register/${id}`, {approved: true})
+        setIsLoading(true)
+        axios.put<CampaignRegister>(`/campaigns/register/${id}`, {approved: true})
             .then(res => {
-                if (res.status === 200) setRegisters(registers
-                    .map(reg => reg.id === id
-                        ? {...reg, approved: true}
-                        : reg
+                if (res.status === 200) {
+                    onEdit(registers
+                        .map(reg => reg.id === id
+                            ? res.data
+                            : reg
+                        )
                     )
-                )
+                    setError(undefined)
+                }
             }).catch(err => setError(err as Error))
+            .finally(() => setIsLoading(false))
     }
 
     const handleDelete = (id: string) => {
         axios.delete(`/campaigns/register/${id}`)
             .then(res => {
-                if (res.status === 204) setRegisters(registers.filter(reg => reg.id !== id))
+                if (res.status === 204) onEdit(registers.filter(reg => reg.id !== id))
             }).catch(err => setError(err as Error))
     }
 
@@ -58,7 +53,10 @@ export default function ({campaignId, isOwner}: Props) {
                         ? <ErrorHandler error={error}/>
                         : <>
                             {!registers.some(reg => reg.playerId === auth.id) &&
-                                <CampaignRegisterForm campaignId={campaignId}/>
+                                <CampaignRegisterForm
+                                    campaignId={campaign.id}
+                                    onEdit={newReg => onEdit([...registers, newReg])}
+                                />
                         }
                         {registers.filter(reg => isOwner ? true : reg.approved).length
                             ? <ScrollArea type='hover' scrollbars='horizontal'>

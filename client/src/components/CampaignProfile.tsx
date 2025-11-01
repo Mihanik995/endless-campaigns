@@ -77,8 +77,13 @@ export default function ({id}: Props) {
                                     </Tabs.List>
                                     <Tabs.Content value='registers'>
                                         <RegisteredPlayers
-                                            campaignId={campaign.id}
+                                            campaign={campaign}
                                             isOwner={isOwner as boolean}
+                                            onEdit={(campaignRegisters) =>
+                                                setCampaign({
+                                                    ...campaign,
+                                                    campaignRegisters
+                                                })}
                                         />
                                     </Tabs.Content>
                                     <Tabs.Content value='periods'>

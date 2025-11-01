@@ -52,7 +52,8 @@ campaignsRouter.get("/:id", verifyToken, async (req: Request, res: Response, nex
             where: {id: campaignId},
             include: {
                 customNotifications: true,
-                assets: true
+                assets: true,
+                campaignRegisters: {include: {player: {select: {id: true, username: true, email: true}}}}
             }
         })
         if (!campaign) return res.status(404).json({error: 'Campaign not found'})
@@ -92,7 +93,13 @@ campaignsRouter.put("/:id", verifyToken, async (req: Request, res: Response, nex
 
     try {
         const {userId: ownerId} = jwt.verify(token, process.env.JWT_SECRET);
-        const campaign = await dbClient.campaign.update({where: {ownerId, id: campaignId}, data: campaignData})
+        const campaign = await dbClient.campaign.update({
+            where: {ownerId, id: campaignId},
+            data: {
+                ...campaignData,
+                assets: undefined,
+                campaignRegisters: undefined
+            }})
         return res.status(200).json(campaign)
     } catch (error) {
         next(error)

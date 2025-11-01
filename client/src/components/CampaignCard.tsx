@@ -58,112 +58,113 @@ export default function ({clickable, onDelete, campaignData, onEdit}: Props) {
     const handleDelete: MouseEventHandler<HTMLButtonElement> = () => {
         axios.delete(`/campaigns/${campaign.id}`)
             .then((response) => {
-                if (response.status === 204) onDelete()
+                if (response.status === 204) {
+                    setError(undefined)
+                    onDelete()
+                }
             }).catch((error) => setError(error as Error))
     }
 
     const onSubmit: SubmitHandler<Campaign> = (data) => {
-        try {
-            axios.put<Campaign>(`/campaigns/${campaign.id}`, data)
-                .then((response) => {
-                    if (response.status === 200) {
-                        onEdit({
-                            ...response.data,
-                            dateStart: new Date(response.data.dateStart).toLocaleDateString(),
-                            dateEnd: new Date(response.data.dateEnd).toLocaleDateString(),
-                        })
-                        setEdit(false)
-                    }
-                })
-        } catch (error) {
-            setError(error as Error)
-        }
+        axios.put<Campaign>(`/campaigns/${campaign.id}`, data)
+            .then((response) => {
+                if (response.status === 200) {
+                    onEdit({
+                        ...response.data,
+                        dateStart: new Date(response.data.dateStart).toLocaleDateString(),
+                        dateEnd: new Date(response.data.dateEnd).toLocaleDateString()
+                    })
+                    setEdit(false)
+                    setError(undefined)
+                }
+            })
+            .catch((error) => setError(error as Error))
     }
 
     return (
-        <Container width='100vw'>
-            <Card size='3' m='2'>
-                <Flex gap='3' direction={{
+        <Container width="100vw">
+            <Card size="3" m="2">
+                <Flex gap="3" direction={{
                     initial: 'column',
                     xs: 'row'
                 }}>
                     {edit
                         ? <>
-                            <Flex width='100vw' direction='column' gap='3'>
+                            <Flex width="100vw" direction="column" gap="3">
                                 <TextInput
-                                    label='Title'
-                                    name='title'
+                                    label="Title"
+                                    name="title"
                                     control={control}
                                 />
                                 <TextAreaInput
-                                    label='Description'
-                                    name='description'
+                                    label="Description"
+                                    name="description"
                                     control={control}
                                 />
                                 <TextInput
-                                    label='Regulations'
-                                    name='regulations'
+                                    label="Regulations"
+                                    name="regulations"
                                     control={control}
                                 />
-                                <Flex gap='3' justify='start'>
+                                <Flex gap="3" justify="start">
                                     <TextInput
-                                        label='Start Date'
-                                        name='dateStart'
-                                        type='date'
+                                        label="Start Date"
+                                        name="dateStart"
+                                        type="date"
                                         control={control}
                                     />
                                     <TextInput
-                                        label='End Date'
-                                        name='dateEnd'
-                                        type='date'
+                                        label="End Date"
+                                        name="dateEnd"
+                                        type="date"
                                         control={control}
                                     />
                                 </Flex>
                                 <CheckInput
-                                    name='requiresRegisterApproval'
-                                    label='Player register requires master approval'
+                                    name="requiresRegisterApproval"
+                                    label="Player register requires master approval"
                                     control={control}
                                 />
-                                <Separator size='4'/>
-                                <Grid my='2' columns="2" gap="3" width="auto">
+                                <Separator size="4"/>
+                                <Grid my="2" columns="2" gap="3" width="auto">
                                     <CheckInput
-                                        name='requiresPairingResultsApproval'
-                                        label='Pairings results should be approved by campaign master'
+                                        name="requiresPairingResultsApproval"
+                                        label="Pairings results should be approved by campaign master"
                                         control={control}
                                     />
                                     <CheckInput
-                                        name='requiresPairingReport'
+                                        name="requiresPairingReport"
                                         disabled={!watch('requiresPairingResultsApproval')}
-                                        label='Players should attach the link to the pairing report'
+                                        label="Players should attach the link to the pairing report"
                                         control={control}
                                     />
                                 </Grid>
-                                <Separator size='4'/>
+                                <Separator size="4"/>
                                 <CheckInput
-                                    label='Campaign uses assets'
-                                    name='usesAssets'
+                                    label="Campaign uses assets"
+                                    name="usesAssets"
                                     control={control}
                                 />
                                 {watch('usesAssets') &&
                                     <TextInput
                                         control={control}
-                                        name='assetsTitle'
-                                        label='Assets Title'
-                                        placeholder='one word explaining what your assets are'
+                                        name="assetsTitle"
+                                        label="Assets Title"
+                                        placeholder="one word explaining what your assets are"
                                     />
                                 }
                             </Flex>
                             <Flex direction={{
                                 initial: 'row',
                                 xs: 'column'
-                            }} align='end' justify='start' gap='3'>
-                                <Tooltip content='Cancel'>
-                                    <IconButton radius='full' onClick={() => setEdit(false)}>
+                            }} align="end" justify="start" gap="3">
+                                <Tooltip content="Cancel">
+                                    <IconButton radius="full" onClick={() => setEdit(false)}>
                                         <Cross2Icon/>
                                     </IconButton>
                                 </Tooltip>
-                                <Tooltip content='Submit'>
-                                    <IconButton radius='full' color='grass' onClick={handleSubmit(onSubmit)}>
+                                <Tooltip content="Submit">
+                                    <IconButton radius="full" color="grass" onClick={handleSubmit(onSubmit)}>
                                         <CheckIcon/>
                                     </IconButton>
                                 </Tooltip>
@@ -171,31 +172,31 @@ export default function ({clickable, onDelete, campaignData, onEdit}: Props) {
                         </>
                         : <>
                             <Flex
-                                width='100%'
-                                direction='column'
-                                align='start'
+                                width="100%"
+                                direction="column"
+                                align="start"
                                 onClick={() => {
                                     if (clickable) dispatch(updateCampaign(campaign.id))
                                 }}
                                 className={`${clickable && 'cursor-pointer'}`}
                             >
                                 <Heading>{campaign.title}</Heading>
-                                <Separator size='4' my='2'/>
+                                <Separator size="4" my="2"/>
                                 <Text>{campaign.description}</Text>
-                                <Separator size='4' my='2'/>
+                                <Separator size="4" my="2"/>
                                 <Text>
                                     Regulations:{' '}
-                                    <Link href={campaign.regulations} target='_blank'>
+                                    <Link href={campaign.regulations} target="_blank">
                                         {campaign.regulations}
                                     </Link>
                                 </Text>
-                                <Separator size='4' my='2'/>
+                                <Separator size="4" my="2"/>
                                 <Text>Dates: {campaign.dateStart} - {campaign.dateEnd}</Text>
-                                <Separator size='4' my='2'/>
+                                <Separator size="4" my="2"/>
                                 <Text>
                                     Campaign Link:{' '}
                                     <Link href={`https://www.endless-campaigns.com/campaigns/${campaign.id}`}
-                                          target='_blank'>
+                                          target="_blank">
                                         https://www.endless-campaigns.com/campaigns/{campaign.id}
                                     </Link>
                                 </Text>
@@ -203,11 +204,11 @@ export default function ({clickable, onDelete, campaignData, onEdit}: Props) {
                             <Flex direction={{
                                 initial: 'row',
                                 xs: 'column'
-                            }} align='end' justify='start' gap='2'>
+                            }} align="end" justify="start" gap="2">
                                 {!!id.length &&
-                                    <Tooltip content='Exit'>
+                                    <Tooltip content="Exit">
                                         <IconButton
-                                            radius='full'
+                                            radius="full"
                                             onClick={() => dispatch(cleanCampaign())}
                                         >
                                             <ExitIcon/>
@@ -216,29 +217,29 @@ export default function ({clickable, onDelete, campaignData, onEdit}: Props) {
                                 }
                                 {isOwner &&
                                     <>
-                                        <Tooltip content='Edit'>
-                                            <IconButton radius='full' onClick={() => setEdit(true)}>
+                                        <Tooltip content="Edit">
+                                            <IconButton radius="full" onClick={() => setEdit(true)}>
                                                 <Pencil2Icon/>
                                             </IconButton>
                                         </Tooltip>
                                         <Popover.Root>
-                                            <Tooltip content='Delete'>
+                                            <Tooltip content="Delete">
                                                 <Popover.Trigger>
-                                                    <IconButton radius='full' color='red'>
+                                                    <IconButton radius="full" color="red">
                                                         <TrashIcon/>
                                                     </IconButton>
                                                 </Popover.Trigger>
                                             </Tooltip>
                                             <Popover.Content>
-                                                <Flex direction='column' gap='2'>
+                                                <Flex direction="column" gap="2">
                                                     <Heading>Are you sure?</Heading>
                                                     <Text>This action cannot be undone!</Text>
-                                                    <Flex gap='2'>
+                                                    <Flex gap="2">
                                                         <Popover.Close>
                                                             <Button>Cancel</Button>
                                                         </Popover.Close>
                                                         <Popover.Close>
-                                                            <Button color='red' onClick={handleDelete}>Delete</Button>
+                                                            <Button color="red" onClick={handleDelete}>Delete</Button>
                                                         </Popover.Close>
                                                     </Flex>
                                                 </Flex>

@@ -20,7 +20,10 @@ export default function ({open, setOpen, pairing}: Props) {
         setIsLoading(true)
         axios.get(`/missions/nodes/passed/pairing/${pairing.id}`)
             .then(res => {
-                if (res.status === 200) setNodesPassed(res.data)
+                if (res.status === 200) {
+                    setNodesPassed(res.data)
+                    setError(undefined)
+                }
             }).catch(err => setError(err as Error))
             .finally(() => setIsLoading(false))
     }, []);

@@ -26,6 +26,7 @@ export default function ({campaignId, periods, setPeriods}: Props) {
                     if (res.status === 200) {
                         setPeriods([...periods, {...res.data}])
                         reset({campaignId, dateStart: '', dateEnd: ''})
+                        setCreateError(undefined)
                     }
                 })
         } catch (error) {

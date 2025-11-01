@@ -26,6 +26,7 @@ export default function ({campaignId, setNew}: Props) {
             .then((res) => {
                 if (res.status === 201) {
                     setNew(res.data)
+                    setError(undefined)
                 }
             }).catch((err: Error) => setError(err))
             .finally(() => setIsLoading(false))

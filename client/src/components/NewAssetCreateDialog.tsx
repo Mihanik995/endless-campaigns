@@ -29,6 +29,7 @@ export default function ({open, setOpen, campaignId, setNew}: Props) {
                 if (res.status === 201) {
                     setNew(res.data)
                     setOpen(false)
+                    setError(undefined)
                 }
             }).catch((err) => setError(err))
             .finally(() => setIsLoading(false))

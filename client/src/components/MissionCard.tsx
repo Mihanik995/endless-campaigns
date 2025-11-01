@@ -49,7 +49,10 @@ export default function ({clickable, onDelete, mission, owner}: Props) {
     const handleDelete: MouseEventHandler<HTMLButtonElement> = () => {
         axios.delete(`/missions/${missionData.id}`)
             .then((response) => {
-                if (response.status === 204) onDelete()
+                if (response.status === 204) {
+                    onDelete()
+                    setError(undefined)
+                }
             }).catch((error) => setError(error as Error))
     }
 

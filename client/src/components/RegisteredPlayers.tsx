@@ -40,7 +40,10 @@ export default function ({campaign, isOwner, onEdit}: Props) {
     const handleDelete = (id: string) => {
         axios.delete(`/campaigns/register/${id}`)
             .then(res => {
-                if (res.status === 204) onEdit(registers.filter(reg => reg.id !== id))
+                if (res.status === 204) {
+                    onEdit(registers.filter(reg => reg.id !== id))
+                    setError(undefined)
+                }
             }).catch(err => setError(err as Error))
     }
 

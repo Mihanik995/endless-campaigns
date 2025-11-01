@@ -27,10 +27,11 @@ export default function ({isOwner, index, onChange, period, campaignPlayers, mis
     useEffect(() => {
         setIsLoading(true)
 
-        axios.get(`/missions/pairings/period/${period.id}`)
+        axios.get<Pairing[]>(`/missions/pairings/period/${period.id}`)
             .then(res => {
                 if (res.status === 200) {
                     setPairings(res.data)
+                    setError(undefined)
                 }
             }).catch(err => setPairingsEError(err as Error))
             .finally(() => setIsLoading(false))
@@ -46,14 +47,20 @@ export default function ({isOwner, index, onChange, period, campaignPlayers, mis
     const handleSubmit: MouseEventHandler<HTMLButtonElement> = () => {
         axios.put(`campaigns/periods/${period.id}`, periodChanges)
             .then(res => {
-                if (res.status === 200) onChange()
+                if (res.status === 200) {
+                    onChange()
+                    setError(undefined)
+                }
             }).catch(err => setError(err as Error))
     }
 
     const handleDelete: MouseEventHandler<HTMLButtonElement> = () => {
         axios.delete(`campaigns/periods/${period.id}`)
             .then(res => {
-                if (res.status === 204) onChange()
+                if (res.status === 204) {
+                    onChange()
+                    setError(undefined)
+                }
             }).catch(err => setError(err as Error))
     }
 

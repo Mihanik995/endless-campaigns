@@ -16,7 +16,8 @@ export default function (): ReactElement {
         axios.get(`/auth/verify/${token}`)
             .then(res => {
                 if (res.status === 200) {
-                    setSuccess(true);
+                    setSuccess(true)
+                    setError(undefined)
                 }
             }).catch(err => setError(err as Error))
             .finally(() => setIsLoading(false))

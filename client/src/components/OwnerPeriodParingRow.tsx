@@ -25,7 +25,10 @@ export default function ({pairing, missions, playerRegisters, period, onChange}:
     const handleDeletePairing = (): void => {
         axios.delete(`/missions/pairings/${pairing.id}`)
             .then(res => {
-                if (res.status === 204) onChange()
+                if (res.status === 204) {
+                    onChange()
+                    setError(undefined)
+                }
             }).catch(err => setError(err as Error));
     }
 
@@ -34,7 +37,10 @@ export default function ({pairing, missions, playerRegisters, period, onChange}:
     const approveResults = (): void => {
         axios.put(`/missions/pairings/${pairing.id}/approve`)
             .then(res => {
-                if (res.status === 200) onChange()
+                if (res.status === 200) {
+                    onChange()
+                    setError(undefined)
+                }
             }).catch(err => setError(err as Error))
     }
 

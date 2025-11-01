@@ -34,6 +34,7 @@ export default function ({open, setOpen, asset, onEdit}: Props) {
                 if (res.status === 200) {
                     onEdit(res.data)
                     setOpen(false)
+                    setError(undefined)
                 }
             }).catch((err) => setError(err))
             .finally(() => setIsLoading(false))

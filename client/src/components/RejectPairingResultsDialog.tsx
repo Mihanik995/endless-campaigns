@@ -27,7 +27,10 @@ export default function ({open, setOpen, pairing, onChange}: Props) {
         setIsLoading(true)
         axios.put(`/missions/pairings/${pairing.id}/reject`, data)
             .then(res => {
-                if (res.status === 200) onChange()
+                if (res.status === 200) {
+                    onChange()
+                    setError(undefined)
+                }
             }).catch(err => setError(err as Error))
             .finally(() => setIsLoading(false))
     }

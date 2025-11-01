@@ -72,7 +72,10 @@ export default function ({playerRegisters, period, onChange, missions, open, ope
                 }
             })
         }).then(res => {
-            if (res.status === 201) onChange()
+            if (res.status === 201) {
+                onChange()
+                setError(undefined)
+            }
         }).catch((error) => setError(error as Error))
 
         else setError(new Error('No players assigned to the pairing!'))

@@ -23,20 +23,29 @@ export default function ({campaignId, isOwner}: Props) {
         setIsLoading(true)
         axios.get(`/campaigns/periods/${campaignId}`)
             .then(res => {
-                if (res.status === 200) setPeriods(res.data)
+                if (res.status === 200) {
+                    setPeriods(res.data)
+                    setError(undefined)
+                }
             })
             .then(() => axios.get(`/campaigns/register/campaign/${campaignId}`))
             .then(regsRes => {
-                if (regsRes.status === 200) setCampaignPlayers(
-                    regsRes.data.filter((reg: CampaignRegister) => reg.approved)
-                        .map((reg: CampaignRegister) => {
-                            return {...reg, playerUsername: reg.player?.username}
-                        })
-                )
+                if (regsRes.status === 200) {
+                    setCampaignPlayers(
+                        regsRes.data.filter((reg: CampaignRegister) => reg.approved)
+                            .map((reg: CampaignRegister) => {
+                                return {...reg, playerUsername: reg.player?.username}
+                            })
+                    )
+                    setError(undefined)
+                }
             })
             .then(() => axios.get(`/missions`))
             .then(res => {
-                if (res.status === 200) setMissions(res.data)
+                if (res.status === 200) {
+                    setMissions(res.data)
+                    setError(undefined)
+                }
             })
             .catch(error => setError(error as Error))
             .finally(() => setIsLoading(false))

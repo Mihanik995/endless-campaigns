@@ -23,7 +23,10 @@ export default function ({asset, isOwner, onEdit, onDelete}: Props) {
         setIsLoading(true)
         axios.delete(`/campaigns/assets/${id}`)
             .then(res => {
-                if (res.status === 204) onDelete(id)
+                if (res.status === 204) {
+                    onDelete(id)
+                    setError(undefined)
+                }
             }).catch(err => setError(err))
             .finally(() => setIsLoading(false))
     }

@@ -27,6 +27,7 @@ export default function ({id, data, selected}: NodeProps<MissionNode>) {
                 if (res.status === 204) {
                     deleteElements({nodes: [{id}]})
                     setDeleteOpen(false)
+                    setError(undefined)
                 }
             }).catch(err => setError(err as Error))
             .finally(() => setIsLoading(false))

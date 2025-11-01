@@ -22,6 +22,7 @@ export default function () {
                             dateEnd: new Date(c.dateEnd).toLocaleDateString(),
                         }
                     }))
+                setError(undefined)
             })
             .catch((err) => setError(err as Error))
             .finally(() => setIsLoading(false))

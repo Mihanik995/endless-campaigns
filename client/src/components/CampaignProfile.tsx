@@ -35,6 +35,7 @@ export default function ({id}: Props) {
                         dateEnd: new Date(res.data.dateEnd).toLocaleDateString(),
                     })
                     setIsOwner(res.data.ownerId === auth.id)
+                    setError(undefined)
                 }
             }).catch(err => setError(err as Error))
             .finally(() => setIsLoading(false))

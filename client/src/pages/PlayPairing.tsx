@@ -30,6 +30,7 @@ export default function () {
         axios.get<Pairing>(`/missions/pairings/${id}`)
             .then(res => {
                 if (res.status === 200) {
+                    setError(undefined)
                     if (
                         !res.data.players
                             .map((player: PlayersOnPairings) => player.playerId)
@@ -62,7 +63,10 @@ export default function () {
         setIsLoading(true)
         axios.post(`/missions/nodes/passed/${startNode?.id}`, {pairingId: pairing.id})
             .then(res => {
-                if (res.status === 201) setNextNode(startNode)
+                if (res.status === 201) {
+                    setNextNode(startNode)
+                    setError(undefined)
+                }
             }).catch(error => setError(error as Error))
             .finally(() => setIsLoading(false))
     }

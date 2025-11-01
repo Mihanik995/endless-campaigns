@@ -41,6 +41,7 @@ export default function () {
                 if (res.status === 200) {
                     setUserData({...res.data})
                     reset({...res.data})
+                    setError(undefined)
                 }
             }).catch(err => setError(err as Error))
             .finally(() => setIsLoading(false))
@@ -57,6 +58,7 @@ export default function () {
                 if (response.status === 200) {
                     setUserData({...response.data})
                     setEdit(false)
+                    setError(undefined)
                 }
             })
             .catch((error) => setUpdateError(error as Error))

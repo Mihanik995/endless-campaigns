@@ -27,6 +27,7 @@ export default function ({node, pairing, onPass}: Props) {
         axios.get<MissionNode>(`/missions/nodes/${node.id}`)
             .then(res => {
                 if (res.status === 200) {
+                    setError(undefined)
                     setNodeData(res.data)
                     for (const nodeLink of res.data.nextLinks) {
                         if (pairing.players
@@ -50,6 +51,7 @@ export default function ({node, pairing, onPass}: Props) {
         axios.post(`/missions/nodes/passed/${node.id}`, {pairingId: pairing.id})
             .then(res => {
                 if (res.status === 201) {
+                    setError(undefined)
                     setNextNode(node)
                     if (onPass) onPass()
                 }
@@ -61,7 +63,10 @@ export default function ({node, pairing, onPass}: Props) {
         setIsLoading(true)
         axios.post(`/missions/nodes/cancel-pass/${nextNode?.id}`, {pairingId: pairing.id})
             .then(res => {
-                if (res.status === 204) setNextNode(undefined)
+                if (res.status === 204) {
+                    setNextNode(undefined)
+                    setError(undefined)
+                }
             }).catch(error => setError(error as Error))
             .finally(() => setIsLoading(false))
     }

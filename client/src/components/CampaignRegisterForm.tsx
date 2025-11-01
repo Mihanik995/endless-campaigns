@@ -22,7 +22,10 @@ export default function ({campaignId, onEdit}: Props): ReactElement {
         try {
             axios.post<CampaignRegister>('/campaigns/register', data)
                 .then((response) => {
-                    if (response.status === 201) onEdit(response.data)
+                    if (response.status === 201) {
+                        onEdit(response.data)
+                        setError(undefined)
+                    }
                 })
         } catch (error) {
             setError(error as Error)

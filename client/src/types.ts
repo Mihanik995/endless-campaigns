@@ -43,6 +43,7 @@ export interface Campaign {
     requiresPairingResultsApproval: boolean
     requiresPairingReport: boolean
     campaignRegisters?: CampaignRegister[]
+    campaignPeriod?: CampaignPeriod[]
     customNotifications?: CustomNotification[]
 
     usesAssets: boolean
@@ -104,12 +105,13 @@ export interface CampaignRegisterCreate {
 }
 
 export interface CampaignPeriod {
-    [key: string]: string
+    [key: string]: any
 
     id: string
     campaignId: string
     dateStart: string
     dateEnd: string
+    pairing?: Pairing[]
 }
 
 export interface CampaignPeriodCreate {

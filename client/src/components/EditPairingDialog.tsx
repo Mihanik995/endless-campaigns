@@ -1,4 +1,4 @@
-import {Button, Dialog, Flex, IconButton, Strong, Text} from "@radix-ui/themes";
+import {Button, Dialog, Flex, IconButton, Spinner, Strong, Text} from "@radix-ui/themes";
 import SelectInput from "./SelectInput.tsx";
 import type {CampaignPeriod, Mission, Pairing, PlayerRegister} from "../types.ts";
 import {PlusIcon} from "@radix-ui/react-icons";
@@ -8,6 +8,7 @@ import NewPairingPlayer from "./NewPairingPlayer.tsx";
 import AddPlayerToPairing from "./AddPlayerToPairing.tsx";
 import {type SubmitHandler, useForm} from "react-hook-form";
 import CheckManyInput from "./CheckManyInput.tsx";
+import ErrorHandler from "./ErrorHandler.tsx";
 
 interface Props {
     open: boolean
@@ -16,8 +17,7 @@ interface Props {
     playerRegisters: PlayerRegister[]
     period: CampaignPeriod
     pairing: Pairing
-    onChange: () => void
-    onError: (error: Error) => void
+    onEdit: (pairing: Pairing) => void
 }
 
 interface PairingMissionAndWinners {
@@ -25,7 +25,7 @@ interface PairingMissionAndWinners {
     winners: string[]
 }
 
-export default function ({open, onOpenChange, missions, playerRegisters, pairing, onChange, onError}: Props) {
+export default function ({open, onOpenChange, missions, playerRegisters, pairing, onEdit}: Props) {
     const [playersList, setPlayersList] = useState<PlayerRegister[]>(
         pairing.players.map(player => {
             return {
@@ -76,45 +76,49 @@ export default function ({open, onOpenChange, missions, playerRegisters, pairing
         ])
     }
 
+    const [error, setError] = useState()
+    const [isLoading, setIsLoading] = useState(false)
     const onSubmit: SubmitHandler<PairingMissionAndWinners> = (data) => {
-        axios.put(`/missions/pairings/${pairing.id}`, {
+        setIsLoading(true)
+        axios.put<Pairing>(`/missions/pairings/${pairing.id}`, {
             campaignId: pairing.campaignId,
             periodId: pairing.periodId,
             players: playersList.map(player => {
                 return {
                     playerId: player.playerId,
-                    personalMissionId: player.personalMissionId,
+                    personalMissionId: player.personalMissionId
                 }
             }),
             ...data
         }).then(res => {
             if (res.status === 200) {
-                onChange()
+                onEdit(res.data)
                 onOpenChange(false)
+                setError(undefined)
             }
-        }).catch(err => onError(err as Error))
-
+        }).catch(err => setError(err))
+            .finally(() => setIsLoading(false))
     }
 
     return <Dialog.Root open={open} onOpenChange={onOpenChange}>
         <Dialog.Content>
             <Dialog.Title>Edit Pairing</Dialog.Title>
             <Dialog.Description>
-                <Text color='red'><Strong>NOTICE!</Strong></Text> Any changes will
+                <Text color="red"><Strong>NOTICE!</Strong></Text> Any changes will
                 drop players' mission progress (if any).
             </Dialog.Description>
-            <Flex direction='column' gap='2' mt='3'>
+            <Flex direction="column" gap="2" mt="3">
                 <SelectInput
-                    size='2'
-                    placeholder='Choose a mission'
-                    name='missionId'
+                    size="2"
+                    placeholder="Choose a mission"
+                    name="missionId"
                     control={control}
                     options={missions.reduce((acc, mission) => {
                         acc[mission.id] = mission.title
                         return acc
                     }, {} as Record<string, string>)}
                 />
-                <Flex gap='2' direction='column'>
+                <Flex gap="2" direction="column">
                     Players:
                     {playersList
                         .map((player: PlayerRegister) => (
@@ -126,7 +130,7 @@ export default function ({open, onOpenChange, missions, playerRegisters, pairing
                                 setCustomMission={handleSetCustomMission}
                             />
                         ))}
-                    {!!playersOptions.length && <Flex gap='1' align='center'>
+                    {!!playersOptions.length && <Flex gap="1" align="center">
                         {addPlayer
                             ? <AddPlayerToPairing
                                 playersOptions={playersOptions}
@@ -134,18 +138,18 @@ export default function ({open, onOpenChange, missions, playerRegisters, pairing
                                 setPlayerToAdd={setPlayerToAdd}
                             />
                             : <IconButton
-                                size='1'
+                                size="1"
                                 onClick={handleAdd}
-                                color='grass'
+                                color="grass"
                             >
                                 <PlusIcon/>
                             </IconButton>}
                     </Flex>}
                 </Flex>
-                <Flex gap='2' align='center'>
+                <Flex gap="2" align="center">
                     Winners:
                     <CheckManyInput
-                        name='winners'
+                        name="winners"
                         control={control}
                         values={playersList.map((player) => {
                             return {
@@ -155,11 +159,21 @@ export default function ({open, onOpenChange, missions, playerRegisters, pairing
                         })}
                     />
                 </Flex>
-                <Flex gap='3'>
+                {!!error && <ErrorHandler error={error}/>}
+                <Flex gap="3">
                     <Dialog.Close>
-                        <Button>Cancel</Button>
+                        <Button disabled={isLoading}>Cancel</Button>
                     </Dialog.Close>
-                    <Button color='grass' onClick={handleSubmit(onSubmit)}>Submit</Button>
+                    <Button
+                        color="grass"
+                        onClick={handleSubmit(onSubmit)}
+                        disabled={isLoading}
+                    >
+                        {isLoading
+                            ? <Spinner size="1"/>
+                            : 'Submit'
+                        }
+                    </Button>
                 </Flex>
             </Flex>
         </Dialog.Content>

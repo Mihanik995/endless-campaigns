@@ -6,7 +6,7 @@ import {useAppSelector} from "../app/hooks.ts";
 import {selectAuth} from "../app/features/auth/authSlice.ts";
 import CampaignPeriods from "../components/CampaignPeriods.tsx";
 import {selectCampaign} from "../app/features/campaign/campaignSlice.ts";
-import type {Campaign, CustomNotification} from "../types.ts";
+import type {Campaign, CustomNotification, Mission} from "../types.ts";
 import {useEffect, useState} from "react";
 import axios from "../axios/axiosConfig.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
@@ -20,6 +20,7 @@ interface Props {
 export default function ({id}: Props) {
     const campaignId = id || useAppSelector(selectCampaign).id as string
     const [campaign, setCampaign] = useState<Campaign>()
+    const [missions, setMissions] = useState<Mission[]>()
     const [isOwner, setIsOwner] = useState<boolean>()
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<Error>()
@@ -37,7 +38,14 @@ export default function ({id}: Props) {
                     setIsOwner(res.data.ownerId === auth.id)
                     setError(undefined)
                 }
-            }).catch(err => setError(err as Error))
+            }).then(() => axios.get<Mission[]>(`/missions`))
+            .then(res => {
+                if (res.status === 200) {
+                    setMissions(res.data)
+                    setError(undefined)
+                }
+            })
+            .catch(err => setError(err as Error))
             .finally(() => setIsLoading(false))
     }, []);
 
@@ -89,8 +97,14 @@ export default function ({id}: Props) {
                                     </Tabs.Content>
                                     <Tabs.Content value='periods'>
                                         <CampaignPeriods
-                                            campaignId={campaign.id}
+                                            campaign={campaign}
+                                            missions={missions as Mission[]}
                                             isOwner={isOwner as boolean}
+                                            onEdit={(periods) =>
+                                                setCampaign({
+                                                    ...campaign,
+                                                    campaignPeriod: periods
+                                                })}
                                         />
                                     </Tabs.Content>
                                     <Tabs.Content value='assets'>

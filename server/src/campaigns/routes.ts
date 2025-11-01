@@ -29,7 +29,7 @@ campaignsRouter.get("/", verifyToken, async (req: Request, res: Response, next: 
         const campaignsUserOwns = await dbClient.campaign.findMany({where: {ownerId: userId}}) as Campaign[]
         const userRegs = await dbClient.campaignRegister.findMany({where: {playerId: userId}}) as CampaignRegister[]
         const campaignsUserParticipates = await Promise.all(userRegs.map(async reg =>
-                dbClient.campaign.findUnique({where: {id: reg.campaignId}}))) as Campaign[]
+            dbClient.campaign.findUnique({where: {id: reg.campaignId}}))) as Campaign[]
         const dupsFilter = new Set()
         const campaigns: Campaign[] = [...campaignsUserOwns, ...campaignsUserParticipates]
             .filter(camp => {
@@ -53,7 +53,23 @@ campaignsRouter.get("/:id", verifyToken, async (req: Request, res: Response, nex
             include: {
                 customNotifications: true,
                 assets: true,
-                campaignRegisters: {include: {player: {select: {id: true, username: true, email: true}}}}
+                campaignRegisters: {include: {player: {select: {id: true, username: true, email: true}}}},
+                campaignPeriod: {
+                    include: {
+                        pairing: {
+                            include: {
+                                mission: {include: {nodes: true}},
+                                players: {
+                                    include: {
+                                        player: {select: {id: true, username: true, email: true}},
+                                        personalMission: true
+                                    }
+                                },
+                                winners: {include: {player: {select: {id: true, username: true, email: true}}}}
+                            }
+                        }
+                    }
+                }
             }
         })
         if (!campaign) return res.status(404).json({error: 'Campaign not found'})
@@ -99,7 +115,8 @@ campaignsRouter.put("/:id", verifyToken, async (req: Request, res: Response, nex
                 ...campaignData,
                 assets: undefined,
                 campaignRegisters: undefined
-            }})
+            }
+        })
         return res.status(200).json(campaign)
     } catch (error) {
         next(error)

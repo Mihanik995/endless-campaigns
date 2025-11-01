@@ -14,7 +14,7 @@ export default function ({error}: Props) {
                 <InfoCircledIcon/>
             </Callout.Icon>
             <Callout.Text>
-                Error occurred: {error.response.data.message
+                Error occurred: {error.response?.data?.message
                 ? error.response.data.message
                 : error.message
             }

@@ -2,7 +2,7 @@ import {Button, Dialog, Flex, IconButton, Text} from "@radix-ui/themes";
 import {useState} from "react";
 import {PlusIcon} from "@radix-ui/react-icons";
 import axios from "../axios/axiosConfig.ts";
-import type {CampaignPeriod, Mission, PlayerRegister} from "../types.ts";
+import type {CampaignPeriod, Mission, Pairing, PlayerRegister} from "../types.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
 import SelectInput from "./SelectInput.tsx";
 import NewPairingPlayer from "./NewPairingPlayer.tsx";
@@ -15,14 +15,14 @@ interface Props {
     playerRegisters: PlayerRegister[],
     missions: Mission[],
     period: CampaignPeriod
-    onChange: () => void
+    onEdit: (pairing: Pairing) => void
 }
 
 interface PairingMission {
     missionId: string;
 }
 
-export default function ({playerRegisters, period, onChange, missions, open, openChange}: Props) {
+export default function ({playerRegisters, period, onEdit, missions, open, openChange}: Props) {
     const [playersOptions, setPlayersOptions] = useState<PlayerRegister[]>(playerRegisters)
     const [playersList, setPlayersList] = useState<PlayerRegister[]>([])
     const {control, handleSubmit} = useForm<PairingMission>({
@@ -61,7 +61,7 @@ export default function ({playerRegisters, period, onChange, missions, open, ope
 
     const [error, setError] = useState<Error>()
     const onSubmit: SubmitHandler<PairingMission> = (data) => {
-        if (playersList.length) axios.post('/missions/pairings', {
+        if (playersList.length) axios.post<Pairing>('/missions/pairings', {
             campaignId: period.campaignId,
             periodId: period.id,
             missionId: data.missionId,
@@ -73,8 +73,9 @@ export default function ({playerRegisters, period, onChange, missions, open, ope
             })
         }).then(res => {
             if (res.status === 201) {
-                onChange()
+                onEdit(res.data)
                 setError(undefined)
+                openChange(false)
             }
         }).catch((error) => setError(error as Error))
 

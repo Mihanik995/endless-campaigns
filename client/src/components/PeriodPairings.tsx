@@ -9,10 +9,10 @@ interface Props {
     missions: Mission[]
     playerRegisters: PlayerRegister[]
     period: CampaignPeriod
-    onChange: () => void
+    onEdit: (pairings: Pairing[]) => void
 }
 
-export default function ({isOwner, pairings, missions, playerRegisters, period, onChange}: Props) {
+export default function ({isOwner, pairings, missions, playerRegisters, period, onEdit}: Props) {
     return <Table.Root>
         <Table.Header>
             <Table.Row>
@@ -42,7 +42,13 @@ export default function ({isOwner, pairings, missions, playerRegisters, period, 
                     missions={missions}
                     playerRegisters={playerRegisters}
                     period={period}
-                    onChange={onChange}
+                    onEdit={(pairing) =>
+                        onEdit(pairings.map(p => p.id === pairing.id
+                            ? pairing
+                            : p))
+                    }
+                    onDelete={(id) =>
+                        onEdit(pairings.filter(pairing => pairing.id !== id))}
                 />
                 : <GuestPeriodParingRow
                     pairing={pairing}

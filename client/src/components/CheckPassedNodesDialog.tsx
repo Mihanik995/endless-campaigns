@@ -8,7 +8,6 @@ interface Props {
     open: boolean
     setOpen: (open: boolean) => void
     pairing: Pairing
-    onChange: () => void
 }
 
 export default function ({open, setOpen, pairing}: Props) {

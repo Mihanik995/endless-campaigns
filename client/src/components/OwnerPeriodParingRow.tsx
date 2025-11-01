@@ -13,10 +13,11 @@ interface Props {
     missions: Mission[]
     playerRegisters: PlayerRegister[]
     period: CampaignPeriod
-    onChange: () => void
+    onEdit: (pairing: Pairing) => void
+    onDelete: (id: string) => void
 }
 
-export default function ({pairing, missions, playerRegisters, period, onChange}: Props) {
+export default function ({pairing, missions, playerRegisters, period, onEdit, onDelete}: Props) {
     const [edit, setEdit] = useState(false);
 
     const [error, setError] = useState<Error>()
@@ -26,7 +27,7 @@ export default function ({pairing, missions, playerRegisters, period, onChange}:
         axios.delete(`/missions/pairings/${pairing.id}`)
             .then(res => {
                 if (res.status === 204) {
-                    onChange()
+                    onDelete(pairing.id);
                     setError(undefined)
                 }
             }).catch(err => setError(err as Error));
@@ -35,10 +36,10 @@ export default function ({pairing, missions, playerRegisters, period, onChange}:
 
 
     const approveResults = (): void => {
-        axios.put(`/missions/pairings/${pairing.id}/approve`)
+        axios.put<Pairing>(`/missions/pairings/${pairing.id}/approve`)
             .then(res => {
                 if (res.status === 200) {
-                    onChange()
+                    onEdit(res.data)
                     setError(undefined)
                 }
             }).catch(err => setError(err as Error))
@@ -125,13 +126,12 @@ export default function ({pairing, missions, playerRegisters, period, onChange}:
             open={rejectOpen}
             setOpen={setRejectOpen}
             pairing={pairing}
-            onChange={onChange}
+            onEdit={onEdit}
         />
         <CheckPassedNodesDialog
             open={nodesOpen}
             setOpen={setNodesOpen}
             pairing={pairing}
-            onChange={onChange}
         />
         <EditPairingDialog
             open={edit}
@@ -140,8 +140,7 @@ export default function ({pairing, missions, playerRegisters, period, onChange}:
             playerRegisters={playerRegisters}
             period={period}
             pairing={pairing}
-            onChange={onChange}
-            onError={setError}
+            onEdit={onEdit}
         />
     </>
 }

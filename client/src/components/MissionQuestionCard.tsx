@@ -9,33 +9,43 @@ import {selectAuth} from "../app/features/auth/authSlice.ts";
 interface Props {
     question: Question
     isMissionOwner: boolean
-    onChange: () => void
+    onEdit: (question: Question) => void
+    onDelete: (id: string) => void
 }
 
-export default function ({question, isMissionOwner, onChange}: Props) {
+export default function ({question, isMissionOwner, onEdit, onDelete}: Props) {
     const auth = useAppSelector(selectAuth)
 
     const [answer, setAnswer] = useState<string>(question.answer || '');
     const [error, setError] = useState<Error>()
     const handleAnswer: MouseEventHandler<HTMLButtonElement> = () => {
-        axios.put(`/missions/questions/${question.id}`, {answer})
+        axios.put<Question>(`/missions/questions/${question.id}`, {answer})
             .then(res => {
-                if (res.status === 200) onChange()
+                if (res.status === 200) {
+                    onEdit(res.data)
+                    setError(undefined)
+                }
             }).catch(err => setError(err as Error))
     }
 
     const [editQuestion, setEditQuestion] = useState(question.text)
     const handleQuestion: MouseEventHandler<HTMLButtonElement> = () => {
-        axios.put(`/missions/questions/${question.id}`, {text: editQuestion})
+        axios.put<Question>(`/missions/questions/${question.id}`, {text: editQuestion})
             .then(res => {
-                if (res.status === 200) onChange()
+                if (res.status === 200) {
+                    onEdit(res.data)
+                    setError(undefined)
+                }
             }).catch(err => setError(err as Error))
     }
 
     const handleDelete: MouseEventHandler<HTMLButtonElement> = () => {
         axios.delete(`/missions/questions/${question.id}`)
             .then(res => {
-                if (res.status === 204) onChange()
+                if (res.status === 204) {
+                    onDelete(question.id)
+                    setError(undefined)
+                }
             }).catch(err => setError(err as Error))
     }
 

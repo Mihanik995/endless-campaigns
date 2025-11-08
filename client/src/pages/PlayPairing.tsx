@@ -1,6 +1,6 @@
 import Header from "../components/Header.tsx";
 import {type MouseEventHandler, useEffect, useState} from "react";
-import {useParams} from "react-router";
+import {useNavigate, useParams} from "react-router";
 import type {Mission, MissionNode, Pairing, PlayersOnPairings} from "../types.ts";
 import axios from "../axios/axiosConfig.ts";
 import {useAppSelector} from "../app/hooks.ts";
@@ -15,6 +15,7 @@ export default function () {
     const [error, setError] = useState<Error>()
     const id = useParams().id as string
     const auth = useAppSelector(selectAuth)
+    const navigate = useNavigate();
     const [pairing, setPairing] = useState<Pairing>({
         id: '', campaignId: '', periodId: '', missionId: '',
         played: false, players: [], winners: [], resultsApproved: false,
@@ -84,8 +85,7 @@ export default function () {
                                 {mission &&
                                     <MissionCard
                                         clickable={false}
-                                        onDelete={() => {
-                                        }}
+                                        onDelete={() => navigate('/dashboard')}
                                         mission={mission as Mission}
                                         owner={false}
                                     />

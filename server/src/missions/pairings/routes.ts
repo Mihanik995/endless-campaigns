@@ -63,7 +63,7 @@ pairingsRouter.get('/:id', verifyToken, async (req: Request, res: Response, next
         const pairing = await dbClient.pairing.findUnique({
             where: {id},
             include: {
-                mission: {include: {nodes: true}},
+                mission: {include: {nodes: {include: {nextLinks: {include: {to: true}}}}}},
                 campaign: {include: {campaignRegisters: true}},
                 players: {
                     include: {

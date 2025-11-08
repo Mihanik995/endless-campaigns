@@ -1,7 +1,7 @@
 import Header from "../components/Header.tsx";
 import {type MouseEventHandler, useEffect, useState} from "react";
 import {useNavigate, useParams} from "react-router";
-import type {Mission, MissionNode, Pairing, PlayersOnPairings} from "../types.ts";
+import type {Mission, MissionNode, NodesPassedOnPairing, Pairing, PlayersOnPairings} from "../types.ts";
 import axios from "../axios/axiosConfig.ts";
 import {useAppSelector} from "../app/hooks.ts";
 import {selectAuth} from "../app/features/auth/authSlice.ts";
@@ -19,7 +19,7 @@ export default function () {
     const [pairing, setPairing] = useState<Pairing>({
         id: '', campaignId: '', periodId: '', missionId: '',
         played: false, players: [], winners: [], resultsApproved: false,
-        resultsRejected: false, nodesPassedOnPairing: []
+        resultsRejected: false
     })
     const [mission, setMission] = useState<Mission>()
     const [startNode, setStartNode] = useState<MissionNode>()
@@ -74,28 +74,41 @@ export default function () {
 
     return <>
         <Header/>
-        <Container className='pb-5 pt-23'>
-            <Flex minHeight='40vh' align='center' justify='center'>
+        <Container className="pb-5 pt-23">
+            <Flex minHeight="40vh" align="center" justify="center">
                 <Card>
                     {isLoading
-                        ? <Spinner size='3' m='4'/>
+                        ? <Spinner size="3" m="4"/>
                         : !!error
                             ? <ErrorHandler error={error}/>
-                            : <Flex direction='column' align='center' gap='2'>
+                            : <Flex direction="column" align="center" gap="2">
                                 {mission &&
-                                    <MissionCard
-                                        clickable={false}
-                                        onDelete={() => navigate('/dashboard')}
-                                        mission={mission as Mission}
-                                        owner={false}
-                                    />
+                                  <MissionCard
+                                    clickable={false}
+                                    onDelete={() => navigate('/dashboard')}
+                                    mission={mission as Mission}
+                                    owner={false}
+                                  />
                                 }
-                                <Separator size='4'/>
+                                <Separator size="4"/>
                                 {startNode
                                     ? !!nextNode
                                         ? <NextPairingStep
                                             node={nextNode}
                                             pairing={pairing}
+                                            missionNodes={mission?.nodes as MissionNode[]}
+                                            nodesPassed={pairing.players
+                                                .find(player => player.playerId === auth.id)
+                                                ?.nodesPassedOnPairing as NodesPassedOnPairing[]}
+                                            onEdit={(nodesPassedOnPairing) =>
+                                                setPairing({
+                                                    ...pairing,
+                                                    players: pairing.players
+                                                        .map(player => player.playerId === auth.id
+                                                            ? {...player, nodesPassedOnPairing}
+                                                            : player)
+                                                })
+                                            }
                                         />
                                         : <Button onClick={handleStart}>
                                             {startNode.buttonLabel}

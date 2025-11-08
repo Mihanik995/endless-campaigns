@@ -72,7 +72,7 @@ pairingsRouter.get('/:id', verifyToken, async (req: Request, res: Response, next
                         nodesPassedOnPairing: true
                     }
                 },
-                winners: {include: {player: {select: {id: true, username: true, email: true}}}}
+                winners: {include: {player: {select: {id: true, username: true, email: true}}}},
             }
         })
         if (!pairing) return res.status(404).json({error: 'No pairing'})

@@ -214,7 +214,6 @@ export interface Pairing {
     players: PlayersOnPairings[]
     played: boolean
     winners: WinnersOnPairings[]
-    nodesPassedOnPairing: NodesPassedOnPairing[]
 
     resultsApproved: boolean
     reportLink?: string

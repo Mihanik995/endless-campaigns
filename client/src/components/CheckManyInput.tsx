@@ -25,8 +25,8 @@ export default function ({name, control, values, rules}: Props) {
                 onValueChange={field.onChange}
                 columns={{
                     initial: '1',
-                    xs: '2',
-                    sm: '3'
+                    xs: values.length > 2 ? '2' : `${values.length}`,
+                    sm: values.length > 3 ? '3' : `${values.length}`
                 }}
             >
                 {values.map((value, id) => (

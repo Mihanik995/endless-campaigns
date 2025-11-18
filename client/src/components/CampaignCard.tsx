@@ -1,17 +1,4 @@
-import {
-    Button,
-    Card,
-    Container,
-    Flex,
-    Grid,
-    Heading,
-    IconButton,
-    Link,
-    Popover,
-    Separator,
-    Text,
-    Tooltip
-} from "@radix-ui/themes";
+import {Button, Card, Container, Flex, Grid, Heading, IconButton, Link, Popover, Separator, Text, Tooltip} from "@radix-ui/themes";
 import {type MouseEventHandler, useState} from "react";
 import axios from "../axios/axiosConfig.ts"
 import TextInput from "./TextInput.tsx";
@@ -22,7 +9,7 @@ import {selectAuth} from "../app/features/auth/authSlice.ts";
 import CheckInput from "./CheckInput.tsx";
 import ErrorHandler from "./ErrorHandler.tsx";
 import {cleanCampaign, selectCampaign, updateCampaign} from "../app/features/campaign/campaignSlice.ts";
-import type {Campaign} from "../types.ts";
+import type {Campaign, CampaignCreate} from "../types.ts";
 import {type SubmitHandler, useForm} from "react-hook-form";
 
 interface Props {
@@ -39,11 +26,12 @@ function toInputDateFormat(date: string): string {
 
 export default function ({clickable, onDelete, campaignData, onEdit}: Props) {
     const campaign = campaignData
-    const {control, handleSubmit, watch} = useForm<Campaign>({
+    const {control, handleSubmit, watch, setValue, getValues} = useForm<CampaignCreate>({
         defaultValues: {
             ...campaignData,
             dateStart: toInputDateFormat(campaignData.dateStart),
-            dateEnd: toInputDateFormat(campaignData.dateEnd)
+            dateEnd: toInputDateFormat(campaignData.dateEnd),
+            assetGroups: []
         },
         mode: "onBlur"
     })
@@ -65,7 +53,7 @@ export default function ({clickable, onDelete, campaignData, onEdit}: Props) {
             }).catch((error) => setError(error as Error))
     }
 
-    const onSubmit: SubmitHandler<Campaign> = (data) => {
+    const onSubmit: SubmitHandler<CampaignCreate> = (data) => {
         axios.put<Campaign>(`/campaigns/${campaign.id}`, data)
             .then((response) => {
                 if (response.status === 200) {
@@ -144,14 +132,40 @@ export default function ({clickable, onDelete, campaignData, onEdit}: Props) {
                                     label="Campaign uses assets"
                                     name="usesAssets"
                                     control={control}
+                                    hint={<Text>
+                                        Note: here you can only add new asset groups. To edit or delete
+                                        the existing ones, pass to their tabs.
+                                    </Text>}
                                 />
                                 {watch('usesAssets') &&
-                                    <TextInput
-                                        control={control}
-                                        name="assetsTitle"
-                                        label="Assets Title"
-                                        placeholder="one word explaining what your assets are"
-                                    />
+                                  <>
+                                      {watch('assetGroups').map((group, i) =>
+                                          <Flex gap="2">
+                                              <TextInput
+                                                  control={control}
+                                                  name={`assetGroups.${i}.groupTitle`}
+                                                  placeholder="Group Title"
+                                              />
+                                              <IconButton
+                                                  onClick={() => setValue(
+                                                      'assetGroups',
+                                                      getValues('assetGroups').filter(g => g !== group)
+                                                  )}
+                                                  color="red"
+                                                  radius="full"
+                                              >
+                                                  <Cross2Icon/>
+                                              </IconButton>
+                                          </Flex>)}
+                                    <Button
+                                      onClick={() => setValue(
+                                          'assetGroups',
+                                          [...getValues('assetGroups'), {groupTitle: ''}]
+                                      )}
+                                    >
+                                      Add Assets Group
+                                    </Button>
+                                  </>
                                 }
                             </Flex>
                             <Flex direction={{
@@ -206,46 +220,46 @@ export default function ({clickable, onDelete, campaignData, onEdit}: Props) {
                                 xs: 'column'
                             }} align="end" justify="start" gap="2">
                                 {!!id.length &&
-                                    <Tooltip content="Exit">
-                                        <IconButton
-                                            radius="full"
-                                            onClick={() => dispatch(cleanCampaign())}
-                                        >
-                                            <ExitIcon/>
-                                        </IconButton>
-                                    </Tooltip>
+                                  <Tooltip content="Exit">
+                                    <IconButton
+                                      radius="full"
+                                      onClick={() => dispatch(cleanCampaign())}
+                                    >
+                                      <ExitIcon/>
+                                    </IconButton>
+                                  </Tooltip>
                                 }
                                 {isOwner &&
-                                    <>
-                                        <Tooltip content="Edit">
-                                            <IconButton radius="full" onClick={() => setEdit(true)}>
-                                                <Pencil2Icon/>
-                                            </IconButton>
-                                        </Tooltip>
-                                        <Popover.Root>
-                                            <Tooltip content="Delete">
-                                                <Popover.Trigger>
-                                                    <IconButton radius="full" color="red">
-                                                        <TrashIcon/>
-                                                    </IconButton>
-                                                </Popover.Trigger>
-                                            </Tooltip>
-                                            <Popover.Content>
-                                                <Flex direction="column" gap="2">
-                                                    <Heading>Are you sure?</Heading>
-                                                    <Text>This action cannot be undone!</Text>
-                                                    <Flex gap="2">
-                                                        <Popover.Close>
-                                                            <Button>Cancel</Button>
-                                                        </Popover.Close>
-                                                        <Popover.Close>
-                                                            <Button color="red" onClick={handleDelete}>Delete</Button>
-                                                        </Popover.Close>
-                                                    </Flex>
-                                                </Flex>
-                                            </Popover.Content>
-                                        </Popover.Root>
-                                    </>
+                                  <>
+                                    <Tooltip content="Edit">
+                                      <IconButton radius="full" onClick={() => setEdit(true)}>
+                                        <Pencil2Icon/>
+                                      </IconButton>
+                                    </Tooltip>
+                                    <Popover.Root>
+                                      <Tooltip content="Delete">
+                                        <Popover.Trigger>
+                                          <IconButton radius="full" color="red">
+                                            <TrashIcon/>
+                                          </IconButton>
+                                        </Popover.Trigger>
+                                      </Tooltip>
+                                      <Popover.Content>
+                                        <Flex direction="column" gap="2">
+                                          <Heading>Are you sure?</Heading>
+                                          <Text>This action cannot be undone!</Text>
+                                          <Flex gap="2">
+                                            <Popover.Close>
+                                              <Button>Cancel</Button>
+                                            </Popover.Close>
+                                            <Popover.Close>
+                                              <Button color="red" onClick={handleDelete}>Delete</Button>
+                                            </Popover.Close>
+                                          </Flex>
+                                        </Flex>
+                                      </Popover.Content>
+                                    </Popover.Root>
+                                  </>
                                 }
                             </Flex>
                         </>

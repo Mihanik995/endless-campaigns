@@ -120,6 +120,11 @@ export default function ({id}: Props) {
                                                                 ? assetGroups
                                                                 : group)
                                                     })}
+                                                onDelete={() =>
+                                                    setCampaign({
+                                                        ...campaign,
+                                                        assetGroups: campaign?.assetGroups.filter(g => g !== group)
+                                                    })}
                                             />
                                         </Tabs.Content>)}
                                     <Tabs.Content value="notifications">

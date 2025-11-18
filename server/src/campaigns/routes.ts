@@ -89,11 +89,15 @@ campaignsRouter.post("/", verifyToken, async (req: Request, res: Response, next:
         campaignData.dateStart = new Date(campaignData.dateStart)
         campaignData.dateEnd = new Date(campaignData.dateEnd)
 
-        const campaign = await dbClient.campaign.create({data: {
-            ...campaignData,
-                assetGroups: {create: [...campaignData.assetGroups
-                        .map((group: {title: string}) => ({groupTitle: group.title}))]}
-        }})
+        const campaign = await dbClient.campaign.create({
+            data: {
+                ...campaignData,
+                assetGroups: {
+                    create: [...campaignData.assetGroups
+                        .map((group: { title: string }) => ({groupTitle: group.title}))]
+                }
+            }
+        })
         return res.status(201).json(campaign)
     } catch (error) {
         next(error)
@@ -115,8 +119,34 @@ campaignsRouter.put("/:id", verifyToken, async (req: Request, res: Response, nex
             where: {ownerId, id: campaignId},
             data: {
                 ...campaignData,
-                assets: undefined,
-                campaignRegisters: undefined
+                campaignRegisters: undefined,
+                customNotifications: undefined,
+                campaignPeriod: undefined,
+                assetGroups: {
+                    create: [...campaignData.assetGroups
+                        .map((group: { groupTitle: string }) => ({groupTitle: group.groupTitle}))]
+                }
+            },
+            include: {
+                customNotifications: true,
+                assetGroups: {include: {assets: {include: {owner: true}}}},
+                campaignRegisters: {include: {player: {select: {id: true, username: true, email: true}}}},
+                campaignPeriod: {
+                    include: {
+                        pairing: {
+                            include: {
+                                mission: {include: {nodes: true}},
+                                players: {
+                                    include: {
+                                        player: {select: {id: true, username: true, email: true}},
+                                        personalMission: true
+                                    }
+                                },
+                                winners: {include: {player: {select: {id: true, username: true, email: true}}}}
+                            }
+                        }
+                    }
+                }
             }
         })
         return res.status(200).json(campaign)

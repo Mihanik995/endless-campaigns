@@ -3,25 +3,43 @@ import {Button, Card, Container, Flex, Heading, Table} from "@radix-ui/themes";
 import {useState} from "react";
 import NewAssetCreateDialog from "./NewAssetCreateDialog.tsx";
 import CampaignAssetRow from "./CampaignAssetRow.tsx";
+import AssetGroupEditDialog from "./AssetGroupEditDialog.tsx";
+import AssetGroupDeleteDialog from "./AssetGroupDeleteDialog.tsx";
 
 interface Props {
     assetsGroup: AssetGroup;
     isOwner: boolean
     onEdit: (assetGroup: AssetGroup) => void
+    onDelete: () => void;
 }
 
-export default function ({assetsGroup, isOwner, onEdit}: Props) {
+export default function ({assetsGroup, isOwner, onEdit, onDelete}: Props) {
     const assets = assetsGroup.assets;
     const [newOpen, setNewOpen] = useState(false);
+    const [editOpen, setEditOpen] = useState(false);
+    const [deleteOpen, setDeleteOpen] = useState(false);
 
     return <Container mt="3">
         <Card size="3">
             <Flex direction="column" gap="3" align="start">
-                <Button onClick={() => setNewOpen(true)}>
-                    Add Asset
-                </Button>
+                <Flex justify="between" width="100%">
+                    <Button onClick={() => setNewOpen(true)}>
+                        Add Asset
+                    </Button>
+                    <Flex gap="3" direction={{
+                        initial: 'column',
+                        xs: 'row'
+                    }}>
+                        <Button onClick={() => setEditOpen(true)}>
+                            Edit Group
+                        </Button>
+                        <Button onClick={() => setDeleteOpen(true)} color="red">
+                            Delete Group
+                        </Button>
+                    </Flex>
+                </Flex>
                 {assets.length
-                    ? <Table.Root className='w-full'>
+                    ? <Table.Root className="w-full">
                         <Table.Header>
                             <Table.Row>
                                 <Table.ColumnHeaderCell>
@@ -66,7 +84,7 @@ export default function ({assetsGroup, isOwner, onEdit}: Props) {
                         </Table.Body>
                     </Table.Root>
                     : <Flex justify="center" align="center" width="100%">
-                        <Heading wrap="balance" align="center" my='9'>
+                        <Heading wrap="balance" align="center" my="9">
                             No {assetsGroup.groupTitle.toLowerCase()} created for this campaign yet.
                         </Heading>
                     </Flex>
@@ -81,6 +99,18 @@ export default function ({assetsGroup, isOwner, onEdit}: Props) {
                 ...assetsGroup,
                 assets: [...assets, asset]
             })}
+        />
+        <AssetGroupEditDialog
+            open={editOpen}
+            setOpen={setEditOpen}
+            group={assetsGroup}
+            onEdit={group => onEdit(group)}
+        />
+        <AssetGroupDeleteDialog
+            open={deleteOpen}
+            setOpen={setDeleteOpen}
+            groupId={assetsGroup.id}
+            onDelete={onDelete}
         />
     </Container>
 }

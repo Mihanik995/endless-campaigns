@@ -28,16 +28,12 @@ export default function () {
 
     const onSubmit: SubmitHandler<CampaignCreate> = function (data) {
         setIsLoading(true);
-        try {
-            axios.post('/campaigns', data)
-                .then(res => {
-                    if (res.status === 201) navigate('/dashboard')
-                })
-        } catch (error) {
-            setError(error as Error)
-        } finally {
-            setIsLoading(false);
-        }
+        axios.post('/campaigns', data)
+            .then(res => {
+                if (res.status === 201) navigate('/dashboard')
+            })
+            .catch((error) => setError(error as Error))
+            .finally(() => setIsLoading(false))
     }
 
     return (
@@ -124,12 +120,12 @@ export default function () {
                                       initial: '1',
                                       xs: '2',
                                       sm: '3'
-                                  }} gap="2" align='center'>
+                                  }} gap="2" align="center">
                                       {watch('assetGroups').map((group, index) =>
-                                          <Flex gap="2" align='center'>
+                                          <Flex gap="2" align="center">
                                               <TextInput
                                                   control={control}
-                                                  name={`assetGroups.${index}.title`}
+                                                  name={`assetGroups.${index}.groupTitle`}
                                                   placeholder="Group title"
                                               />
                                               <IconButton
@@ -147,7 +143,7 @@ export default function () {
                                     <Button
                                       onClick={() => setValue(
                                           'assetGroups',
-                                          [...getValues('assetGroups'), {title: ''}]
+                                          [...getValues('assetGroups'), {groupTitle: ''}]
                                       )}
                                     >
                                       Add Asset Group

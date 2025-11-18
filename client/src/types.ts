@@ -65,7 +65,7 @@ export interface CampaignCreate {
     assetGroups: {
         [key: string]: any
 
-        title: string
+        groupTitle: string
     }[]
 }
 

@@ -37,4 +37,24 @@ assetsRouter.delete('/:id', verifyToken, async (req: Request, res: Response, nex
         .catch((error: any) => next(error))
 })
 
+assetsRouter.put('/group/:id', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
+    const {id} = req.params
+    const data = req.body
+    try {
+        const updatedGroup = await dbClient.assetGroup.update({
+            where: {id}, data, include: {assets: true}
+        })
+        res.status(200).json(updatedGroup)
+    } catch (error) {
+        next(error)
+    }
+})
+
+assetsRouter.delete('/group/:id', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
+    const {id} = req.params
+    dbClient.assetGroup.delete({where: {id}})
+        .then(() => res.sendStatus(204))
+        .catch((error: any) => next(error))
+})
+
 module.exports = assetsRouter

@@ -46,6 +46,9 @@ export default function ({asset, isOwner, onEdit, onDelete}: Props) {
                 className='ProseMirror'
             />
         </Table.Cell>
+        <Table.Cell>
+            {asset.owner?.formationName || '-'}
+        </Table.Cell>
         {isOwner &&
             <Table.Cell>
                 <Flex gap='2'>

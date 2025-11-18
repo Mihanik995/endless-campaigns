@@ -52,7 +52,7 @@ campaignsRouter.get("/:id", verifyToken, async (req: Request, res: Response, nex
             where: {id: campaignId},
             include: {
                 customNotifications: true,
-                assets: true,
+                assets: {include: {owner: true}},
                 campaignRegisters: {include: {player: {select: {id: true, username: true, email: true}}}},
                 campaignPeriod: {
                     include: {

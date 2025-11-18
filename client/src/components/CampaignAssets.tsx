@@ -30,6 +30,9 @@ export default function ({campaign, isOwner, onEdit}: Props) {
                                 <Table.ColumnHeaderCell>
                                     Description
                                 </Table.ColumnHeaderCell>
+                                <Table.ColumnHeaderCell>
+                                    Owner
+                                </Table.ColumnHeaderCell>
                                 {isOwner &&
                                     <Table.ColumnHeaderCell>
                                         Actions

@@ -1,9 +1,9 @@
-import {Button, Flex, Spinner, Table, TextField} from "@radix-ui/themes";
-import {type ChangeEvent, type MouseEventHandler, useEffect, useState} from "react";
+import {Button, Flex, Table, TextField} from "@radix-ui/themes";
+import {type ChangeEvent, type MouseEventHandler, useState} from "react";
 import axios from "../axios/axiosConfig.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
 import PairingCreateDialog from "./PairingCreateDialog.tsx";
-import type {CampaignPeriod, Pairing, PlayerRegister, Mission} from "../types.ts";
+import type {CampaignPeriod, Mission, Pairing, PlayerRegister} from "../types.ts";
 import PeriodPairings from "./PeriodPairings.tsx";
 import {TriangleDownIcon, TriangleUpIcon} from "@radix-ui/react-icons";
 
@@ -21,22 +21,7 @@ export default function ({isOwner, index, onEdit, onDelete, period, campaignPlay
     const [periodChanges, setPeriodChanges] = useState<CampaignPeriod>(period)
     const [edit, setEdit] = useState<boolean>(false)
     const [error, setError] = useState<Error>()
-
-    const [isLoading, setIsLoading] = useState(false)
-    const [pairingsError, setPairingsEError] = useState<Error>()
-    const [pairings, setPairings] = useState<Pairing[]>([])
-    useEffect(() => {
-        setIsLoading(true)
-
-        axios.get<Pairing[]>(`/missions/pairings/period/${period.id}`)
-            .then(res => {
-                if (res.status === 200) {
-                    setPairings(res.data)
-                    setError(undefined)
-                }
-            }).catch(err => setPairingsEError(err as Error))
-            .finally(() => setIsLoading(false))
-    }, [])
+    const pairings = period.pairing
 
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         setPeriodChanges({
@@ -50,6 +35,7 @@ export default function ({isOwner, index, onEdit, onDelete, period, campaignPlay
             .then(res => {
                 if (res.status === 200) {
                     onEdit(res.data)
+                    setEdit(false)
                     setError(undefined)
                 }
             }).catch(err => setError(err as Error))
@@ -69,7 +55,7 @@ export default function ({isOwner, index, onEdit, onDelete, period, campaignPlay
 
     const [unfold, setUnfold] = useState(false)
 
-    return (
+    return pairings && (
         <>
             <Table.Row>
                 <Table.RowHeaderCell
@@ -98,7 +84,7 @@ export default function ({isOwner, index, onEdit, onDelete, period, campaignPlay
                                 onChange={handleChange}
                             />
                             : new Date(period.dateStart).toLocaleDateString()}
-                        -
+                        {' '}-{' '}
                         {edit
                             ? <TextField.Root
                                 type="date"
@@ -110,51 +96,39 @@ export default function ({isOwner, index, onEdit, onDelete, period, campaignPlay
                     </Flex>
                 </Table.Cell>
                 {isOwner &&
-                    <Table.Cell>
-                        <Flex gap="3">
-                            {!edit
-                                ? <>
-                                    <Button onClick={() => setEdit(true)}>Edit</Button>
-                                    <Button onClick={() => setAddPairing(!addPairing)}>
-                                        Add pairing
-                                    </Button>
-                                    <Button color="red" onClick={handleDelete}>Delete</Button>
-                                </>
-                                : <>
-                                    <Button onClick={() => setEdit(false)}>Cancel</Button>
-                                    <Button color="grass" onClick={handleSubmit}>Submit</Button>
-                                </>}
-                            {!!error && <ErrorHandler error={error}/>}
-                        </Flex>
-                    </Table.Cell>}
+                  <Table.Cell>
+                    <Flex gap="3">
+                        {!edit
+                            ? <>
+                                <Button onClick={() => setEdit(true)}>Edit</Button>
+                                <Button onClick={() => setAddPairing(!addPairing)}>
+                                    Add pairing
+                                </Button>
+                                <Button color="red" onClick={handleDelete}>Delete</Button>
+                            </>
+                            : <>
+                                <Button onClick={() => setEdit(false)}>Cancel</Button>
+                                <Button color="grass" onClick={handleSubmit}>Submit</Button>
+                            </>}
+                        {!!error && <ErrorHandler error={error}/>}
+                    </Flex>
+                  </Table.Cell>}
             </Table.Row>
             {unfold
-                ? isLoading
-                    ? <Table.Row>
-                        <Table.Cell colSpan={isOwner ? 3 : 2} justify="center">
-                            <Spinner size="3"/>
-                        </Table.Cell>
-                    </Table.Row>
-                    : !!pairingsError
-                        ? <Table.Row>
-                            <Table.Cell colSpan={isOwner ? 3 : 2} justify="center">
-                                <ErrorHandler error={pairingsError}/>
-                            </Table.Cell>
-                        </Table.Row>
-                        : !!pairings.length &&
-                        <Table.Row>
-                            <Table.Cell colSpan={isOwner ? 3 : 2}>
-                                <PeriodPairings
-                                    isOwner={isOwner}
-                                    pairings={period.pairing as Pairing[]}
-                                    missions={missions}
-                                    playerRegisters={campaignPlayers}
-                                    period={period}
-                                    onEdit={(pairings) =>
-                                        onEdit({...period, pairing: pairings})}
-                                />
-                            </Table.Cell>
-                        </Table.Row>
+                ? !!pairings.length &&
+              <Table.Row>
+                <Table.Cell colSpan={isOwner ? 3 : 2}>
+                  <PeriodPairings
+                    isOwner={isOwner}
+                    pairings={period.pairing as Pairing[]}
+                    missions={missions}
+                    playerRegisters={campaignPlayers}
+                    period={period}
+                    onEdit={(pairings) =>
+                        onEdit({...period, pairing: pairings})}
+                  />
+                </Table.Cell>
+              </Table.Row>
                 : <></>}
             <PairingCreateDialog
                 open={addPairing}

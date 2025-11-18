@@ -48,27 +48,7 @@ export interface Campaign {
 
     usesAssets: boolean
     assetsTitle: string
-    assets: CampaignAsset[]
-}
-
-export interface CampaignAsset {
-    [key: string]: any
-
-    id: string
-    title: string
-    description: string
-    campaign?: Campaign
-    campaignId: string
-    owner?: CampaignRegister
-    ownerId?: string
-}
-
-export interface CampaignAssetCreate {
-    [key: string]: any
-
-    title: string
-    description: string
-    campaignId: string
+    assetGroups: AssetGroup[]
 }
 
 export interface CampaignCreate {
@@ -82,6 +62,39 @@ export interface CampaignCreate {
     requiresRegisterApproval: boolean
     requiresPairingResultsApproval: boolean
     requiresPairingReport: boolean
+    assetGroups: {
+        [key: string]: any
+
+        title: string
+    }[]
+}
+
+export interface AssetGroup {
+    id: string
+    groupTitle: string
+    campaign: Campaign
+    campaignId: string
+    assets: CampaignAsset[]
+}
+
+export interface CampaignAsset {
+    [key: string]: any
+
+    id: string
+    title: string
+    description: string
+    assetGroup: AssetGroup
+    groupId: string
+    owner?: CampaignRegister
+    ownerId?: string
+}
+
+export interface CampaignAssetCreate {
+    [key: string]: any
+
+    title: string
+    description: string
+    groupId: string
 }
 
 export interface CampaignRegister {

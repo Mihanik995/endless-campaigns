@@ -5,7 +5,6 @@ const {Router} = require("express");
 const {PrismaClient} = require("../../generated/prisma")
 const {verifyToken} = require('../auth/middleware')
 const jwt = require('jsonwebtoken');
-const {v4: uuid} = require('uuid');
 
 const campaignRegisterRouter = require('./register/routes')
 const periodsRouter = require('./periods/routes')
@@ -52,7 +51,7 @@ campaignsRouter.get("/:id", verifyToken, async (req: Request, res: Response, nex
             where: {id: campaignId},
             include: {
                 customNotifications: true,
-                assets: {include: {owner: true}},
+                assetGroups: {include: {assets: {include: {owner: true}}}},
                 campaignRegisters: {include: {player: {select: {id: true, username: true, email: true}}}},
                 campaignPeriod: {
                     include: {
@@ -86,12 +85,15 @@ campaignsRouter.post("/", verifyToken, async (req: Request, res: Response, next:
         const {userId: ownerId} = jwt.verify(token, process.env.JWT_SECRET);
 
         campaignData["ownerId"] = ownerId;
-        campaignData["id"] = uuid();
 
         campaignData.dateStart = new Date(campaignData.dateStart)
         campaignData.dateEnd = new Date(campaignData.dateEnd)
 
-        const campaign = await dbClient.campaign.create({data: campaignData})
+        const campaign = await dbClient.campaign.create({data: {
+            ...campaignData,
+                assetGroups: {create: [...campaignData.assetGroups
+                        .map((group: {title: string}) => ({groupTitle: group.title}))]}
+        }})
         return res.status(201).json(campaign)
     } catch (error) {
         next(error)

@@ -10,13 +10,13 @@ import ErrorHandler from "./ErrorHandler.tsx";
 interface Props {
     open: boolean
     setOpen: (open: boolean) => void
-    campaignId: string;
+    groupId: string;
     setNew: (asset: CampaignAsset) => void;
 }
 
-export default function ({open, setOpen, campaignId, setNew}: Props) {
+export default function ({open, setOpen, groupId, setNew}: Props) {
     const {control, handleSubmit} = useForm<CampaignAssetCreate>({
-        defaultValues: {campaignId},
+        defaultValues: {groupId},
         mode: "onBlur"
     })
 

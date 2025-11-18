@@ -15,7 +15,7 @@ datasource db {
 }
 
 model User {
-  id                String              @id @unique
+  id                String              @id @unique @default(uuid(4))
   username          String              @unique
   password          Bytes
   salt              Bytes
@@ -57,19 +57,27 @@ model Campaign {
 
   customNotifications CustomNotification[]
 
-  usesAssets  Boolean         @default(false)
+  usesAssets  Boolean      @default(false)
   assetsTitle String?
-  assets      CampaignAsset[]
+  assetGroups AssetGroup[]
 }
 
 model CampaignAsset {
   id          String            @id @default(uuid(4))
   title       String
   description String
-  campaign    Campaign          @relation(fields: [campaignId], references: [id], onDelete: Cascade)
-  campaignId  String
+  assetGroup  AssetGroup        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId     String
   owner       CampaignRegister? @relation(fields: [ownerId], references: [id], onDelete: SetNull)
   ownerId     String?
+}
+
+model AssetGroup {
+  id         String          @id @default(uuid(4))
+  groupTitle String
+  campaign   Campaign        @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  campaignId String
+  assets     CampaignAsset[]
 }
 
 model CampaignRegister {

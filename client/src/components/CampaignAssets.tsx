@@ -1,22 +1,22 @@
-import type {Campaign, CampaignAsset} from "../types.ts";
+import type {AssetGroup, CampaignAsset} from "../types.ts";
 import {Button, Card, Container, Flex, Heading, Table} from "@radix-ui/themes";
 import {useState} from "react";
 import NewAssetCreateDialog from "./NewAssetCreateDialog.tsx";
 import CampaignAssetRow from "./CampaignAssetRow.tsx";
 
 interface Props {
-    campaign: Campaign;
+    assetsGroup: AssetGroup;
     isOwner: boolean
-    onEdit: (assets: CampaignAsset[]) => void
+    onEdit: (assetGroup: AssetGroup) => void
 }
 
-export default function ({campaign, isOwner, onEdit}: Props) {
-    const assets = campaign.assets;
+export default function ({assetsGroup, isOwner, onEdit}: Props) {
+    const assets = assetsGroup.assets;
     const [newOpen, setNewOpen] = useState(false);
 
-    return <Container mt='3'>
-        <Card size='3'>
-            <Flex direction='column' gap='3' align='start'>
+    return <Container mt="3">
+        <Card size="3">
+            <Flex direction="column" gap="3" align="start">
                 <Button onClick={() => setNewOpen(true)}>
                     Add Asset
                 </Button>
@@ -34,9 +34,9 @@ export default function ({campaign, isOwner, onEdit}: Props) {
                                     Owner
                                 </Table.ColumnHeaderCell>
                                 {isOwner &&
-                                    <Table.ColumnHeaderCell>
-                                        Actions
-                                    </Table.ColumnHeaderCell>
+                                  <Table.ColumnHeaderCell>
+                                    Actions
+                                  </Table.ColumnHeaderCell>
                                 }
                             </Table.Row>
                         </Table.Header>
@@ -46,22 +46,28 @@ export default function ({campaign, isOwner, onEdit}: Props) {
                                     asset={asset}
                                     isOwner={isOwner}
                                     onEdit={(updatedAsset) =>
-                                        onEdit(assets.map(asset =>
-                                            asset.id === updatedAsset.id
-                                                ? updatedAsset
-                                                : asset))
+                                        onEdit({
+                                            ...assetsGroup,
+                                            assets: assets.map(asset =>
+                                                asset.id === updatedAsset.id
+                                                    ? updatedAsset
+                                                    : asset)
+                                        })
                                     }
                                     onDelete={(id) =>
-                                        onEdit(assets.filter(asset =>
-                                            asset.id !== id))
+                                        onEdit({
+                                            ...assetsGroup,
+                                            assets: assets.filter(asset =>
+                                                asset.id !== id)
+                                        })
                                     }
                                 />
                             )}
                         </Table.Body>
                     </Table.Root>
-                    : <Flex justify='center' align='center' width='100%'>
-                        <Heading wrap='balance' align='center'>
-                            No {campaign.assetsTitle.toLowerCase()} created for this campaign yet.
+                    : <Flex justify="center" align="center" width="100%">
+                        <Heading wrap="balance" align="center">
+                            No {assetsGroup.groupTitle.toLowerCase()} created for this campaign yet.
                         </Heading>
                     </Flex>
                 }
@@ -70,8 +76,11 @@ export default function ({campaign, isOwner, onEdit}: Props) {
         <NewAssetCreateDialog
             open={newOpen}
             setOpen={setNewOpen}
-            campaignId={campaign.id}
-            setNew={(asset: CampaignAsset) => onEdit([...assets, asset])}
+            groupId={assetsGroup.id}
+            setNew={(asset: CampaignAsset) => onEdit({
+                ...assetsGroup,
+                assets: [...assets, asset]
+            })}
         />
     </Container>
 }

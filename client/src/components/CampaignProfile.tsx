@@ -33,7 +33,7 @@ export default function ({id}: Props) {
                     setCampaign({
                         ...res.data,
                         dateStart: new Date(res.data.dateStart).toLocaleDateString(),
-                        dateEnd: new Date(res.data.dateEnd).toLocaleDateString(),
+                        dateEnd: new Date(res.data.dateEnd).toLocaleDateString()
                     })
                     setIsOwner(res.data.ownerId === auth.id)
                     setError(undefined)
@@ -54,13 +54,13 @@ export default function ({id}: Props) {
     const navigate = useNavigate();
 
     return (
-        <Flex minHeight='40vh' align='center' justify='center'>
+        <Flex minHeight="40vh" align="center" justify="center">
             {isLoading
-                ? <Spinner size='3'/>
+                ? <Spinner size="3"/>
                 : !!error
                     ? <ErrorHandler error={error}/>
                     : campaign
-                        ? <Container width='100vw'>
+                        ? <Container width="100vw">
                             <CampaignCard
                                 campaignData={campaign}
                                 clickable={false}
@@ -70,21 +70,21 @@ export default function ({id}: Props) {
                                     ...updatedCampaign
                                 })}
                             />
-                            <Box m='2'>
-                                <Tabs.Root defaultValue='registers'>
+                            <Box m="2">
+                                <Tabs.Root defaultValue="registers">
                                     <Tabs.List>
-                                        <Tabs.Trigger value='registers'>Players</Tabs.Trigger>
-                                        <Tabs.Trigger value='periods'>Periods and Pairings</Tabs.Trigger>
-                                        {campaign.usesAssets &&
-                                            <Tabs.Trigger value='assets'>
-                                                {campaign.assetsTitle}
+                                        <Tabs.Trigger value="registers">Players</Tabs.Trigger>
+                                        <Tabs.Trigger value="periods">Periods and Pairings</Tabs.Trigger>
+                                        {campaign.usesAssets && campaign.assetGroups.map(group =>
+                                            <Tabs.Trigger value={`${group.groupTitle}_assets`}>
+                                                {group.groupTitle}
                                             </Tabs.Trigger>
-                                        }
+                                        )}
                                         {isOwner &&
-                                            <Tabs.Trigger value='notifications'>Notifications</Tabs.Trigger>
+                                          <Tabs.Trigger value="notifications">Notifications</Tabs.Trigger>
                                         }
                                     </Tabs.List>
-                                    <Tabs.Content value='registers'>
+                                    <Tabs.Content value="registers">
                                         <RegisteredPlayers
                                             campaign={campaign}
                                             isOwner={isOwner as boolean}
@@ -95,7 +95,7 @@ export default function ({id}: Props) {
                                                 })}
                                         />
                                     </Tabs.Content>
-                                    <Tabs.Content value='periods'>
+                                    <Tabs.Content value="periods">
                                         <CampaignPeriods
                                             campaign={campaign}
                                             missions={missions as Mission[]}
@@ -107,15 +107,22 @@ export default function ({id}: Props) {
                                                 })}
                                         />
                                     </Tabs.Content>
-                                    <Tabs.Content value='assets'>
-                                        <CampaignAssets
-                                            campaign={campaign}
-                                            isOwner={isOwner as boolean}
-                                            onEdit={(assets) =>
-                                                setCampaign({...campaign, assets})}
-                                        />
-                                    </Tabs.Content>
-                                    <Tabs.Content value='notifications'>
+                                    {campaign.assetGroups.map(group =>
+                                        <Tabs.Content value={`${group.groupTitle}_assets`}>
+                                            <CampaignAssets
+                                                assetsGroup={group}
+                                                isOwner={isOwner as boolean}
+                                                onEdit={(assetGroups) =>
+                                                    setCampaign({
+                                                        ...campaign,
+                                                        assetGroups: campaign?.assetGroups
+                                                            .map(group => group.id === assetGroups.id
+                                                                ? assetGroups
+                                                                : group)
+                                                    })}
+                                            />
+                                        </Tabs.Content>)}
+                                    <Tabs.Content value="notifications">
                                         <CampaignNotifications
                                             campaignNotifications={
                                                 campaign.customNotifications as CustomNotification[]

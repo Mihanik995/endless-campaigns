@@ -20,7 +20,7 @@ export default function ({open, setOpen, asset, onEdit}: Props) {
         defaultValues: {
             title: asset.title,
             description: asset.description,
-            campaignId: asset.campaignId
+            groupId: asset.groupId
         },
         mode: "onBlur"
     })

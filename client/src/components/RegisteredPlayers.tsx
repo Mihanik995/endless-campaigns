@@ -125,7 +125,7 @@ export default function ({campaign, isOwner, onEdit}: Props) {
                                 </Table.Root>
                             </ScrollArea>
                             : <Container width='100vw'>
-                                <Heading align='center'>
+                                <Heading align='center' my='9'>
                                     To invite players to your campaign, send them
                                     the campaign link (see above).
                                 </Heading>

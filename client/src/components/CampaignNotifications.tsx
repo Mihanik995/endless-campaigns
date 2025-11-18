@@ -59,8 +59,8 @@ export default function ({campaignNotifications, campaignId, onEdit}: Props) {
                             </Table.Body>
                         </Table.Root>
                     </ScrollArea>
-                    : <Flex justify='center' align='center'>
-                        <Heading wrap='balance' align='center'>
+                    : <Flex justify='center' align='center' width='100%'>
+                        <Heading wrap='balance' align='center' my='9'>
                             Here will be stored all custom notification you'll create
                             in context of the campaign.
                         </Heading>

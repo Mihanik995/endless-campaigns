@@ -132,6 +132,7 @@ export default function ({clickable, onDelete, mission, owner}: Props) {
                                                     __html: purifyHTML(missionData.missionConditions)
                                             }}
                                                 className='ProseMirror'
+                                                style={{minHeight: 'fit-content'}}
                                             />
                                         </Text>
                                     </>

@@ -80,6 +80,7 @@ export default function ({campaign, isOwner, missions, onEdit}: Props) {
                     align="center"
                     justify="center"
                     gap="3"
+                    my='9'
                 >
                     <Heading>No periods found</Heading>
                     {isOwner &&

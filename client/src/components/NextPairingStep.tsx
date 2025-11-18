@@ -84,6 +84,7 @@ export default function ({node, pairing, onPass, missionNodes, nodesPassed, onEd
                                     __html: purifyHTML(node.missionConditions)
                                 }}
                                 className="ProseMirror"
+                                style={{minHeight: 'fit-content'}}
                             />
                         </Text>
                     </Flex>

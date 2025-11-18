@@ -21,7 +21,7 @@ export default function ({assetsGroup, isOwner, onEdit}: Props) {
                     Add Asset
                 </Button>
                 {assets.length
-                    ? <Table.Root>
+                    ? <Table.Root className='w-full'>
                         <Table.Header>
                             <Table.Row>
                                 <Table.ColumnHeaderCell>
@@ -66,7 +66,7 @@ export default function ({assetsGroup, isOwner, onEdit}: Props) {
                         </Table.Body>
                     </Table.Root>
                     : <Flex justify="center" align="center" width="100%">
-                        <Heading wrap="balance" align="center">
+                        <Heading wrap="balance" align="center" my='9'>
                             No {assetsGroup.groupTitle.toLowerCase()} created for this campaign yet.
                         </Heading>
                     </Flex>

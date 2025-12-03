@@ -14,12 +14,16 @@ const pairingsRouter = new Router();
 const dbClient = new PrismaClient();
 
 pairingsRouter.post('/', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
-    const {campaignId, periodId, players, missionId} = req.body;
+    const {campaignId, periodId, players, missionId, rewards} = req.body;
     try {
         const id = uuid()
         const pairing = await dbClient.pairing.create({
             data: {
-                id, campaignId, periodId, missionId, players: {
+                id,
+                campaignId,
+                periodId,
+                missionId,
+                players: {
                     create: players.map((player: { playerId: string, personalMissionId: string }) => {
                         return player.personalMissionId
                             ? {
@@ -28,6 +32,11 @@ pairingsRouter.post('/', verifyToken, async (req: Request, res: Response, next: 
                             }
                             : {player: {connect: {id: player.playerId}}}
                     })
+                },
+                rewardsOnPairings: {
+                    create: rewards.map((id: string) => ({
+                        asset: {connect: {id}},
+                    }))
                 }
             },
             include: {
@@ -47,7 +56,7 @@ pairingsRouter.post('/', verifyToken, async (req: Request, res: Response, next: 
                 },
                 campaign: true,
                 mission: {include: {nodes: true}},
-                winners: {include: {player: {select: {id: true, username: true, email: true}}}}
+                winners: true
             }
         })
         await newPairingNotify(pairing)
@@ -72,7 +81,7 @@ pairingsRouter.get('/:id', verifyToken, async (req: Request, res: Response, next
                         nodesPassedOnPairing: true
                     }
                 },
-                winners: {include: {player: {select: {id: true, username: true, email: true}}}},
+                winners: {include: {player: {select: {id: true, username: true, email: true}}}}
             }
         })
         if (!pairing) return res.status(404).json({error: 'No pairing'})
@@ -156,7 +165,7 @@ pairingsRouter.get('/', verifyToken, async (req: Request, res: Response, next: N
 
 pairingsRouter.put('/:id', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const {id} = req.params;
-    const {players, missionId, winners} = req.body;
+    const {players, missionId, winners, rewards} = req.body;
     try {
         const pairing = await dbClient.pairing.findUnique({where: {id}})
         if (!pairing) return res.status(404).json({error: 'No pairing'})
@@ -177,9 +186,15 @@ pairingsRouter.put('/:id', verifyToken, async (req: Request, res: Response, next
                 },
                 winners: {
                     deleteMany: {},
-                    create: winners.map((id: string) => {
-                        return {player: {connect: {id}}}
-                    })
+                    create: winners.map((id: string) => ({
+                        player: {connect: {id}}
+                    }))
+                },
+                rewardsOnPairings: {
+                    deleteMany: {},
+                    create: rewards.map((id: string) => ({
+                        asset: {connect: {id}},
+                    }))
                 }
             },
             include: {
@@ -284,9 +299,13 @@ pairingsRouter.put('/:id/reject', verifyToken, async (req: Request, res: Respons
     try {
         const pairing = await dbClient.pairing.findUnique({
             where: {id},
-            include: {players: {include: {
-                player: {select: {notifications: true, email: true, telegramId: true}}
-            }}}
+            include: {
+                players: {
+                    include: {
+                        player: {select: {notifications: true, email: true, telegramId: true}}
+                    }
+                }
+            }
         })
         if (!pairing) return res.status(404).json({error: 'No pairing'})
         const rejectedPairing = await dbClient.pairing.update({

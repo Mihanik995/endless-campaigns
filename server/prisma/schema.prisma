@@ -70,6 +70,8 @@ model CampaignAsset {
   groupId     String
   owner       CampaignRegister? @relation(fields: [ownerId], references: [id], onDelete: SetNull)
   ownerId     String?
+
+  rewardsOnPairings RewardsOnPairings[]
 }
 
 model AssetGroup {
@@ -165,6 +167,17 @@ model Pairing {
   reportLink      String?
   resultsRejected Boolean             @default(false)
   rejectMessage   String?
+
+  rewardsOnPairings RewardsOnPairings[]
+}
+
+model RewardsOnPairings {
+  asset     CampaignAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  assetId   String
+  pairing   Pairing       @relation(fields: [pairingId], references: [id], onDelete: Cascade)
+  pairingId String
+
+  @@id([pairingId, assetId])
 }
 
 model PlayersOnPairings {

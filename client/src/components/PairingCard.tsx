@@ -68,7 +68,10 @@ export default function ({pairing, personalMission}: Props) {
                             {pairing.rewardsOnPairings.length > 1
                                 ? <Flex direction="column" gap="2">
                                     <Text>Rewards:</Text>
-                                    <DataList.Root>
+                                    <DataList.Root orientation={{
+                                        initial: 'vertical',
+                                        sm: 'horizontal'
+                                    }}>
                                     {pairing.rewardsOnPairings.map(reward =>
                                         <DataList.Label>- {reward.asset.title}</DataList.Label>)}
                                     </DataList.Root>

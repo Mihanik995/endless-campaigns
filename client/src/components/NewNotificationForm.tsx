@@ -12,6 +12,8 @@ interface Props {
     setNew: (notification: CustomNotification) => void
 }
 
+// TODO: Proxy Request Notifications
+
 export default function ({campaignId, setNew}: Props) {
     const {control, handleSubmit} = useForm<CustomNotificationCreate>({
         defaultValues: {campaignId},

@@ -47,7 +47,6 @@ export interface Campaign {
     customNotifications?: CustomNotification[]
 
     usesAssets: boolean
-    assetsTitle: string
     assetGroups: AssetGroup[]
 }
 
@@ -232,6 +231,15 @@ export interface Pairing {
     reportLink?: string
     resultsRejected: boolean
     rejectMessage?: string
+
+    rewardsOnPairings: RewardsOnPairings[]
+}
+
+export interface RewardsOnPairings {
+    asset: CampaignAsset
+    assetId: string
+    pairing: Pairing
+    pairingId: string
 }
 
 export interface PairingCreate {

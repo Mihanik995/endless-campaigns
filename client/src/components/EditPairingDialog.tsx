@@ -1,7 +1,7 @@
 import {Button, Dialog, Flex, IconButton, Spinner, Strong, Text} from "@radix-ui/themes";
 import SelectInput from "./SelectInput.tsx";
-import type {CampaignPeriod, Mission, Pairing, PlayerRegister} from "../types.ts";
-import {PlusIcon} from "@radix-ui/react-icons";
+import type {CampaignAsset, CampaignPeriod, Mission, Pairing, PlayerRegister} from "../types.ts";
+import {Cross2Icon, PlusIcon} from "@radix-ui/react-icons";
 import axios from "../axios/axiosConfig.ts";
 import {useState} from "react";
 import NewPairingPlayer from "./NewPairingPlayer.tsx";
@@ -9,11 +9,13 @@ import AddPlayerToPairing from "./AddPlayerToPairing.tsx";
 import {type SubmitHandler, useForm} from "react-hook-form";
 import CheckManyInput from "./CheckManyInput.tsx";
 import ErrorHandler from "./ErrorHandler.tsx";
+import {Select} from "@radix-ui/themes";
 
 interface Props {
     open: boolean
     onOpenChange: (open: boolean) => void
     missions: Mission[]
+    availableRewards: CampaignAsset[]
     playerRegisters: PlayerRegister[]
     period: CampaignPeriod
     pairing: Pairing
@@ -25,7 +27,7 @@ interface PairingMissionAndWinners {
     winners: string[]
 }
 
-export default function ({open, onOpenChange, missions, playerRegisters, pairing, onEdit}: Props) {
+export default function ({open, onOpenChange, missions, availableRewards, playerRegisters, pairing, onEdit}: Props) {
     const [playersList, setPlayersList] = useState<PlayerRegister[]>(
         pairing.players.map(player => {
             return {
@@ -40,6 +42,15 @@ export default function ({open, onOpenChange, missions, playerRegisters, pairing
             winners: pairing.winners.map(winner => winner.playerId as string)
         }
     })
+
+
+    const [pairingRewards, setPairingRewards] = useState<string[]>(pairing.rewardsOnPairings.map(ROP => ROP.asset.id))
+    const [rewardsOptions, setRewardsOptions] = useState(availableRewards.filter(asset =>
+        !pairing.rewardsOnPairings.map(ROP => ROP.asset.id).includes(asset.id) &&
+        !asset.ownerId ||
+        playersList.map(playerRegister => playerRegister.playerId).includes(asset.ownerId as string)
+    ))
+
 
     const [playersOptions, setPlayersOptions] = useState<PlayerRegister[]>(
         playerRegisters.filter(pr => !playersList
@@ -76,6 +87,19 @@ export default function ({open, onOpenChange, missions, playerRegisters, pairing
         ])
     }
 
+    const handleAddReward = (rewardId: string) => {
+        setPairingRewards([...pairingRewards, rewardId])
+        setRewardsOptions(rewardsOptions.filter(asset => asset.id !== rewardId))
+    }
+
+    const handleDeleteReward = (rewardId: string) => {
+        setPairingRewards(pairingRewards.filter(assetId => assetId != rewardId))
+        setRewardsOptions([
+            ...rewardsOptions,
+            (availableRewards.find(reward => reward.id === rewardId) as CampaignAsset)
+        ])
+    }
+
     const [error, setError] = useState()
     const [isLoading, setIsLoading] = useState(false)
     const onSubmit: SubmitHandler<PairingMissionAndWinners> = (data) => {
@@ -89,6 +113,7 @@ export default function ({open, onOpenChange, missions, playerRegisters, pairing
                     personalMissionId: player.personalMissionId
                 }
             }),
+            rewards: pairingRewards,
             ...data
         }).then(res => {
             if (res.status === 200) {
@@ -145,6 +170,38 @@ export default function ({open, onOpenChange, missions, playerRegisters, pairing
                                 <PlusIcon/>
                             </IconButton>}
                     </Flex>}
+                </Flex>
+                <Flex gap="2" direction="column">
+                    Rewards:
+                    <Flex direction="column" gap="1">
+                        {pairingRewards.map(reward => <Flex gap="2">
+                                <IconButton
+                                    color="red"
+                                    size="1"
+                                    onClick={() => handleDeleteReward((availableRewards.find(asset => asset.id === reward) as CampaignAsset).id)}
+                                >
+                                    <Cross2Icon/>
+                                </IconButton>
+                                <Text>
+                                    {availableRewards.find(asset => asset.id === reward)?.title}
+                                </Text>
+                            </Flex>
+                        )}
+                        {!!rewardsOptions.length &&
+                          <Select.Root
+                            size="2"
+                            key={pairingRewards.length}
+                            onValueChange={handleAddReward}
+                          >
+                            <Select.Trigger placeholder="Select a reward (optional)"/>
+                            <Select.Content>
+                                {rewardsOptions.map(reward =>
+                                    <Select.Item key={reward.id} value={reward.id}>{reward.title}</Select.Item>)
+                                }
+                            </Select.Content>
+                          </Select.Root>
+                        }
+                    </Flex>
                 </Flex>
                 <Flex gap="2" align="center">
                     Winners:

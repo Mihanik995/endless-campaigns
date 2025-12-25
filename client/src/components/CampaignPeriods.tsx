@@ -47,6 +47,7 @@ export default function ({campaign, isOwner, missions, onEdit}: Props) {
                                     isOwner={isOwner}
                                     period={period}
                                     campaignPlayers={campaignPlayers}
+                                    campaignAssets={campaign.assetGroups}
                                     missions={missions}
                                     onEdit={(period) =>
                                         onEdit(periods?.map(p => p.id === period.id

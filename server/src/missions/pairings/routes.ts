@@ -56,7 +56,8 @@ pairingsRouter.post('/', verifyToken, async (req: Request, res: Response, next: 
                 },
                 campaign: true,
                 mission: {include: {nodes: true}},
-                winners: true
+                winners: true,
+                rewardsOnPairings: {include: {asset: true}}
             }
         })
         await newPairingNotify(pairing)
@@ -205,7 +206,8 @@ pairingsRouter.put('/:id', verifyToken, async (req: Request, res: Response, next
                         personalMission: true
                     }
                 },
-                winners: {include: {player: {select: {id: true, username: true, email: true}}}}
+                winners: {include: {player: {select: {id: true, username: true, email: true}}}},
+                rewardsOnPairings: {include: {asset: true}}
             }
         })
         res.status(200).json(updatedPairing);
@@ -284,7 +286,8 @@ pairingsRouter.put('/:id/approve', verifyToken, async (req: Request, res: Respon
                         personalMission: true
                     }
                 },
-                winners: {include: {player: {select: {id: true, username: true, email: true}}}}
+                winners: {include: {player: {select: {id: true, username: true, email: true}}}},
+                rewardsOnPairings: {include: {asset: true}}
             }
         })
         res.status(200).json(approvedPairing);
@@ -331,7 +334,8 @@ pairingsRouter.put('/:id/reject', verifyToken, async (req: Request, res: Respons
                 },
                 campaign: true,
                 mission: {include: {nodes: true}},
-                winners: {include: {player: {select: {id: true, username: true, email: true}}}}
+                winners: {include: {player: {select: {id: true, username: true, email: true}}}},
+                rewardsOnPairings: {include: {asset: true}}
             }
         })
         await resultsRejectedNotify(pairing)

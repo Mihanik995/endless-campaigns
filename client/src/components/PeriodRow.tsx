@@ -3,7 +3,7 @@ import {type ChangeEvent, type MouseEventHandler, useState} from "react";
 import axios from "../axios/axiosConfig.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
 import PairingCreateDialog from "./PairingCreateDialog.tsx";
-import type {CampaignPeriod, Mission, Pairing, PlayerRegister} from "../types.ts";
+import type {AssetGroup, CampaignAsset, CampaignPeriod, Mission, Pairing, PlayerRegister} from "../types.ts";
 import PeriodPairings from "./PeriodPairings.tsx";
 import {TriangleDownIcon, TriangleUpIcon} from "@radix-ui/react-icons";
 
@@ -15,13 +15,34 @@ interface Props {
     period: CampaignPeriod
     missions: Mission[]
     campaignPlayers: PlayerRegister[]
+    campaignAssets: AssetGroup[]
 }
 
-export default function ({isOwner, index, onEdit, onDelete, period, campaignPlayers, missions}: Props) {
+function getAvailableAssetsForPeriod(
+    period: CampaignPeriod,
+    campaignAssets: AssetGroup[],
+): CampaignAsset[] {
+    // 1. Собираем все assetId, которые уже задействованы в наградах этого периода
+    const usedAssetIds = new Set<string>();
+
+    period.pairing?.forEach(pairing => {
+        pairing.rewardsOnPairings.forEach(reward => {
+            usedAssetIds.add(reward.assetId);
+        });
+    });
+
+    const allAssets = campaignAssets.flatMap(group => group.assets);
+
+    return allAssets.filter(asset => !usedAssetIds.has(asset.id));
+}
+
+export default function ({isOwner, index, onEdit, onDelete, period, campaignPlayers, missions, campaignAssets}: Props) {
     const [periodChanges, setPeriodChanges] = useState<CampaignPeriod>(period)
     const [edit, setEdit] = useState<boolean>(false)
     const [error, setError] = useState<Error>()
+
     const pairings = period.pairing
+    const availableRewards = getAvailableAssetsForPeriod(period, campaignAssets)
 
     const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
         setPeriodChanges({
@@ -122,6 +143,7 @@ export default function ({isOwner, index, onEdit, onDelete, period, campaignPlay
                     isOwner={isOwner}
                     pairings={period.pairing as Pairing[]}
                     missions={missions}
+                    availableRewards={availableRewards}
                     playerRegisters={campaignPlayers}
                     period={period}
                     onEdit={(pairings) =>
@@ -135,6 +157,7 @@ export default function ({isOwner, index, onEdit, onDelete, period, campaignPlay
                 openChange={setAddPairing}
                 playerRegisters={campaignPlayers}
                 period={period}
+                availableRewards={availableRewards}
                 onEdit={(pairing) => onEdit({
                     ...period,
                     pairing: [...period.pairing as Pairing[], pairing]

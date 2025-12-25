@@ -1,5 +1,5 @@
 import {Table} from "@radix-ui/themes";
-import type {CampaignPeriod, Pairing, PlayerRegister, Mission} from "../types.ts";
+import type {CampaignPeriod, Pairing, PlayerRegister, Mission, CampaignAsset} from "../types.ts";
 import OwnerPeriodParingRow from "./OwnerPeriodParingRow.tsx";
 import GuestPeriodParingRow from "./GuestPeriodParingRow.tsx";
 
@@ -7,12 +7,13 @@ interface Props {
     isOwner: boolean
     pairings: Pairing[]
     missions: Mission[]
+    availableRewards: CampaignAsset[]
     playerRegisters: PlayerRegister[]
     period: CampaignPeriod
     onEdit: (pairings: Pairing[]) => void
 }
 
-export default function ({isOwner, pairings, missions, playerRegisters, period, onEdit}: Props) {
+export default function ({isOwner, pairings, missions, availableRewards, playerRegisters, period, onEdit}: Props) {
     return <Table.Root>
         <Table.Header>
             <Table.Row>
@@ -21,6 +22,9 @@ export default function ({isOwner, pairings, missions, playerRegisters, period, 
                 </Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>
                     Players
+                </Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell>
+                    Rewards
                 </Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell>
                     Winner(s)
@@ -40,6 +44,7 @@ export default function ({isOwner, pairings, missions, playerRegisters, period, 
                     key={pairing.id}
                     pairing={pairing}
                     missions={missions}
+                    availableRewards={availableRewards}
                     playerRegisters={playerRegisters}
                     period={period}
                     onEdit={(pairing) =>

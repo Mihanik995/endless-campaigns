@@ -64,7 +64,8 @@ campaignsRouter.get("/:id", verifyToken, async (req: Request, res: Response, nex
                                         personalMission: true
                                     }
                                 },
-                                winners: {include: {player: {select: {id: true, username: true, email: true}}}}
+                                winners: {include: {player: {select: {id: true, username: true, email: true}}}},
+                                rewardsOnPairings: {include: {asset: true}}
                             }
                         }
                     }

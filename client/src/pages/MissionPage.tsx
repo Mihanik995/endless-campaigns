@@ -26,6 +26,7 @@ export default function () {
             .then(res => {
                 if (res.status === 200) {
                     setMission(res.data)
+                    setError(undefined)
                 }
             }).catch(error => setError(error as Error))
             .finally(() => setIsLoading(false))

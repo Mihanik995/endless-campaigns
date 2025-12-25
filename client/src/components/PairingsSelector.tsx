@@ -12,9 +12,12 @@ export default function () {
 
     useEffect(() => {
         setIsLoading(true)
-        axios.get('/missions/pairings')
+        axios.get<PlayersOnPairings[]>('/missions/pairings')
             .then(res => {
-                if (res.status === 200) setPairings(res.data)
+                if (res.status === 200) {
+                    setPairings(res.data)
+                    setError(undefined)
+                }
             }).catch(err => setError(err))
             .finally(() => setIsLoading(false))
     }, []);

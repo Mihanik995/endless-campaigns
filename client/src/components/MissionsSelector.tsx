@@ -14,9 +14,12 @@ export default function () {
 
     useEffect(() => {
         setIsLoading(true)
-        axios.get('/missions')
+        axios.get<Mission[]>('/missions')
             .then(res => {
-                if (res.status === 200) setMissions(res.data)
+                if (res.status === 200) {
+                    setMissions(res.data)
+                    setError(undefined)
+                }
             }).catch(err => setError(err))
             .finally(() => setIsLoading(false))
     }, []);

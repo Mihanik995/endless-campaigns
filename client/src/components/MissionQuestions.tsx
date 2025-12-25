@@ -23,7 +23,6 @@ export default function ({mission}: Props) {
 
     const [error, setError] = useState<Error>()
     const [isLoading, setIsLoading] = useState(false)
-    const [change, setChange] = useState(0)
     const [questions, setQuestions] = useState<Question[]>([])
     const isOwner = mission.creatorId === auth.id
     useEffect(() => {
@@ -32,10 +31,11 @@ export default function ({mission}: Props) {
             .then(res => {
                 if (res.status === 200) {
                     setQuestions(res.data)
+                    setError(undefined)
                 }
             }).catch(error => setError(error as Error))
             .finally(() => setIsLoading(false))
-    }, [change]);
+    }, []);
 
     const {control, handleSubmit} = useForm<NewQuestion>({
         defaultValues: {missionId: mission.id},
@@ -46,7 +46,10 @@ export default function ({mission}: Props) {
         try {
             axios.post(`missions/questions/`, data)
                 .then(res => {
-                    if (res.status === 201) setQuestions([...questions, res.data])
+                    if (res.status === 201) {
+                        setQuestions([...questions, res.data])
+                        setError(undefined)
+                    }
                 })
         } catch (error) {
             setUpdateError(error as Error)
@@ -54,10 +57,10 @@ export default function ({mission}: Props) {
     }
 
     return isLoading
-        ? <Spinner size='3'/>
+        ? <Spinner size="3"/>
         : !!error
             ? <ErrorHandler error={error}/>
-            : <Flex direction='column' gap='3'>
+            : <Flex direction="column" gap="3">
                 <Heading>Questions</Heading>
                 {questions.length
                     ? <Grid
@@ -68,33 +71,41 @@ export default function ({mission}: Props) {
                                 sm: questions.length > 3 ? '3' : `${questions.length}`
                             }
                         }
-                        gap='3'
-                        width='auto'
+                        gap="3"
+                        width="auto"
                     >
                         {questions.map(q => (
                             <MissionQuestionCard
                                 key={q.id}
                                 question={q}
                                 isMissionOwner={isOwner}
-                                onChange={() => setChange(change + 1)}
+                                onEdit={(question) =>
+                                    setQuestions(questions.map(q =>
+                                        q.id === question.id
+                                            ? question
+                                            : q))}
+                                onDelete={(id) =>
+                                    setQuestions(questions.filter(q =>
+                                        q.id !== id))
+                                }
                             />
                         ))}
                     </Grid>
-                    : <Text size='4' align='center' my='3'>No questions asked yet.</Text>}
+                    : <Text size="4" align="center" my="3">No questions asked yet.</Text>}
                 {!isOwner &&
                     <Popover.Root>
                         <Popover.Trigger>
                             <Button>Ask question</Button>
                         </Popover.Trigger>
                         <Popover.Content>
-                            <Flex direction='column' gap='2'>
+                            <Flex direction="column" gap="2">
                                 <TextInput
-                                    label='Question'
-                                    name='newQuestionText'
+                                    label="Question"
+                                    name="newQuestionText"
                                     control={control}
                                 />
                                 {!!updateError && <ErrorHandler error={updateError}/>}
-                                <Flex gap='2'>
+                                <Flex gap="2">
                                     <Popover.Close>
                                         <Button>Close</Button>
                                     </Popover.Close>

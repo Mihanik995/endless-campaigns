@@ -6,11 +6,12 @@ import {useAppSelector} from "../app/hooks.ts";
 import {selectAuth} from "../app/features/auth/authSlice.ts";
 import CampaignPeriods from "../components/CampaignPeriods.tsx";
 import {selectCampaign} from "../app/features/campaign/campaignSlice.ts";
-import type {Campaign, CustomNotification} from "../types.ts";
+import type {Campaign, CampaignRegister, CustomNotification, Mission} from "../types.ts";
 import {useEffect, useState} from "react";
 import axios from "../axios/axiosConfig.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
 import CampaignNotifications from "./CampaignNotifications.tsx";
+import CampaignAssets from "./CampaignAssets.tsx";
 
 interface Props {
     id?: string;
@@ -19,6 +20,7 @@ interface Props {
 export default function ({id}: Props) {
     const campaignId = id || useAppSelector(selectCampaign).id as string
     const [campaign, setCampaign] = useState<Campaign>()
+    const [missions, setMissions] = useState<Mission[]>()
     const [isOwner, setIsOwner] = useState<boolean>()
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<Error>()
@@ -31,11 +33,19 @@ export default function ({id}: Props) {
                     setCampaign({
                         ...res.data,
                         dateStart: new Date(res.data.dateStart).toLocaleDateString(),
-                        dateEnd: new Date(res.data.dateEnd).toLocaleDateString(),
+                        dateEnd: new Date(res.data.dateEnd).toLocaleDateString()
                     })
                     setIsOwner(res.data.ownerId === auth.id)
+                    setError(undefined)
                 }
-            }).catch(err => setError(err as Error))
+            }).then(() => axios.get<Mission[]>(`/missions`))
+            .then(res => {
+                if (res.status === 200) {
+                    setMissions(res.data)
+                    setError(undefined)
+                }
+            })
+            .catch(err => setError(err as Error))
             .finally(() => setIsLoading(false))
     }, []);
 
@@ -44,45 +54,91 @@ export default function ({id}: Props) {
     const navigate = useNavigate();
 
     return (
-        <Flex minHeight='40vh' align='center' justify='center'>
+        <Flex minHeight="40vh" align="center" justify="center">
             {isLoading
-                ? <Spinner size='3'/>
+                ? <Spinner size="3"/>
                 : !!error
                     ? <ErrorHandler error={error}/>
                     : campaign
-                        ? <Container width='100vw'>
+                        ? <Container width="100vw">
                             <CampaignCard
                                 campaignData={campaign}
                                 clickable={false}
                                 onDelete={() => navigate('/dashboard')}
+                                onEdit={(updatedCampaign) => setCampaign({
+                                    ...campaign,
+                                    ...updatedCampaign
+                                })}
                             />
-                            <Box m='2'>
-                                <Tabs.Root defaultValue='registers'>
+                            <Box m="2">
+                                <Tabs.Root defaultValue="registers">
                                     <Tabs.List>
-                                        <Tabs.Trigger value='registers'>Players</Tabs.Trigger>
-                                        <Tabs.Trigger value='periods'>Periods and Pairings</Tabs.Trigger>
+                                        <Tabs.Trigger value="registers">Players</Tabs.Trigger>
+                                        <Tabs.Trigger value="periods">Periods and Pairings</Tabs.Trigger>
+                                        {campaign.usesAssets && campaign.assetGroups.map(group =>
+                                            <Tabs.Trigger value={`${group.groupTitle}_assets`}>
+                                                {group.groupTitle}
+                                            </Tabs.Trigger>
+                                        )}
                                         {isOwner &&
-                                            <Tabs.Trigger value='notifications'>Notifications</Tabs.Trigger>
+                                          <Tabs.Trigger value="notifications">Notifications</Tabs.Trigger>
                                         }
                                     </Tabs.List>
-                                    <Tabs.Content value='registers'>
+                                    <Tabs.Content value="registers">
                                         <RegisteredPlayers
-                                            campaignId={campaign.id}
+                                            campaign={campaign}
                                             isOwner={isOwner as boolean}
+                                            onEdit={(campaignRegisters) =>
+                                                setCampaign({
+                                                    ...campaign,
+                                                    campaignRegisters
+                                                })}
                                         />
                                     </Tabs.Content>
-                                    <Tabs.Content value='periods'>
+                                    <Tabs.Content value="periods">
                                         <CampaignPeriods
-                                            campaignId={campaign.id}
+                                            campaign={campaign}
+                                            missions={missions as Mission[]}
                                             isOwner={isOwner as boolean}
+                                            onEdit={(periods) =>
+                                                setCampaign({
+                                                    ...campaign,
+                                                    campaignPeriod: periods
+                                                })}
                                         />
                                     </Tabs.Content>
-                                    <Tabs.Content value='notifications'>
+                                    {campaign.assetGroups.map(group =>
+                                        <Tabs.Content value={`${group.groupTitle}_assets`}>
+                                            <CampaignAssets
+                                                assetsGroup={group}
+                                                registers={campaign.campaignRegisters as CampaignRegister[]}
+                                                isOwner={isOwner as boolean}
+                                                onEdit={(assetGroups) =>
+                                                    setCampaign({
+                                                        ...campaign,
+                                                        assetGroups: campaign?.assetGroups
+                                                            .map(group => group.id === assetGroups.id
+                                                                ? assetGroups
+                                                                : group)
+                                                    })}
+                                                onDelete={() =>
+                                                    setCampaign({
+                                                        ...campaign,
+                                                        assetGroups: campaign?.assetGroups.filter(g => g !== group)
+                                                    })}
+                                            />
+                                        </Tabs.Content>)}
+                                    <Tabs.Content value="notifications">
                                         <CampaignNotifications
                                             campaignNotifications={
                                                 campaign.customNotifications as CustomNotification[]
                                             }
                                             campaignId={campaign.id}
+                                            onEdit={(notifications) =>
+                                                setCampaign({
+                                                    ...campaign,
+                                                    customNotifications: notifications
+                                                })}
                                         />
                                     </Tabs.Content>
                                 </Tabs.Root>

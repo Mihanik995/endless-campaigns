@@ -18,8 +18,8 @@ export default function () {
         setIsLoading(true)
         axios.get(`/auth/restore-access/${token}`)
             .then(res => {
-                console.log(res)
                 if (res.status === 200) {
+                    setError(undefined)
                     dispatch(refresh(res.data))
                     setSuccess(true)
                 }

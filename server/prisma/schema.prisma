@@ -15,7 +15,7 @@ datasource db {
 }
 
 model User {
-  id                String              @id @unique
+  id                String              @id @unique @default(uuid(4))
   username          String              @unique
   password          Bytes
   salt              Bytes
@@ -56,6 +56,30 @@ model Campaign {
   requiresPairingReport          Boolean            @default(true)
 
   customNotifications CustomNotification[]
+
+  usesAssets  Boolean      @default(false)
+  assetsTitle String?
+  assetGroups AssetGroup[]
+}
+
+model CampaignAsset {
+  id          String            @id @default(uuid(4))
+  title       String
+  description String
+  assetGroup  AssetGroup        @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId     String
+  owner       CampaignRegister? @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  ownerId     String?
+
+  rewardsOnPairings RewardsOnPairings[]
+}
+
+model AssetGroup {
+  id         String          @id @default(uuid(4))
+  groupTitle String
+  campaign   Campaign        @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  campaignId String
+  assets     CampaignAsset[]
 }
 
 model CampaignRegister {
@@ -67,6 +91,8 @@ model CampaignRegister {
   formationName String
   rosterLink    String
   approved      Boolean
+
+  campaignAssets CampaignAsset[]
 }
 
 model CampaignPeriod {
@@ -141,6 +167,17 @@ model Pairing {
   reportLink      String?
   resultsRejected Boolean             @default(false)
   rejectMessage   String?
+
+  rewardsOnPairings RewardsOnPairings[]
+}
+
+model RewardsOnPairings {
+  asset     CampaignAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  assetId   String
+  pairing   Pairing       @relation(fields: [pairingId], references: [id], onDelete: Cascade)
+  pairingId String
+
+  @@id([pairingId, assetId])
 }
 
 model PlayersOnPairings {
@@ -167,7 +204,7 @@ model WinnersOnPairings {
 model NodesPassedOnPairing {
   node            MissionNode       @relation(fields: [nodeId], references: [id], onDelete: Cascade)
   nodeId          String
-  playerOnPairing PlayersOnPairings @relation(fields: [pairingId, playerId], references: [playerId, pairingId], onDelete: Cascade)
+  playerOnPairing PlayersOnPairings @relation(fields: [playerId, pairingId], references: [playerId, pairingId], onDelete: Cascade)
   pairingId       String
   playerId        String
 

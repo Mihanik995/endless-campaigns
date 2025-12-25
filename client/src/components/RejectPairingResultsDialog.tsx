@@ -10,14 +10,14 @@ interface Props {
     open: boolean
     setOpen: (open: boolean) => void
     pairing: Pairing
-    onChange: () => void
+    onEdit: (pairing: Pairing) => void
 }
 
 interface RejectMessage{
     rejectMessage: string
 }
 
-export default function ({open, setOpen, pairing, onChange}: Props) {
+export default function ({open, setOpen, pairing, onEdit}: Props) {
     const [isLoading, setIsLoading] = useState(false)
     const [error, setError] = useState<Error>()
     const {control, handleSubmit} = useForm<RejectMessage>({
@@ -25,9 +25,12 @@ export default function ({open, setOpen, pairing, onChange}: Props) {
     })
     const onRejectResults: SubmitHandler<RejectMessage> = (data) => {
         setIsLoading(true)
-        axios.put(`/missions/pairings/${pairing.id}/reject`, data)
+        axios.put<Pairing>(`/missions/pairings/${pairing.id}/reject`, data)
             .then(res => {
-                if (res.status === 200) onChange()
+                if (res.status === 200) {
+                    onEdit(res.data)
+                    setError(undefined)
+                }
             }).catch(err => setError(err as Error))
             .finally(() => setIsLoading(false))
     }

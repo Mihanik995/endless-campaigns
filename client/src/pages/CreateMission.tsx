@@ -10,6 +10,8 @@ import type {MissionCreate} from "../types.ts";
 import WYSIWYGInput from "../components/WYSIWYGInput.tsx";
 import {type SubmitHandler, useForm} from "react-hook-form";
 
+// TODO: Add disabling step-back option in multistep missions
+
 export default function () {
     const {control, handleSubmit} = useForm<MissionCreate>({
         defaultValues: {missionConditions: ''},

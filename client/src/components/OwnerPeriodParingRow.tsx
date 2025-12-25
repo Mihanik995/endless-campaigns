@@ -71,7 +71,9 @@ export default function ({pairing, missions, availableRewards, playerRegisters, 
             </Table.Cell>
             <Table.Cell>
                 {pairing.rewardsOnPairings.length
-                    ? pairing.rewardsOnPairings.map(ROP => <Text>{ROP.asset.title}</Text>)
+                    ? <Flex direction='column' gap='1'>
+                        {pairing.rewardsOnPairings.map(ROP => <Text>{ROP.asset.title}</Text>)}
+                    </Flex>
                     : '-'
                 }
             </Table.Cell>

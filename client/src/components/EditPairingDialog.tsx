@@ -28,14 +28,9 @@ interface PairingMissionAndWinners {
 }
 
 export default function ({open, onOpenChange, missions, availableRewards, playerRegisters, pairing, onEdit}: Props) {
-    const [playersList, setPlayersList] = useState<PlayerRegister[]>(
-        pairing.players.map(player => {
-            return {
-                playerUsername: player.player.username,
-                playerId: player.playerId,
-                personalMissionId: player.personalMissionId
-            } as PlayerRegister
-        }))
+    const initialPlayersList = playerRegisters.filter(pr => pairing.players
+        .map(p => p.playerId).includes(pr.playerId))
+    const [playersList, setPlayersList] = useState<PlayerRegister[]>(initialPlayersList)
     const {control, handleSubmit} = useForm<PairingMissionAndWinners>({
         defaultValues: {
             missionId: pairing.missionId,
@@ -43,14 +38,11 @@ export default function ({open, onOpenChange, missions, availableRewards, player
         }
     })
 
-
     const [pairingRewards, setPairingRewards] = useState<string[]>(pairing.rewardsOnPairings.map(ROP => ROP.asset.id))
-    const [rewardsOptions, setRewardsOptions] = useState(availableRewards.filter(asset =>
-        !pairing.rewardsOnPairings.map(ROP => ROP.asset.id).includes(asset.id) &&
-        !asset.ownerId ||
-        playersList.map(playerRegister => playerRegister.playerId).includes(asset.ownerId as string)
-    ))
-
+    const rewardOptions = availableRewards.filter(reward =>
+        !pairingRewards.includes(reward.id) &&
+        (!reward.ownerId || playersList.map(reg => reg.id).includes(reward.ownerId))
+    )
 
     const [playersOptions, setPlayersOptions] = useState<PlayerRegister[]>(
         playerRegisters.filter(pr => !playersList
@@ -61,10 +53,11 @@ export default function ({open, onOpenChange, missions, availableRewards, player
 
     const handleAdd = () => {
         if (addPlayer && playerToAdd.length) {
-            setPlayersList([
+            const newPlayersList = [
                 ...playersList,
                 playerRegisters.find(player => player.playerId === playerToAdd) as PlayerRegister
-            ])
+            ]
+            setPlayersList(newPlayersList)
             setPlayersOptions(playersOptions.filter(player => player.playerId !== playerToAdd))
         }
         setPlayerToAdd('')
@@ -79,25 +72,23 @@ export default function ({open, onOpenChange, missions, availableRewards, player
     }
 
     const handleDelete = (id: string) => {
-        setPlayersList(playersList
-            .filter(player => player.playerId !== id))
+        const newPlayersList = playersList.filter(player => player.id !== id)
+        setPlayersList(newPlayersList)
         setPlayersOptions([
             ...playersOptions,
-            playerRegisters.find(player => player.playerId === id) as PlayerRegister
+            playerRegisters.find(player => player.id === id) as PlayerRegister
         ])
+        setPairingRewards(pairingRewards
+            .filter(assetId => availableRewards
+                .find(asset => asset.ownerId === id)?.id !== assetId))
     }
 
     const handleAddReward = (rewardId: string) => {
         setPairingRewards([...pairingRewards, rewardId])
-        setRewardsOptions(rewardsOptions.filter(asset => asset.id !== rewardId))
     }
 
     const handleDeleteReward = (rewardId: string) => {
         setPairingRewards(pairingRewards.filter(assetId => assetId != rewardId))
-        setRewardsOptions([
-            ...rewardsOptions,
-            (availableRewards.find(reward => reward.id === rewardId) as CampaignAsset)
-        ])
     }
 
     const [error, setError] = useState()
@@ -187,7 +178,7 @@ export default function ({open, onOpenChange, missions, availableRewards, player
                                 </Text>
                             </Flex>
                         )}
-                        {!!rewardsOptions.length &&
+                        {!!rewardOptions.length &&
                           <Select.Root
                             size="2"
                             key={pairingRewards.length}
@@ -195,7 +186,7 @@ export default function ({open, onOpenChange, missions, availableRewards, player
                           >
                             <Select.Trigger placeholder="Select a reward (optional)"/>
                             <Select.Content>
-                                {rewardsOptions.map(reward =>
+                                {rewardOptions.map(reward =>
                                     <Select.Item key={reward.id} value={reward.id}>{reward.title}</Select.Item>)
                                 }
                             </Select.Content>

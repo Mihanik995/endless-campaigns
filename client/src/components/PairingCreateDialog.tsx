@@ -27,11 +27,14 @@ export default function ({playerRegisters, period, onEdit, missions, availableRe
     const [playersOptions, setPlayersOptions] = useState<PlayerRegister[]>(playerRegisters)
     const [playersList, setPlayersList] = useState<PlayerRegister[]>([])
 
-    const [pairingRewards, setPairingRewards] = useState<string[]>([])
-    const [rewardsOptions, setRewardsOptions] = useState(availableRewards.filter(asset =>
+    const resetRewardOptions = (playersList: PlayerRegister[]) => availableRewards.filter(asset =>
+        !pairingRewards.includes(asset.id) &&
         !asset.ownerId ||
-        playersList.map(playerRegister => playerRegister.playerId).includes(asset.ownerId)
-    ))
+        playersList.map(playerRegister => playerRegister.id).includes(asset.ownerId as string)
+    )
+
+    const [pairingRewards, setPairingRewards] = useState<string[]>([])
+    const [rewardsOptions, setRewardsOptions] = useState(resetRewardOptions([]))
 
     const {control: missionControl, handleSubmit} = useForm<PairingMission>({mode: "onBlur"})
 
@@ -40,11 +43,13 @@ export default function ({playerRegisters, period, onEdit, missions, availableRe
 
     const handleAdd = () => {
         if (addPlayer && playerToAdd.length) {
-            setPlayersList([
+            const newPlayersList = [
                 ...playersList,
                 playerRegisters.find(player => player.playerId === playerToAdd) as PlayerRegister
-            ])
+            ]
+            setPlayersList(newPlayersList)
             setPlayersOptions(playersOptions.filter(player => player.playerId !== playerToAdd))
+            setRewardsOptions(resetRewardOptions(newPlayersList))
         }
         setPlayerToAdd('')
         setAddPlayer(!addPlayer)
@@ -71,12 +76,16 @@ export default function ({playerRegisters, period, onEdit, missions, availableRe
     }
 
     const handleDelete = (id: string) => {
-        setPlayersList(playersList
-            .filter(player => player.playerId !== id))
+        const newPlayersList = playersList.filter(player => player.id !== id)
+        setPlayersList(newPlayersList)
         setPlayersOptions([
             ...playersOptions,
-            playerRegisters.find(player => player.playerId === id) as PlayerRegister
+            playerRegisters.find(player => player.id === id) as PlayerRegister
         ])
+        setRewardsOptions(resetRewardOptions(newPlayersList))
+        setPairingRewards(pairingRewards
+            .filter(assetId => availableRewards
+                .find(asset => asset.ownerId === id)?.id !== assetId))
     }
 
     const [error, setError] = useState<Error>()
@@ -158,7 +167,7 @@ export default function ({playerRegisters, period, onEdit, missions, availableRe
                     <Flex gap="2" direction="column">
                         Rewards:
                         <Flex direction="column" gap="1">
-                            {pairingRewards.map(reward => <Flex gap="2">
+                            {pairingRewards.map(reward => <Flex key={reward} gap="2">
                                     <IconButton
                                         color="red"
                                         size="1"

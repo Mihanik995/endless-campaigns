@@ -58,7 +58,7 @@ export default function ({player, handleDelete, missions, setCustomMission}: Pro
                 <Button
                     color='red'
                     size='1'
-                    onClick={() => handleDelete(player.playerId)}
+                    onClick={() => handleDelete(player.id)}
                 >
                     Delete
                 </Button>

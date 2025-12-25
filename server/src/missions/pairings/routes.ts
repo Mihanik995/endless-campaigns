@@ -1,5 +1,5 @@
-import type {Request, Response, NextFunction} from 'express';
-import type {PlayersOnPairings} from '../../../generated/prisma'
+import type {NextFunction, Request, Response} from 'express';
+import type {CampaignAsset, PlayersOnPairings, RewardsOnPairings} from '../../../generated/prisma'
 
 const {Router} = require("express");
 const {PrismaClient} = require("../../../generated/prisma");
@@ -82,7 +82,8 @@ pairingsRouter.get('/:id', verifyToken, async (req: Request, res: Response, next
                         nodesPassedOnPairing: true
                     }
                 },
-                winners: {include: {player: {select: {id: true, username: true, email: true}}}}
+                winners: {include: {player: {select: {id: true, username: true, email: true}}}},
+                rewardsOnPairings: {include: {asset: true}}
             }
         })
         if (!pairing) return res.status(404).json({error: 'No pairing'})
@@ -151,7 +152,8 @@ pairingsRouter.get('/', verifyToken, async (req: Request, res: Response, next: N
                             include: {campaignRegisters: {include: {player: true}}}
                         },
                         mission: true,
-                        players: {include: {player: {select: {id: true, username: true, email: true}}}}
+                        players: {include: {player: {select: {id: true, username: true, email: true}}}},
+                        rewardsOnPairings: {include: {asset: true}}
                     }
                 },
                 personalMission: true
@@ -235,7 +237,8 @@ pairingsRouter.post('/:id/set-winners/', verifyToken, async (req: Request, res: 
             where: {id},
             include: {
                 players: {include: {player: {select: {username: true}}}},
-                campaign: {include: {owner: true}}
+                campaign: {include: {owner: true}},
+                rewardsOnPairings: true
             }
         })
         if (!pairing) return res.status(404).json({error: 'No pairing'})
@@ -261,6 +264,19 @@ pairingsRouter.post('/:id/set-winners/', verifyToken, async (req: Request, res: 
         })
         if (pairing.campaign.requiresPairingResultsApproval) {
             await pairingPlayedNotify(pairing)
+        } else if (pairing.rewardsOnPairings.length) {
+            const winnerRegister = await dbClient.campaignRegister.findFirst({
+                where: {
+                    playerId: winnersIds[0],
+                    campaignId: pairing.campaignId
+                }
+            })
+            await dbClient.campaignAsset.updateMany({
+                where: {id: {in: pairing.rewardsOnPairings.map((ROP: RewardsOnPairings) => ROP.assetId)}},
+                data: {
+                    ownerId: winnerRegister.id
+                }
+            })
         }
         res.status(200).json(updatedPairing);
     } catch (error) {
@@ -271,8 +287,25 @@ pairingsRouter.post('/:id/set-winners/', verifyToken, async (req: Request, res: 
 pairingsRouter.put('/:id/approve', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const {id} = req.params;
     try {
-        const pairing = await dbClient.pairing.findUnique({where: {id}})
+        const pairing = await dbClient.pairing.findUnique({
+            where: {id},
+            include: {rewardsOnPairings: true, winners: true}
+        })
         if (!pairing) return res.status(404).json({error: 'No pairing'})
+        if (pairing.rewardsOnPairings.length) {
+            const winnerRegister = await dbClient.campaignRegister.findFirst({
+                where: {
+                    playerId: pairing.winners[0].playerId,
+                    campaignId: pairing.campaignId
+                }
+            })
+            await dbClient.campaignAsset.updateMany({
+                where: {id: {in: pairing.rewardsOnPairings.map((ROP: RewardsOnPairings) => ROP.assetId)}},
+                data: {
+                    ownerId: winnerRegister.id
+                }
+            })
+        }
         const approvedPairing = await dbClient.pairing.update({
             where: {id},
             data: {

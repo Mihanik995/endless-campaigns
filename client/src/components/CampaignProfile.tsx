@@ -6,7 +6,7 @@ import {useAppSelector} from "../app/hooks.ts";
 import {selectAuth} from "../app/features/auth/authSlice.ts";
 import CampaignPeriods from "../components/CampaignPeriods.tsx";
 import {selectCampaign} from "../app/features/campaign/campaignSlice.ts";
-import type {Campaign, CustomNotification, Mission} from "../types.ts";
+import type {Campaign, CampaignRegister, CustomNotification, Mission} from "../types.ts";
 import {useEffect, useState} from "react";
 import axios from "../axios/axiosConfig.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
@@ -111,6 +111,7 @@ export default function ({id}: Props) {
                                         <Tabs.Content value={`${group.groupTitle}_assets`}>
                                             <CampaignAssets
                                                 assetsGroup={group}
+                                                registers={campaign.campaignRegisters as CampaignRegister[]}
                                                 isOwner={isOwner as boolean}
                                                 onEdit={(assetGroups) =>
                                                     setCampaign({

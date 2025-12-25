@@ -94,6 +94,7 @@ export interface CampaignAssetCreate {
     title: string
     description: string
     groupId: string
+    ownerId?: string | null
 }
 
 export interface CampaignRegister {

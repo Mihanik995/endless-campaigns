@@ -18,8 +18,8 @@ export default function () {
     const navigate = useNavigate();
     const [pairing, setPairing] = useState<Pairing>({
         id: '', campaignId: '', periodId: '', missionId: '',
-        played: false, players: [], winners: [], resultsApproved: false,
-        resultsRejected: false
+        played: false, players: [], winners: [], rewardsOnPairings: [],
+        resultsApproved: false, resultsRejected: false
     })
     const [mission, setMission] = useState<Mission>()
     const [startNode, setStartNode] = useState<MissionNode>()

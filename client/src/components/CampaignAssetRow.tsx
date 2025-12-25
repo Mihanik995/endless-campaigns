@@ -1,5 +1,5 @@
 import {Flex, IconButton, Spinner, Table, Text, Tooltip} from "@radix-ui/themes";
-import type {CampaignAsset} from "../types.ts";
+import type {CampaignAsset, CampaignRegister} from "../types.ts";
 import purifyHTML from "../utils/validators/purifyHTML.ts";
 import {Cross2Icon, Pencil2Icon} from "@radix-ui/react-icons";
 import {useState} from "react";
@@ -9,12 +9,13 @@ import ErrorHandler from "./ErrorHandler.tsx";
 
 interface Props {
     asset: CampaignAsset
+    registers: CampaignRegister[]
     isOwner: boolean
     onEdit: (asset: CampaignAsset) => void
     onDelete: (id: string) => void
 }
 
-export default function ({asset, isOwner, onEdit, onDelete}: Props) {
+export default function ({asset, registers, isOwner, onEdit, onDelete}: Props) {
     const [editOpen, setEditOpen] = useState(false)
 
     const [isLoading, setIsLoading] = useState(false)
@@ -90,6 +91,7 @@ export default function ({asset, isOwner, onEdit, onDelete}: Props) {
             open={editOpen}
             setOpen={setEditOpen}
             asset={asset}
+            registers={registers}
             onEdit={onEdit}
         />
     </>

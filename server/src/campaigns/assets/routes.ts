@@ -22,7 +22,7 @@ assetsRouter.put('/:id', verifyToken, async (req: Request, res: Response, next: 
     const {id} = req.params
     try {
         const updatedAsset = await dbClient.campaignAsset.update({
-            where: {id}, data
+            where: {id}, data, include: {owner: true}
         })
         res.status(200).json(updatedAsset)
     } catch (error) {

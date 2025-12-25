@@ -1,4 +1,4 @@
-import type {AssetGroup, CampaignAsset} from "../types.ts";
+import type {AssetGroup, CampaignAsset, CampaignRegister} from "../types.ts";
 import {Button, Card, Container, Flex, Heading, Table} from "@radix-ui/themes";
 import {useState} from "react";
 import NewAssetCreateDialog from "./NewAssetCreateDialog.tsx";
@@ -8,12 +8,13 @@ import AssetGroupDeleteDialog from "./AssetGroupDeleteDialog.tsx";
 
 interface Props {
     assetsGroup: AssetGroup;
+    registers: CampaignRegister[]
     isOwner: boolean
     onEdit: (assetGroup: AssetGroup) => void
     onDelete: () => void;
 }
 
-export default function ({assetsGroup, isOwner, onEdit, onDelete}: Props) {
+export default function ({assetsGroup, registers, isOwner, onEdit, onDelete}: Props) {
     const assets = assetsGroup.assets;
     const [newOpen, setNewOpen] = useState(false);
     const [editOpen, setEditOpen] = useState(false);
@@ -62,6 +63,7 @@ export default function ({assetsGroup, isOwner, onEdit, onDelete}: Props) {
                             {assets.map(asset =>
                                 <CampaignAssetRow
                                     asset={asset}
+                                    registers={registers}
                                     isOwner={isOwner}
                                     onEdit={(updatedAsset) =>
                                         onEdit({

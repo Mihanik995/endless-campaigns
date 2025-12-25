@@ -1,5 +1,5 @@
-import type {Request, Response, NextFunction} from "express";
-import type {CampaignRegister, Campaign} from "../../generated/prisma";
+import type {NextFunction, Request, Response} from "express";
+import type {Campaign, CampaignRegister} from "../../generated/prisma";
 
 const {Router} = require("express");
 const {PrismaClient} = require("../../generated/prisma")
@@ -123,10 +123,13 @@ campaignsRouter.put("/:id", verifyToken, async (req: Request, res: Response, nex
                 campaignRegisters: undefined,
                 customNotifications: undefined,
                 campaignPeriod: undefined,
-                assetGroups: {
-                    create: [...campaignData.assetGroups
-                        .map((group: { groupTitle: string }) => ({groupTitle: group.groupTitle}))]
-                }
+                assetGroups: campaignData.usesAssets
+                    ? {
+                        create: [...campaignData.assetGroups
+                            .map((group: { groupTitle: string }) => ({groupTitle: group.groupTitle}))]
+                    } : {
+                        deleteMany: {}
+                    }
             },
             include: {
                 customNotifications: true,
@@ -143,7 +146,8 @@ campaignsRouter.put("/:id", verifyToken, async (req: Request, res: Response, nex
                                         personalMission: true
                                     }
                                 },
-                                winners: {include: {player: {select: {id: true, username: true, email: true}}}}
+                                winners: {include: {player: {select: {id: true, username: true, email: true}}}},
+                                rewardsOnPairings: {include: {asset: true}}
                             }
                         }
                     }

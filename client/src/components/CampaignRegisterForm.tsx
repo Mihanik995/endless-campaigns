@@ -2,15 +2,16 @@ import {Button, Container, Flex, Popover} from "@radix-ui/themes";
 import {type ReactElement, useState} from "react";
 import TextInput from "./TextInput.tsx";
 import axios from "../axios/axiosConfig.ts";
-import type {CampaignRegisterCreate} from "../types.ts";
+import type {CampaignRegister, CampaignRegisterCreate} from "../types.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
 import {type SubmitHandler, useForm} from "react-hook-form";
 
 interface Props {
     campaignId: string
+    onEdit: (newReg: CampaignRegister) => void
 }
 
-export default function ({campaignId}: Props): ReactElement {
+export default function ({campaignId, onEdit}: Props): ReactElement {
     const {control, handleSubmit} = useForm<CampaignRegisterCreate>({
         defaultValues: {campaignId},
         mode: "onBlur"
@@ -19,9 +20,12 @@ export default function ({campaignId}: Props): ReactElement {
 
     const onSubmit: SubmitHandler<CampaignRegisterCreate> = (data) => {
         try {
-            axios.post('/campaigns/register', data)
+            axios.post<CampaignRegister>('/campaigns/register', data)
                 .then((response) => {
-                    if (response.status === 201) window.location.reload();
+                    if (response.status === 201) {
+                        onEdit(response.data)
+                        setError(undefined)
+                    }
                 })
         } catch (error) {
             setError(error as Error)

@@ -22,6 +22,7 @@ export default function () {
             .then(res => {
                 if (res.status === 200) {
                     setSuccess(true)
+                    setError(undefined)
                 }
             })
             .catch((error) => setError(error as Error))

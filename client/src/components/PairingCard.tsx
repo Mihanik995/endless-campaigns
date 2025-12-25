@@ -17,28 +17,28 @@ export default function ({pairing, personalMission}: Props) {
         .filter(reg => pairingPlayersIds.includes(reg.playerId))
 
     return (
-        <Container width='100vw'>
-            <Card size='3' m='2'>
-                <Flex gap='3'>
+        <Container width="100vw">
+            <Card size="3" m="2">
+                <Flex gap="3">
                     <Flex
-                        width='100%'
-                        direction='column'
-                        align='start'
+                        width="100%"
+                        direction="column"
+                        align="start"
                     >
                         <Text>
-                            <Flex gap='2'>
+                            <Flex gap="2">
                                 Mission:
                                 <Link
-                                    href=''
+                                    href=""
                                     onClick={() => navigate(`/missions/${mission?.id}`)}
                                 >
                                     {mission?.title}
                                 </Link>
                             </Flex>
                         </Text>
-                        <Separator size='4' my='2'/>
+                        <Separator size="4" my="2"/>
                         <Text>
-                            <Flex gap='2' direction='column'>
+                            <Flex gap="2" direction="column">
                                 Players:
                                 <DataList.Root orientation={{
                                     initial: 'vertical',
@@ -63,10 +63,34 @@ export default function ({pairing, personalMission}: Props) {
                                 </DataList.Root>
                             </Flex>
                         </Text>
-                        <Separator size='4' my='2'/>
-                        <Button onClick={() => navigate(`/pairings/${pairing.id}/`)}>
-                            Play the mission
-                        </Button>
+                        <Separator size="4" my="2"/>
+                        {pairing.rewardsOnPairings.length > 0 && <>
+                            {pairing.rewardsOnPairings.length > 1
+                                ? <Flex direction="column" gap="2">
+                                    <Text>Rewards:</Text>
+                                    <DataList.Root orientation={{
+                                        initial: 'vertical',
+                                        sm: 'horizontal'
+                                    }}>
+                                    {pairing.rewardsOnPairings.map(reward =>
+                                        <DataList.Label>- {reward.asset.title}</DataList.Label>)}
+                                    </DataList.Root>
+                                </Flex>
+                                : <Text>Reward: {pairing.rewardsOnPairings[0].asset.title}</Text>
+                              }
+                          <Separator size="4" my="2"/>
+                        </>}
+                        {pairing.played
+                            ? <Button
+                                onClick={() => navigate(`/pairings/${pairing.id}/`)}
+                                color="grass"
+                            >
+                                Show results
+                            </Button>
+                            : <Button onClick={() => navigate(`/pairings/${pairing.id}/`)}>
+                                Play the mission
+                            </Button>
+                        }
                     </Flex>
                 </Flex>
             </Card>

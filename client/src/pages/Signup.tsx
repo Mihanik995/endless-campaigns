@@ -26,7 +26,10 @@ export default function (): ReactElement {
             {headers: {'Content-Type': 'application/json'}}
         )
             .then(res => {
-                if (res.status === 201) setSuccess(true)
+                if (res.status === 201) {
+                    setSuccess(true)
+                    setError(undefined)
+                }
             })
             .catch((error) => setError(error as Error))
     }

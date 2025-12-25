@@ -1,5 +1,5 @@
-import {Button, ContextMenu, Link, Table, Text} from "@radix-ui/themes";
-import type {CampaignPeriod, Mission, Pairing, PlayerRegister} from "../types.ts";
+import {Button, ContextMenu, Flex, Link, Table, Text} from "@radix-ui/themes";
+import type {CampaignAsset, CampaignPeriod, Mission, Pairing, PlayerRegister} from "../types.ts";
 import {useState} from "react";
 import axios from "../axios/axiosConfig.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
@@ -11,12 +11,14 @@ import EditPairingDialog from "./EditPairingDialog.tsx";
 interface Props {
     pairing: Pairing
     missions: Mission[]
+    availableRewards: CampaignAsset[]
     playerRegisters: PlayerRegister[]
     period: CampaignPeriod
-    onChange: () => void
+    onEdit: (pairing: Pairing) => void
+    onDelete: (id: string) => void
 }
 
-export default function ({pairing, missions, playerRegisters, period, onChange}: Props) {
+export default function ({pairing, missions, availableRewards, playerRegisters, period, onEdit, onDelete}: Props) {
     const [edit, setEdit] = useState(false);
 
     const [error, setError] = useState<Error>()
@@ -25,16 +27,21 @@ export default function ({pairing, missions, playerRegisters, period, onChange}:
     const handleDeletePairing = (): void => {
         axios.delete(`/missions/pairings/${pairing.id}`)
             .then(res => {
-                if (res.status === 204) onChange()
+                if (res.status === 204) {
+                    onDelete(pairing.id);
+                    setError(undefined)
+                }
             }).catch(err => setError(err as Error));
     }
 
 
-
     const approveResults = (): void => {
-        axios.put(`/missions/pairings/${pairing.id}/approve`)
+        axios.put<Pairing>(`/missions/pairings/${pairing.id}/approve`)
             .then(res => {
-                if (res.status === 200) onChange()
+                if (res.status === 200) {
+                    onEdit(res.data)
+                    setError(undefined)
+                }
             }).catch(err => setError(err as Error))
     }
 
@@ -45,19 +52,28 @@ export default function ({pairing, missions, playerRegisters, period, onChange}:
         <Table.Row>
             <Table.Cell>
                 <Link
-                    href=''
+                    href=""
                     onClick={() => navigate(`/missions/${pairing.mission?.id}`)}
                 >
                     {pairing.mission?.title}
                 </Link>
             </Table.Cell>
-            <Table.Cell minWidth='150px'>
-                <Text align='center'>
+            <Table.Cell minWidth="150px">
+                <Flex direction="column" gap="1">
                     {pairing.players
-                        .map(player => player.player.username)
-                        .join(' / ')
+                        .map(player => (
+                            <Text>
+                                {player.player.username}
+                            </Text>
+                        ))
                     }
-                </Text>
+                </Flex>
+            </Table.Cell>
+            <Table.Cell>
+                {pairing.rewardsOnPairings.length
+                    ? pairing.rewardsOnPairings.map(ROP => <Text>{ROP.asset.title}</Text>)
+                    : '-'
+                }
             </Table.Cell>
             <Table.Cell>
                 {pairing.played
@@ -68,7 +84,7 @@ export default function ({pairing, missions, playerRegisters, period, onChange}:
             </Table.Cell>
             <Table.Cell>
                 {pairing.reportLink
-                    ? <Link href={pairing.reportLink} target='_blank'>
+                    ? <Link href={pairing.reportLink} target="_blank">
                         {pairing.reportLink.length > 20
                             ? `${pairing.reportLink.slice(0, 20)}...`
                             : pairing.reportLink}
@@ -83,26 +99,26 @@ export default function ({pairing, missions, playerRegisters, period, onChange}:
                 </ContextMenu.Trigger>
                 <ContextMenu.Content>
                     {pairing.played && !pairing.resultsApproved && <>
-                        <ContextMenu.Item onSelect={approveResults}>
-                            Approve results
-                        </ContextMenu.Item>
-                        <ContextMenu.Item onSelect={() => setRejectOpen(true)}>
-                            Reject results
-                        </ContextMenu.Item>
-                        <ContextMenu.Separator/>
+                      <ContextMenu.Item onSelect={approveResults}>
+                        Approve results
+                      </ContextMenu.Item>
+                      <ContextMenu.Item onSelect={() => setRejectOpen(true)}>
+                        Reject results
+                      </ContextMenu.Item>
+                      <ContextMenu.Separator/>
                     </>}
                     {pairing.mission?.nodes &&
-                        <>
-                            <ContextMenu.Item onSelect={() => setNodesOpen(true)}>
-                                Check nodes passed
-                            </ContextMenu.Item>
-                            <ContextMenu.Separator/>
-                        </>
+                      <>
+                        <ContextMenu.Item onSelect={() => setNodesOpen(true)}>
+                          Check nodes passed
+                        </ContextMenu.Item>
+                        <ContextMenu.Separator/>
+                      </>
                     }
                     <ContextMenu.Item onSelect={() => setEdit(true)}>
                         Edit
                     </ContextMenu.Item>
-                    <ContextMenu.Item color='red' onSelect={handleDeletePairing}>
+                    <ContextMenu.Item color="red" onSelect={handleDeletePairing}>
                         Delete
                     </ContextMenu.Item>
                 </ContextMenu.Content>
@@ -110,32 +126,31 @@ export default function ({pairing, missions, playerRegisters, period, onChange}:
         </Table.Row>
         {
             !!error && <Table.Row>
-                <Table.Cell colSpan={3}>
-                    <ErrorHandler error={error}/>
-                </Table.Cell>
-            </Table.Row>
+            <Table.Cell colSpan={3}>
+              <ErrorHandler error={error}/>
+            </Table.Cell>
+          </Table.Row>
         }
         <RejectPairingResultsDialog
             open={rejectOpen}
             setOpen={setRejectOpen}
             pairing={pairing}
-            onChange={onChange}
+            onEdit={onEdit}
         />
         <CheckPassedNodesDialog
             open={nodesOpen}
             setOpen={setNodesOpen}
             pairing={pairing}
-            onChange={onChange}
         />
         <EditPairingDialog
             open={edit}
             onOpenChange={setEdit}
             missions={missions}
+            availableRewards={[...availableRewards, ...pairing.rewardsOnPairings.map(ROP => ROP.asset)]}
             playerRegisters={playerRegisters}
             period={period}
             pairing={pairing}
-            onChange={onChange}
-            onError={setError}
+            onEdit={onEdit}
         />
     </>
 }

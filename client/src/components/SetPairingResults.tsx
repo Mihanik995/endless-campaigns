@@ -8,6 +8,7 @@ import axios from "../axios/axiosConfig.ts";
 import ErrorHandler from "./ErrorHandler.tsx";
 import {type SubmitHandler, useForm} from "react-hook-form";
 import CheckManyInput from "./CheckManyInput.tsx";
+import SelectInput from "./SelectInput.tsx";
 
 interface Props {
     pairing: Pairing;
@@ -84,8 +85,17 @@ export default function ({pairing}: Props) {
                 }
                 <Flex direction='column' gap='2'>
                     <Text weight='medium' size='4'>Choose the winner(s):</Text>
-                    <CheckManyInput
-                        name='winners'
+                    {pairing.rewardsOnPairings.length
+                        ? <SelectInput
+                            name="winners.0"
+                            control={control}
+                            options={pairing.players.reduce((acc, player) => {
+                                acc[player.playerId] = player.player.username
+                                return acc
+                            }, {} as Record<string, string>)}
+                        />
+                        : <CheckManyInput
+                        name="winners"
                         control={control}
                         values={pairing.players.map((player) => {
                             return {
@@ -96,7 +106,7 @@ export default function ({pairing}: Props) {
                                     .formationName
                             }
                         })}
-                    />
+                    />}
                     {pairing.campaign?.requiresPairingReport &&
                         <TextInput
                             label='Report link'
@@ -113,8 +123,9 @@ export default function ({pairing}: Props) {
                                 </IconButton>
                             </Popover.Trigger>
                             <Popover.Content>
-                                <Text>If you have no winner, don't select any options, just
-                                    Submit.</Text>
+                                <Text>
+                                    If you have no winner, don't select any options, just Submit.
+                                </Text>
                             </Popover.Content>
                         </Popover.Root>
                     </Flex>

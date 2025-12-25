@@ -45,6 +45,7 @@ export default function ({source, startNode = false, open, setOpen}: Props) {
         axios.post<MissionNode>('/missions/nodes', data)
             .then(res => {
                 if (res.status === 201) {
+                    setError(undefined)
                     addNodes({
                         id: res.data.id,
                         position: {x: res.data.positionX, y: res.data.positionY},
@@ -74,6 +75,7 @@ export default function ({source, startNode = false, open, setOpen}: Props) {
             })
             .then(res => {
                 if (res && res.status === 201) {
+                    setError(undefined)
                     addEdges({
                         id: `${res.data.id}`,
                         source: res.data.fromId,

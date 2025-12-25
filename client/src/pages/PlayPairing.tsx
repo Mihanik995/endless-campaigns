@@ -1,7 +1,7 @@
 import Header from "../components/Header.tsx";
 import {type MouseEventHandler, useEffect, useState} from "react";
-import {useParams} from "react-router";
-import type {Mission, MissionNode, Pairing, PlayersOnPairings} from "../types.ts";
+import {useNavigate, useParams} from "react-router";
+import type {Mission, MissionNode, NodesPassedOnPairing, Pairing, PlayersOnPairings} from "../types.ts";
 import axios from "../axios/axiosConfig.ts";
 import {useAppSelector} from "../app/hooks.ts";
 import {selectAuth} from "../app/features/auth/authSlice.ts";
@@ -15,10 +15,11 @@ export default function () {
     const [error, setError] = useState<Error>()
     const id = useParams().id as string
     const auth = useAppSelector(selectAuth)
+    const navigate = useNavigate();
     const [pairing, setPairing] = useState<Pairing>({
         id: '', campaignId: '', periodId: '', missionId: '',
-        played: false, players: [], winners: [], resultsApproved: false,
-        resultsRejected: false, nodesPassedOnPairing: []
+        played: false, players: [], winners: [], rewardsOnPairings: [],
+        resultsApproved: false, resultsRejected: false
     })
     const [mission, setMission] = useState<Mission>()
     const [startNode, setStartNode] = useState<MissionNode>()
@@ -30,6 +31,7 @@ export default function () {
         axios.get<Pairing>(`/missions/pairings/${id}`)
             .then(res => {
                 if (res.status === 200) {
+                    setError(undefined)
                     if (
                         !res.data.players
                             .map((player: PlayersOnPairings) => player.playerId)
@@ -62,36 +64,51 @@ export default function () {
         setIsLoading(true)
         axios.post(`/missions/nodes/passed/${startNode?.id}`, {pairingId: pairing.id})
             .then(res => {
-                if (res.status === 201) setNextNode(startNode)
+                if (res.status === 201) {
+                    setNextNode(startNode)
+                    setError(undefined)
+                }
             }).catch(error => setError(error as Error))
             .finally(() => setIsLoading(false))
     }
 
     return <>
         <Header/>
-        <Container className='pb-5 pt-23'>
-            <Flex minHeight='40vh' align='center' justify='center'>
+        <Container className="pb-5 pt-23">
+            <Flex minHeight="40vh" align="center" justify="center">
                 <Card>
                     {isLoading
-                        ? <Spinner size='3' m='4'/>
+                        ? <Spinner size="3" m="4"/>
                         : !!error
                             ? <ErrorHandler error={error}/>
-                            : <Flex direction='column' align='center' gap='2'>
+                            : <Flex direction="column" align="center" gap="2">
                                 {mission &&
-                                    <MissionCard
-                                        clickable={false}
-                                        onDelete={() => {
-                                        }}
-                                        mission={mission as Mission}
-                                        owner={false}
-                                    />
+                                  <MissionCard
+                                    clickable={false}
+                                    onDelete={() => navigate('/dashboard')}
+                                    mission={mission as Mission}
+                                    owner={false}
+                                  />
                                 }
-                                <Separator size='4'/>
+                                <Separator size="4"/>
                                 {startNode
                                     ? !!nextNode
                                         ? <NextPairingStep
                                             node={nextNode}
                                             pairing={pairing}
+                                            missionNodes={mission?.nodes as MissionNode[]}
+                                            nodesPassed={pairing.players
+                                                .find(player => player.playerId === auth.id)
+                                                ?.nodesPassedOnPairing as NodesPassedOnPairing[]}
+                                            onEdit={(nodesPassedOnPairing) =>
+                                                setPairing({
+                                                    ...pairing,
+                                                    players: pairing.players
+                                                        .map(player => player.playerId === auth.id
+                                                            ? {...player, nodesPassedOnPairing}
+                                                            : player)
+                                                })
+                                            }
                                         />
                                         : <Button onClick={handleStart}>
                                             {startNode.buttonLabel}

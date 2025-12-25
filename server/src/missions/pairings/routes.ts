@@ -1,5 +1,5 @@
-import type {Request, Response, NextFunction} from 'express';
-import type {PlayersOnPairings} from '../../../generated/prisma'
+import type {NextFunction, Request, Response} from 'express';
+import type {CampaignAsset, PlayersOnPairings, RewardsOnPairings} from '../../../generated/prisma'
 
 const {Router} = require("express");
 const {PrismaClient} = require("../../../generated/prisma");
@@ -14,12 +14,16 @@ const pairingsRouter = new Router();
 const dbClient = new PrismaClient();
 
 pairingsRouter.post('/', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
-    const {campaignId, periodId, players, missionId} = req.body;
+    const {campaignId, periodId, players, missionId, rewards} = req.body;
     try {
         const id = uuid()
         const pairing = await dbClient.pairing.create({
             data: {
-                id, campaignId, periodId, missionId, players: {
+                id,
+                campaignId,
+                periodId,
+                missionId,
+                players: {
                     create: players.map((player: { playerId: string, personalMissionId: string }) => {
                         return player.personalMissionId
                             ? {
@@ -28,6 +32,11 @@ pairingsRouter.post('/', verifyToken, async (req: Request, res: Response, next: 
                             }
                             : {player: {connect: {id: player.playerId}}}
                     })
+                },
+                rewardsOnPairings: {
+                    create: rewards.map((id: string) => ({
+                        asset: {connect: {id}},
+                    }))
                 }
             },
             include: {
@@ -38,11 +47,17 @@ pairingsRouter.post('/', verifyToken, async (req: Request, res: Response, next: 
                                 notifications: true,
                                 telegramId: true,
                                 email: true,
+                                username: true,
+                                id: true
                             }
-                        }
+                        },
+                        personalMission: true
                     }
                 },
-                campaign: true
+                campaign: true,
+                mission: {include: {nodes: true}},
+                winners: true,
+                rewardsOnPairings: {include: {asset: true}}
             }
         })
         await newPairingNotify(pairing)
@@ -58,7 +73,7 @@ pairingsRouter.get('/:id', verifyToken, async (req: Request, res: Response, next
         const pairing = await dbClient.pairing.findUnique({
             where: {id},
             include: {
-                mission: {include: {nodes: true}},
+                mission: {include: {nodes: {include: {nextLinks: {include: {to: true}}}}}},
                 campaign: {include: {campaignRegisters: true}},
                 players: {
                     include: {
@@ -67,7 +82,8 @@ pairingsRouter.get('/:id', verifyToken, async (req: Request, res: Response, next
                         nodesPassedOnPairing: true
                     }
                 },
-                winners: {include: {player: {select: {id: true, username: true, email: true}}}}
+                winners: {include: {player: {select: {id: true, username: true, email: true}}}},
+                rewardsOnPairings: {include: {asset: true}}
             }
         })
         if (!pairing) return res.status(404).json({error: 'No pairing'})
@@ -136,11 +152,12 @@ pairingsRouter.get('/', verifyToken, async (req: Request, res: Response, next: N
                             include: {campaignRegisters: {include: {player: true}}}
                         },
                         mission: true,
-                        players: {include: {player: {select: {id: true, username: true, email: true}}}}
+                        players: {include: {player: {select: {id: true, username: true, email: true}}}},
+                        rewardsOnPairings: {include: {asset: true}}
                     }
                 },
                 personalMission: true
-            },
+            }
         })
         if (!pairing) return res.status(404).json({error: 'No pairing'})
         res.status(200).json(pairing);
@@ -151,32 +168,49 @@ pairingsRouter.get('/', verifyToken, async (req: Request, res: Response, next: N
 
 pairingsRouter.put('/:id', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const {id} = req.params;
-    const {campaignId, periodId, players, simpleMissionId, winners} = req.body;
+    const {players, missionId, winners, rewards} = req.body;
     try {
         const pairing = await dbClient.pairing.findUnique({where: {id}})
         if (!pairing) return res.status(404).json({error: 'No pairing'})
         const updatedPairing = await dbClient.pairing.update({
             where: {id},
             data: {
-                campaignId, periodId, simpleMissionId,
+                mission: {connect: {id: missionId}},
                 players: {
                     deleteMany: {},
                     create: players.map((player: { playerId: string, personalMissionId: string }) => {
                         return player.personalMissionId
                             ? {
                                 player: {connect: {id: player.playerId}},
-                                personalMission: {connect: {id: player.personalMissionId}},
+                                personalMission: {connect: {id: player.personalMissionId}}
                             }
-                            : {player: {connect: {id: player.playerId}},}
+                            : {player: {connect: {id: player.playerId}}}
                     })
                 },
                 winners: {
                     deleteMany: {},
-                    create: winners.map((id: string) => {
-                        return {player: {connect: {id}}}
-                    })
+                    create: winners.map((id: string) => ({
+                        player: {connect: {id}}
+                    }))
+                },
+                rewardsOnPairings: {
+                    deleteMany: {},
+                    create: rewards.map((id: string) => ({
+                        asset: {connect: {id}},
+                    }))
                 }
             },
+            include: {
+                mission: {include: {nodes: true}},
+                players: {
+                    include: {
+                        player: {select: {id: true, username: true, email: true}},
+                        personalMission: true
+                    }
+                },
+                winners: {include: {player: {select: {id: true, username: true, email: true}}}},
+                rewardsOnPairings: {include: {asset: true}}
+            }
         })
         res.status(200).json(updatedPairing);
     } catch (error) {
@@ -203,7 +237,8 @@ pairingsRouter.post('/:id/set-winners/', verifyToken, async (req: Request, res: 
             where: {id},
             include: {
                 players: {include: {player: {select: {username: true}}}},
-                campaign: {include: {owner: true}}
+                campaign: {include: {owner: true}},
+                rewardsOnPairings: true
             }
         })
         if (!pairing) return res.status(404).json({error: 'No pairing'})
@@ -229,6 +264,19 @@ pairingsRouter.post('/:id/set-winners/', verifyToken, async (req: Request, res: 
         })
         if (pairing.campaign.requiresPairingResultsApproval) {
             await pairingPlayedNotify(pairing)
+        } else if (pairing.rewardsOnPairings.length) {
+            const winnerRegister = await dbClient.campaignRegister.findFirst({
+                where: {
+                    playerId: winnersIds[0],
+                    campaignId: pairing.campaignId
+                }
+            })
+            await dbClient.campaignAsset.updateMany({
+                where: {id: {in: pairing.rewardsOnPairings.map((ROP: RewardsOnPairings) => ROP.assetId)}},
+                data: {
+                    ownerId: winnerRegister.id
+                }
+            })
         }
         res.status(200).json(updatedPairing);
     } catch (error) {
@@ -239,12 +287,40 @@ pairingsRouter.post('/:id/set-winners/', verifyToken, async (req: Request, res: 
 pairingsRouter.put('/:id/approve', verifyToken, async (req: Request, res: Response, next: NextFunction) => {
     const {id} = req.params;
     try {
-        const pairing = await dbClient.pairing.findUnique({where: {id}})
+        const pairing = await dbClient.pairing.findUnique({
+            where: {id},
+            include: {rewardsOnPairings: true, winners: true}
+        })
         if (!pairing) return res.status(404).json({error: 'No pairing'})
+        if (pairing.rewardsOnPairings.length) {
+            const winnerRegister = await dbClient.campaignRegister.findFirst({
+                where: {
+                    playerId: pairing.winners[0].playerId,
+                    campaignId: pairing.campaignId
+                }
+            })
+            await dbClient.campaignAsset.updateMany({
+                where: {id: {in: pairing.rewardsOnPairings.map((ROP: RewardsOnPairings) => ROP.assetId)}},
+                data: {
+                    ownerId: winnerRegister.id
+                }
+            })
+        }
         const approvedPairing = await dbClient.pairing.update({
             where: {id},
             data: {
                 resultsApproved: true
+            },
+            include: {
+                mission: {include: {nodes: true}},
+                players: {
+                    include: {
+                        player: {select: {id: true, username: true, email: true}},
+                        personalMission: true
+                    }
+                },
+                winners: {include: {player: {select: {id: true, username: true, email: true}}}},
+                rewardsOnPairings: {include: {asset: true}}
             }
         })
         res.status(200).json(approvedPairing);
@@ -262,16 +338,9 @@ pairingsRouter.put('/:id/reject', verifyToken, async (req: Request, res: Respons
             include: {
                 players: {
                     include: {
-                        player: {
-                            select: {
-                                notifications: true,
-                                email: true,
-                                telegramId: true,
-                            }
-                        }
+                        player: {select: {notifications: true, email: true, telegramId: true}}
                     }
-                },
-                campaign: true
+                }
             }
         })
         if (!pairing) return res.status(404).json({error: 'No pairing'})
@@ -283,6 +352,23 @@ pairingsRouter.put('/:id/reject', verifyToken, async (req: Request, res: Respons
                 reportLink: undefined,
                 resultsRejected: true,
                 rejectMessage
+            },
+            include: {
+                players: {
+                    include: {
+                        player: {
+                            select: {
+                                id: true,
+                                username: true
+                            }
+                        },
+                        personalMission: true
+                    }
+                },
+                campaign: true,
+                mission: {include: {nodes: true}},
+                winners: {include: {player: {select: {id: true, username: true, email: true}}}},
+                rewardsOnPairings: {include: {asset: true}}
             }
         })
         await resultsRejectedNotify(pairing)

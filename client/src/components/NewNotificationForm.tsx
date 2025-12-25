@@ -12,6 +12,8 @@ interface Props {
     setNew: (notification: CustomNotification) => void
 }
 
+// TODO: Proxy Request Notifications
+
 export default function ({campaignId, setNew}: Props) {
     const {control, handleSubmit} = useForm<CustomNotificationCreate>({
         defaultValues: {campaignId},
@@ -26,6 +28,7 @@ export default function ({campaignId, setNew}: Props) {
             .then((res) => {
                 if (res.status === 201) {
                     setNew(res.data)
+                    setError(undefined)
                 }
             }).catch((err: Error) => setError(err))
             .finally(() => setIsLoading(false))

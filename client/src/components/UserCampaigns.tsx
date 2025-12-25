@@ -19,7 +19,10 @@ export default function ({id}: Props) {
         setIsLoading(true)
         axios.get<CampaignRegister[]>(`/campaigns/register/user/${id}`)
             .then(res => {
-                if (res.status === 200) setCampaignsData(res.data)
+                if (res.status === 200) {
+                    setCampaignsData(res.data)
+                    setError(undefined)
+                }
             }).catch(err => setError(err as Error))
             .finally(() => setIsLoading(false))
     }, []);

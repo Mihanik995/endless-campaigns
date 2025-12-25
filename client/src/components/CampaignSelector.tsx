@@ -22,6 +22,7 @@ export default function () {
                             dateEnd: new Date(c.dateEnd).toLocaleDateString(),
                         }
                     }))
+                setError(undefined)
             })
             .catch((err) => setError(err as Error))
             .finally(() => setIsLoading(false))
@@ -49,6 +50,12 @@ export default function () {
                                             onDelete={() => setCampaigns(campaigns.filter(
                                                 camp => camp.id !== campaign.id
                                             ))}
+                                            onEdit={(updatedCampaign) =>
+                                                setCampaigns(campaigns.map(campaign =>
+                                                    campaign.id === updatedCampaign.id
+                                                        ? updatedCampaign
+                                                        : campaign))
+                                            }
                                         />
                                     ))}
                                     <Button

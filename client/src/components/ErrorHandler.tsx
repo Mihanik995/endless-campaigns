@@ -1,8 +1,8 @@
-import { Callout } from "@radix-ui/themes";
+import {Callout} from "@radix-ui/themes";
 import {InfoCircledIcon} from "@radix-ui/react-icons";
 
 interface Props {
-    error: Error
+    error: any
 }
 
 export default function ({error}: Props) {
@@ -14,7 +14,10 @@ export default function ({error}: Props) {
                 <InfoCircledIcon/>
             </Callout.Icon>
             <Callout.Text>
-                Error occurred: {error.message}
+                Error occurred: {error.response?.data?.message
+                ? error.response.data.message
+                : error.message
+            }
             </Callout.Text>
         </Callout.Root>
     )

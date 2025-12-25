@@ -21,6 +21,7 @@ export default function ({id, sourceX, sourceY, targetX, targetY, selected}: Edg
                 if (res.status === 204) {
                     deleteElements({edges: [{id}]})
                     setOpen(false)
+                    setError(undefined)
                 }
             }).catch(err => setError(err as Error))
             .finally(() => setIsLoading(false))

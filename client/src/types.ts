@@ -43,7 +43,11 @@ export interface Campaign {
     requiresPairingResultsApproval: boolean
     requiresPairingReport: boolean
     campaignRegisters?: CampaignRegister[]
+    campaignPeriod?: CampaignPeriod[]
     customNotifications?: CustomNotification[]
+
+    usesAssets: boolean
+    assetGroups: AssetGroup[]
 }
 
 export interface CampaignCreate {
@@ -57,6 +61,40 @@ export interface CampaignCreate {
     requiresRegisterApproval: boolean
     requiresPairingResultsApproval: boolean
     requiresPairingReport: boolean
+    assetGroups: {
+        [key: string]: any
+
+        groupTitle: string
+    }[]
+}
+
+export interface AssetGroup {
+    id: string
+    groupTitle: string
+    campaign: Campaign
+    campaignId: string
+    assets: CampaignAsset[]
+}
+
+export interface CampaignAsset {
+    [key: string]: any
+
+    id: string
+    title: string
+    description: string
+    assetGroup: AssetGroup
+    groupId: string
+    owner?: CampaignRegister
+    ownerId?: string
+}
+
+export interface CampaignAssetCreate {
+    [key: string]: any
+
+    title: string
+    description: string
+    groupId: string
+    ownerId?: string | null
 }
 
 export interface CampaignRegister {
@@ -80,12 +118,13 @@ export interface CampaignRegisterCreate {
 }
 
 export interface CampaignPeriod {
-    [key: string]: string
+    [key: string]: any
 
     id: string
     campaignId: string
     dateStart: string
     dateEnd: string
+    pairing?: Pairing[]
 }
 
 export interface CampaignPeriodCreate {
@@ -193,6 +232,15 @@ export interface Pairing {
     reportLink?: string
     resultsRejected: boolean
     rejectMessage?: string
+
+    rewardsOnPairings: RewardsOnPairings[]
+}
+
+export interface RewardsOnPairings {
+    asset: CampaignAsset
+    assetId: string
+    pairing: Pairing
+    pairingId: string
 }
 
 export interface PairingCreate {

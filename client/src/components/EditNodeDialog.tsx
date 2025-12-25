@@ -46,6 +46,7 @@ export default function ({source, open, setOpen}: Props) {
                             : node
                     }))
                     setOpen(false)
+                    setError(undefined)
                 }
             }).catch((err) => setError(err as Error))
             .finally(() => setIsLoading(false))

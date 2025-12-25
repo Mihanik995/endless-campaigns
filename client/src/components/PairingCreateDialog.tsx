@@ -27,14 +27,11 @@ export default function ({playerRegisters, period, onEdit, missions, availableRe
     const [playersOptions, setPlayersOptions] = useState<PlayerRegister[]>(playerRegisters)
     const [playersList, setPlayersList] = useState<PlayerRegister[]>([])
 
-    const resetRewardOptions = (playersList: PlayerRegister[]) => availableRewards.filter(asset =>
-        !pairingRewards.includes(asset.id) &&
-        !asset.ownerId ||
-        playersList.map(playerRegister => playerRegister.id).includes(asset.ownerId as string)
-    )
-
     const [pairingRewards, setPairingRewards] = useState<string[]>([])
-    const [rewardsOptions, setRewardsOptions] = useState(resetRewardOptions([]))
+    const rewardsOptions = availableRewards.filter(reward =>
+        !pairingRewards.includes(reward.id) &&
+        (!reward.ownerId || playersList.map(reg => reg.id).includes(reward.ownerId))
+    )
 
     const {control: missionControl, handleSubmit} = useForm<PairingMission>({mode: "onBlur"})
 
@@ -49,7 +46,6 @@ export default function ({playerRegisters, period, onEdit, missions, availableRe
             ]
             setPlayersList(newPlayersList)
             setPlayersOptions(playersOptions.filter(player => player.playerId !== playerToAdd))
-            setRewardsOptions(resetRewardOptions(newPlayersList))
         }
         setPlayerToAdd('')
         setAddPlayer(!addPlayer)
@@ -64,15 +60,10 @@ export default function ({playerRegisters, period, onEdit, missions, availableRe
 
     const handleAddReward = (rewardId: string) => {
         setPairingRewards([...pairingRewards, rewardId])
-        setRewardsOptions(rewardsOptions.filter(asset => asset.id !== rewardId))
     }
 
     const handleDeleteReward = (rewardId: string) => {
         setPairingRewards(pairingRewards.filter(assetId => assetId != rewardId))
-        setRewardsOptions([
-            ...rewardsOptions,
-            (availableRewards.find(reward => reward.id === rewardId) as CampaignAsset)
-        ])
     }
 
     const handleDelete = (id: string) => {
@@ -82,7 +73,6 @@ export default function ({playerRegisters, period, onEdit, missions, availableRe
             ...playersOptions,
             playerRegisters.find(player => player.id === id) as PlayerRegister
         ])
-        setRewardsOptions(resetRewardOptions(newPlayersList))
         setPairingRewards(pairingRewards
             .filter(assetId => availableRewards
                 .find(asset => asset.ownerId === id)?.id !== assetId))
